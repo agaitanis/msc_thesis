@@ -1,10 +1,10 @@
 import os
 import numpy as np
-#from tqdm import tqdm
-from torchvision.io import read_image
+from tqdm import tqdm
 from xml.dom import minidom
 from skimage.draw import polygon
 from PIL import Image
+import cv2
 
 
 semantic_labels = {
@@ -32,22 +32,20 @@ def get_points(e):
 class AnnotationCreator:   
     def __init__(self, sample_dir_path):
         self.sample_dir_path = sample_dir_path
-        self.annotation_img = None
         self.width = None
         self.height = None
-        self.label_divisor = 50
     
     
     def _get_img_file_path(self):
         return os.path.join(self.sample_dir_path, "F1_scaled.png")
-    
-    
-    def _get_orig_img_file_path(self):
-        return os.path.join(self.sample_dir_path, "F1_original.png")
-    
+     
     
     def _get_svg_file_path(self):
         return os.path.join(self.sample_dir_path, "model.svg")
+    
+    
+    def _get_annotation_file_path(self):
+        return os.path.join(self.sample_dir_path, "annotation.png")
     
     
     def _clip_outside(self, rr, cc):
@@ -59,9 +57,11 @@ class AnnotationCreator:
 
 
     def create(self):
-        img_tensor = read_image(self._get_img_file_path())
-        channels, self.height, self.width = img_tensor.shape
-        self.annotation_img = np.zeros((self.height, self.width, channels), dtype=np.uint8)
+        fplan = cv2.imread(self._get_img_file_path())
+        fplan = cv2.cvtColor(fplan, cv2.COLOR_BGR2RGB)  # correct color channels
+        self.height, self.width, nchannel = fplan.shape
+        
+        annotation = np.zeros((self.height, self.width, nchannel), dtype=np.uint8)
         
         svg = minidom.parse(self._get_svg_file_path())
         
@@ -72,29 +72,29 @@ class AnnotationCreator:
                 X, Y = get_points(e)
                 rr, cc = polygon(X, Y)
                 cc, rr = self._clip_outside(cc, rr)
-                self.annotation_img[cc, rr, 0] = semantic_labels[attr] * self.label_divisor
-                
-        img = Image.fromarray(self.annotation_img)
-        img.show()
+                annotation[cc, rr, 0] = semantic_labels[attr]
+
+        img = Image.fromarray(annotation)
+        img.save(self._get_annotation_file_path())
 
 
-def create_annotation_files(set_name):
+def create_annotation_files(set_name, files_num):
     dataset_dir_path = os.path.join("datasets", "cubicasa5k")
     txt_file_path = os.path.join(dataset_dir_path, set_name + ".txt")
     
     print(f"Creating annotation files for {set_name} set")
     
     with open(txt_file_path) as f:
-        for sample_dir_name in f.readlines()[:1]:
+        for sample_dir_name in tqdm(f.readlines()[:files_num]):
             sample_dir_name = os.path.normpath(sample_dir_name[1:-1])
             sample_dir_path = os.path.join(dataset_dir_path, sample_dir_name)
             annotation_creator = AnnotationCreator(sample_dir_path)
             annotation_creator.create()
 
 def main():
-    # create_annotation_files("train")
-    # create_annotation_files("val")
-    create_annotation_files("test")
+    create_annotation_files("train", 420)
+    create_annotation_files("val", 40)
+    create_annotation_files("test", 40)
     
 
 if __name__ == '__main__':
