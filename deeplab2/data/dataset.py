@@ -99,6 +99,7 @@ _MOTCHALLENGE_STEP = 'motchallenge_step'
 _CITYSCAPES_DVPS = 'cityscapes_dvps'
 _SEMKITTI_DVPS = 'semkitti_dvps'
 _COCO_PANOPTIC = 'coco_panoptic'
+_CUBICASA5K = 'cubicasa5k'
 
 # Colormap names.
 CITYSCAPES_COLORMAP = 'cityscapes'
@@ -145,6 +146,21 @@ CITYSCAPES_PANOPTIC_INFORMATION = DatasetDescriptor(
     ignore_label=255,
     panoptic_label_divisor=1000,
     class_has_instances_list=tuple(range(11, 19)),
+    is_video_dataset=False,
+    colormap=CITYSCAPES_COLORMAP,
+    is_depth_dataset=False,
+    ignore_depth=None,
+)
+
+CUBICASA5K_INFORMATION = DatasetDescriptor(
+    dataset_name=_CITYSCAPES_PANOPTIC,
+    splits_to_sizes={'train': 420,
+                     'val': 40,
+                     'test': 40},
+    num_classes=3,
+    ignore_label=255,
+    panoptic_label_divisor=1,
+    class_has_instances_list=[],
     is_video_dataset=False,
     colormap=CITYSCAPES_COLORMAP,
     is_depth_dataset=False,

@@ -7,7 +7,7 @@ from PIL import Image
 import cv2
 
 
-semantic_labels = {
+_semantic_labels = {
     "Wall" : 1,
     "Railing" : 1,
     "Door" : 2,
@@ -15,7 +15,14 @@ semantic_labels = {
 }
 
 
-def get_points(e):
+_set_sizes = {
+    "train" : 420,
+    "val" : 40,
+    "test" : 40,
+}
+
+
+def _get_points(e):
     pol = next(p for p in e.childNodes if p.nodeName == "polygon")
     points = pol.getAttribute("points").split(' ')
     points = points[:-1]
@@ -68,33 +75,35 @@ class AnnotationCreator:
         for e in svg.getElementsByTagName('g'):
             attr = e.getAttribute("id")
             
-            if attr in semantic_labels:
-                X, Y = get_points(e)
+            if attr in _semantic_labels:
+                X, Y = _get_points(e)
                 rr, cc = polygon(X, Y)
                 cc, rr = self._clip_outside(cc, rr)
-                annotation[cc, rr, 0] = semantic_labels[attr]
+                annotation[cc, rr, 0] = _semantic_labels[attr]
 
         img = Image.fromarray(annotation)
         img.save(self._get_annotation_file_path())
 
 
-def create_annotation_files(set_name, files_num):
+def create_annotation_files(set_name):
     dataset_dir_path = os.path.join("datasets", "cubicasa5k")
     txt_file_path = os.path.join(dataset_dir_path, set_name + ".txt")
     
     print(f"Creating annotation files for {set_name} set")
     
+    samples_num = _set_sizes[set_name]
+    
     with open(txt_file_path) as f:
-        for sample_dir_name in tqdm(f.readlines()[:files_num]):
+        for sample_dir_name in tqdm(f.readlines()[:samples_num]):
             sample_dir_name = os.path.normpath(sample_dir_name[1:-1])
             sample_dir_path = os.path.join(dataset_dir_path, sample_dir_name)
             annotation_creator = AnnotationCreator(sample_dir_path)
             annotation_creator.create()
 
 def main():
-    create_annotation_files("train", 420)
-    create_annotation_files("val", 40)
-    create_annotation_files("test", 40)
+    create_annotation_files("train")
+    create_annotation_files("val")
+    create_annotation_files("test")
     
 
 if __name__ == '__main__':
