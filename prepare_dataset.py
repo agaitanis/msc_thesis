@@ -6,20 +6,14 @@ from skimage.draw import polygon
 from PIL import Image
 import cv2
 
-
-_semantic_labels = {
+_SEMANTIC_LABELS = {
     "Wall" : 1,
     "Railing" : 1,
     "Door" : 2,
     "Window" : 3,
 }
 
-
-_set_sizes = {
-    "train" : 420,
-    "val" : 40,
-    "test" : 40,
-}
+_USE_DATASET_RATIO = 0.05
 
 
 def _get_points(e):
@@ -75,35 +69,35 @@ class AnnotationCreator:
         for e in svg.getElementsByTagName('g'):
             attr = e.getAttribute("id")
             
-            if attr in _semantic_labels:
+            if attr in _SEMANTIC_LABELS:
                 X, Y = _get_points(e)
                 rr, cc = polygon(X, Y)
                 cc, rr = self._clip_outside(cc, rr)
-                annotation[cc, rr, 0] = _semantic_labels[attr]
+                annotation[cc, rr, 0] = _SEMANTIC_LABELS[attr]
 
         img = Image.fromarray(annotation)
         img.save(self._get_annotation_file_path())
 
 
-def create_annotation_files(set_name):
+def _prepare_dataset_split(dataset_split):
+    print("Processing dataset split {}".format(dataset_split))
+    
     dataset_dir_path = os.path.join("datasets", "cubicasa5k")
-    txt_file_path = os.path.join(dataset_dir_path, set_name + ".txt")
-    
-    print(f"Creating annotation files for {set_name} set")
-    
-    samples_num = _set_sizes[set_name]
+    txt_file_path = os.path.join(dataset_dir_path, dataset_split + ".txt")
     
     with open(txt_file_path) as f:
-        for sample_dir_name in tqdm(f.readlines()[:samples_num]):
+        lines = f.readlines()
+        samples_num = _USE_DATASET_RATIO*len(lines)
+        for sample_dir_name in tqdm(lines[:samples_num]):
             sample_dir_name = os.path.normpath(sample_dir_name[1:-1])
             sample_dir_path = os.path.join(dataset_dir_path, sample_dir_name)
+            
             annotation_creator = AnnotationCreator(sample_dir_path)
             annotation_creator.create()
 
 def main():
-    create_annotation_files("train")
-    create_annotation_files("val")
-    create_annotation_files("test")
+    for dataset_split in ("train", "val"):
+        _prepare_dataset_split(dataset_split)
     
 
 if __name__ == '__main__':

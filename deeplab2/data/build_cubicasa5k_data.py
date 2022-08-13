@@ -21,17 +21,6 @@ flags.DEFINE_string('output_dir', None,
 _NUM_SHARDS = 10
 _SPLITS_TO_SIZES = dataset.CUBICASA5K_INFORMATION.splits_to_sizes
 
-# # A map from data type to folder name that saves the data.
-# _FOLDERS_MAP = {
-#     'image': 'leftImg8bit',
-#     'label': 'gtFine',
-# }
-
-# # A map from data type to filename postfix.
-# _POSTFIX_MAP = {
-#     'image': '_leftImg8bit',
-#     'label': '_gtFine_labelTrainIds',
-# }
 
 # A map from data type to data format.
 _DATA_FORMAT_MAP = {
