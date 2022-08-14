@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import cv2
+import torch
 import tensorflow as tf
 import shutil
 from tqdm import tqdm
@@ -10,7 +11,6 @@ from PIL import Image
 from absl import app
 from absl import flags
 from absl import logging
-
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("cubicasa5k_root", None, "CubiCasa5k dataset root folder.",
@@ -87,7 +87,19 @@ def _save_as_png(array, file_path):
     
 
 def _resize_array(array, size, mode):
-    # TODO torch.nn.functional.interpolate
+    array = np.moveaxis(array, -1, 0)
+    if mode == "bilinear":
+        array = array.astype(np.float64)
+    tensor = torch.from_numpy(array)
+    tensor = tensor.unsqueeze(0)
+
+    tensor = torch.nn.functional.interpolate(tensor, size=size, mode=mode)
+
+    tensor = tensor.squeeze(0)
+    array = tensor.numpy()
+    if mode == "bilinear":
+        array = array.astype(np.uint8)
+    array = np.moveaxis(array, 0, -1)
     
     return array
         
@@ -130,6 +142,10 @@ def _create_dataset(cubicasa5k_root, output_dir, dataset_split):
 def main(unused_argv):
     logging.get_absl_handler().setFormatter(None)
 
+    try:
+        shutil.rmtree(FLAGS.output_dir)
+    except:
+        pass
     tf.io.gfile.makedirs(FLAGS.output_dir)
     
     for dataset_split in ("train", "val", "test"):

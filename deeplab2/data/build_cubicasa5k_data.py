@@ -1,5 +1,6 @@
 import math
 import os
+import shutil
 
 from absl import app
 from absl import flags
@@ -20,7 +21,7 @@ flags.DEFINE_string('output_dir', None,
                     'Path to save converted TFRecord of TensorFlow examples.',
                     required=True)
 
-_NUM_SHARDS = 10
+_NUM_SHARDS = 1 # FIXME Change to 10
 _SPLITS_TO_SIZES = dataset.CUBICASA5K_INFORMATION.splits_to_sizes
 
 
@@ -31,9 +32,9 @@ _DATA_FORMAT_MAP = {
 }
 
 _DATASET_SPLIT_MAP = {
-    "train" : 420,
-    "val" : 40,
-    "test" : 40,
+    "train" : 1, # FIXME Change to 420
+    "val" : 1, # FIXME Change to 40
+    "test" : 1, # FIXME Change to 40
 }
 
 
@@ -58,7 +59,7 @@ def _get_images(cubicasa5k_root, dataset_split):
         for sample_dir_name in f.readlines()[:samples_num]:
             sample_dir_name = os.path.normpath(sample_dir_name[1:-1])
             sample_dir_path = os.path.join(cubicasa5k_root, sample_dir_name)
-            filenames.append(os.path.join(sample_dir_path, "F1_scaled.png"))
+            filenames.append(os.path.join(sample_dir_path, "image.png"))
     
     return filenames
 
@@ -72,7 +73,7 @@ def _get_image_name(image_path):
 
 def _get_semantic_annotation(image_path):
     dir_path = os.path.dirname(image_path)
-    return os.path.join(dir_path, "annotation.png")
+    return os.path.join(dir_path, "labels.png")
 
 
 def _create_semantic_label(image_path):
@@ -87,13 +88,9 @@ def _convert_dataset(cubicasa5k_root, dataset_split, output_dir):
     """Converts the specified dataset split to TFRecord format.
     
     Args:
-      cubicasa5k_root: String, path to Cityscapes dataset root folder.
+      cubicasa5k_root: String, path to CubiCasa5k dataset root folder.
       dataset_split: String, the dataset split (one of `train`, `val` and `test`).
       output_dir: String, directory to write output TFRecords to.
-    
-    Raises:
-      RuntimeError: If loaded image and label have different shape, or if the
-        image file with specified postfix could not be found.
     """
     image_files = _get_images(cubicasa5k_root, dataset_split)
 
@@ -135,6 +132,11 @@ def _convert_dataset(cubicasa5k_root, dataset_split, output_dir):
 
 def main(unused_argv):
     logging.get_absl_handler().setFormatter(None)
+
+    try:
+        shutil.rmtree(FLAGS.output_dir)
+    except:
+        pass
     tf.io.gfile.makedirs(FLAGS.output_dir)
     
     for dataset_split in ('train', 'val', 'test'):

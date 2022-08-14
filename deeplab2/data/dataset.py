@@ -152,21 +152,6 @@ CITYSCAPES_PANOPTIC_INFORMATION = DatasetDescriptor(
     ignore_depth=None,
 )
 
-CUBICASA5K_INFORMATION = DatasetDescriptor(
-    dataset_name=_CITYSCAPES_PANOPTIC,
-    splits_to_sizes={'train': 420,
-                     'val': 40,
-                     'test': 40},
-    num_classes=3,
-    ignore_label=255,
-    panoptic_label_divisor=1,
-    class_has_instances_list=[],
-    is_video_dataset=False,
-    colormap=CITYSCAPES_COLORMAP,
-    is_depth_dataset=False,
-    ignore_depth=None,
-)
-
 KITTI_STEP_INFORMATION = DatasetDescriptor(
     dataset_name=_KITTI_STEP,
     splits_to_sizes={'train': 5027,
@@ -247,6 +232,21 @@ COCO_PANOPTIC_INFORMATION = DatasetDescriptor(
     ignore_depth=None,
 )
 
+CUBICASA5K_INFORMATION = DatasetDescriptor(
+    dataset_name=_CUBICASA5K,
+    splits_to_sizes={'train': 1, # FIXME Change to 420
+                     'val': 1, # FIXME Change to 40
+                     'test': 1}, # FIXME Change to 40
+    num_classes=4,
+    ignore_label=0,
+    panoptic_label_divisor=1,
+    class_has_instances_list=[],
+    is_video_dataset=False,
+    colormap=COCO_COLORMAP,
+    is_depth_dataset=False,
+    ignore_depth=None,
+)
+
 MAP_NAME_TO_DATASET_INFO = {
     _CITYSCAPES_PANOPTIC: CITYSCAPES_PANOPTIC_INFORMATION,
     _KITTI_STEP: KITTI_STEP_INFORMATION,
@@ -254,6 +254,7 @@ MAP_NAME_TO_DATASET_INFO = {
     _CITYSCAPES_DVPS: CITYSCAPES_DVPS_INFORMATION,
     _COCO_PANOPTIC: COCO_PANOPTIC_INFORMATION,
     _SEMKITTI_DVPS: SEMKITTI_DVPS_INFORMATION,
+    _CUBICASA5K: CUBICASA5K_INFORMATION,
 }
 
 MAP_NAMES = list(MAP_NAME_TO_DATASET_INFO.keys())
