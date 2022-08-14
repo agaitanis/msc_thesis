@@ -21,7 +21,7 @@ flags.DEFINE_string('output_dir', None,
                     'Path to save converted TFRecord of TensorFlow examples.',
                     required=True)
 
-_NUM_SHARDS = 1 # FIXME Change to 10
+_NUM_SHARDS = 2 # FIXME Change to 10
 _SPLITS_TO_SIZES = dataset.CUBICASA5K_INFORMATION.splits_to_sizes
 
 
@@ -32,9 +32,9 @@ _DATA_FORMAT_MAP = {
 }
 
 _DATASET_SPLIT_MAP = {
-    "train" : 1, # FIXME Change to 420
-    "val" : 1, # FIXME Change to 40
-    "test" : 1, # FIXME Change to 40
+    "train" : 42, # FIXME Change to 420
+    "val" : 4, # FIXME Change to 40
+    "test" : 4, # FIXME Change to 40
 }
 
 

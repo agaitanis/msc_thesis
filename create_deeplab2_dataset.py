@@ -26,9 +26,9 @@ _SEMANTIC_LABELS = {
 }
 
 _DATASET_SPLIT_SIZES = {
-    "train" : 420,
-    "val" : 40,
-    "test" : 40,
+    "train" : 42, # FIXME Change to 420
+    "val" : 4, # FIXME Change to 40
+    "test" : 4, # FIXME Change to 40
 }
 
 _TARGET_SIZE = (256, 256)
@@ -76,7 +76,7 @@ def _create_labels_array(img_array, svg_file_path):
             X, Y = _get_points(e)
             rr, cc = polygon(X, Y)
             cc, rr = _clip_outside(cc, rr, height, width)
-            labels_array[cc, rr, 0] = _SEMANTIC_LABELS[attr] * 50 # FIXME Delete this
+            labels_array[cc, rr, 0] = _SEMANTIC_LABELS[attr]
     
     return labels_array
 
@@ -84,7 +84,7 @@ def _create_labels_array(img_array, svg_file_path):
 def _save_as_png(array, file_path):
     img = Image.fromarray(array)
     img.save(file_path)
-    
+
 
 def _resize_array(array, size, mode):
     array = np.moveaxis(array, -1, 0)
