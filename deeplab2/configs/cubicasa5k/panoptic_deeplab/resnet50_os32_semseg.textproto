@@ -30,7 +30,7 @@ experiment_name: "experiment_001"
 model_options {
   # Update the path to the initial checkpoint (e.g., ImageNet
   # pretrained checkpoint).
-  initial_checkpoint: "/home/alex/msc_thesis/deeplab2/initial_checkpoints/resnet50_imagenet1k_strong_training_strategy/ckpt-350.index"
+  initial_checkpoint: "deeplab2/initial_checkpoints/resnet50_imagenet1k_strong_training_strategy/ckpt-350.index"
   backbone {
     name: "resnet50"
     output_stride: 32
@@ -80,7 +80,7 @@ trainer_options {
 train_dataset_options {
   dataset: "cityscapes_panoptic"
   # Update the path to training set.
-  file_pattern: "/home/alex/msc_thesis/datasets/cubicasa5k_for_deeplab2/train*.tfrecord"
+  file_pattern: "datasets/deeplab2/cubicasa5k/tf_records/train*.tfrecord"
   # Adjust the batch_size accordingly to better fit your GPU/TPU memory.
   # Also see Q1 in g3doc/faq.md.
   batch_size: 8
@@ -98,7 +98,7 @@ train_dataset_options {
 eval_dataset_options {
   dataset: "cityscapes_panoptic"
   # Update the path to validation set.
-  file_pattern: "/home/alex/msc_thesis/datasets/cubicasa5k_for_deeplab2/val*.tfrecord"
+  file_pattern: "datasets/deeplab2/cubicasa5k/tf_records/val*.tfrecord"
   batch_size: 1
   crop_size: 1025
   crop_size: 2049

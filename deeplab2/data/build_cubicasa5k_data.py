@@ -13,10 +13,12 @@ from tqdm import tqdm
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('cubicasa5k_root', None, 'CubiCasa5k dataset root folder.')
+flags.DEFINE_string('cubicasa5k_root', None, 'CubiCasa5k dataset root folder.',
+                    required=True)
 
 flags.DEFINE_string('output_dir', None,
-                    'Path to save converted TFRecord of TensorFlow examples.')
+                    'Path to save converted TFRecord of TensorFlow examples.',
+                    required=True)
 
 _NUM_SHARDS = 10
 _SPLITS_TO_SIZES = dataset.CUBICASA5K_INFORMATION.splits_to_sizes
@@ -132,6 +134,7 @@ def _convert_dataset(cubicasa5k_root, dataset_split, output_dir):
 
 
 def main(unused_argv):
+    logging.get_absl_handler().setFormatter(None)
     tf.io.gfile.makedirs(FLAGS.output_dir)
     
     for dataset_split in ('train', 'val', 'test'):
@@ -140,5 +143,4 @@ def main(unused_argv):
 
 
 if __name__ == '__main__':
-    flags.mark_flags_as_required(['cubicasa5k_root', 'output_dir'])
     app.run(main)
