@@ -1,3 +1,0 @@
-[submodule "deeplab2"]
-	path = deeplab2
-	url = https://github.com/google-research/deeplab2.git
