@@ -6,6 +6,7 @@ from absl import app
 from absl import flags
 from absl import logging
 import tensorflow as tf
+import numpy as np
 
 from deeplab2.data import data_utils
 from deeplab2.data import dataset
@@ -30,6 +31,7 @@ _DATA_FORMAT_MAP = {
     'image': 'png',
     'label': 'png',
 }
+_PANOPTIC_LABEL_FORMAT = 'raw'
 
 _DATASET_SPLIT_MAP = {
     "train" : 42, # FIXME Change to 420
@@ -71,17 +73,31 @@ def _get_image_name(image_path):
     return "/" + dir1 + "/" + dir2 + "/"
 
 
-def _get_semantic_annotation(image_path):
+def _get_panoptic_annotation(image_path):
     dir_path = os.path.dirname(image_path)
     return os.path.join(dir_path, "labels.png")
 
 
-def _create_semantic_label(image_path):
-    """Creates labels for semantic segmentation."""
-    with tf.io.gfile.GFile(_get_semantic_annotation(image_path), 'rb') as f:
-        label_data = f.read()
+def _generate_panoptic_label(panoptic_annotation_file):
+    with tf.io.gfile.GFile(panoptic_annotation_file, 'rb') as f:
+        panoptic_label = data_utils.read_image(f.read())
+    
+    panoptic_label = np.array(panoptic_label, dtype=np.int32)
+    panoptic_label = panoptic_label[:, :, 0]
 
-    return label_data, _DATA_FORMAT_MAP['label']
+    return panoptic_label.astype(np.int32)
+
+
+def _create_panoptic_label(image_path):
+    # with tf.io.gfile.GFile(_get_panoptic_annotation(image_path), 'rb') as f:
+    #     label_data = f.read()
+
+    # return label_data, _DATA_FORMAT_MAP['label']
+
+    panoptic_annotation_file = _get_panoptic_annotation(image_path)
+    panoptic_label = _generate_panoptic_label(panoptic_annotation_file)
+
+    return panoptic_label.tobytes(), _PANOPTIC_LABEL_FORMAT
 
 
 def _convert_dataset(cubicasa5k_root, dataset_split, output_dir):
@@ -118,7 +134,7 @@ def _convert_dataset(cubicasa5k_root, dataset_split, output_dir):
                 if dataset_split == 'test':
                     label_data, label_format = None, None
                 else:
-                    label_data, label_format = _create_semantic_label(image_files[i])
+                    label_data, label_format = _create_panoptic_label(image_files[i])
                  
                 # Convert to tf example.
                 image_name = _get_image_name(image_files[i])

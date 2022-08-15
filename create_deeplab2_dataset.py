@@ -93,6 +93,7 @@ def _resize_array(array, size, mode):
     tensor = torch.from_numpy(array)
     tensor = tensor.unsqueeze(0)
 
+    # TODO Try tf.image.resize, tf.image.resize_with_pad
     tensor = torch.nn.functional.interpolate(tensor, size=size, mode=mode)
 
     tensor = tensor.squeeze(0)

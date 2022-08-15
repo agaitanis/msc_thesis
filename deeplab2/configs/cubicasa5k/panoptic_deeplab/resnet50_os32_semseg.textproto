@@ -31,7 +31,6 @@ model_options {
   # Update the path to the initial checkpoint (e.g., ImageNet
   # pretrained checkpoint).
   initial_checkpoint: "deeplab2/initial_checkpoints/resnet50_imagenet1k_strong_training_strategy/ckpt-350.index"
-  # initial_checkpoint: "deeplab2/initial_checkpoints/resnet50_imagenet1k/ckpt-100.index"
   backbone {
     name: "resnet50"
     output_stride: 32
@@ -75,7 +74,7 @@ trainer_options {
   }
   solver_options {
     base_learning_rate: 0.0005
-    training_number_of_steps: 60000
+    training_number_of_steps: 5000
   }
 }
 train_dataset_options {
