@@ -19,10 +19,10 @@ flags.DEFINE_string("output_dir", None, "Path to save dataset for deeplab2.",
                     required=True)
 
 _SEMANTIC_LABELS = {
-    "Wall" : 1,
-    "Railing" : 2,
-    "Door" : 3,
-    "Window" : 4,
+    "Wall" : 2,
+    "Railing" : 3,
+    "Door" : 4,
+    "Window" : 5,
 }
 
 _DATASET_SPLIT_SIZES = {
@@ -65,7 +65,7 @@ def _clip_outside(rr, cc, height, width):
 
 def _create_labels_array(img_array, svg_file_path):
     height, width, nchannel = img_array.shape
-    labels_array = np.zeros((height, width, nchannel), dtype=np.uint8)
+    labels_array = np.ones((height, width, nchannel), dtype=np.uint8)
     
     svg = minidom.parse(svg_file_path)
     

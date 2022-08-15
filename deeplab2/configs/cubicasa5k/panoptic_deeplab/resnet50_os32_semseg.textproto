@@ -56,7 +56,7 @@ model_options {
       enable: false
     }
     semantic_head {
-      output_channels: 5
+      output_channels: 6
       head_channels: 256
     }
   }
@@ -83,7 +83,7 @@ train_dataset_options {
   file_pattern: "datasets/deeplab2/cubicasa5k/tf_records/train*.tfrecord"
   # Adjust the batch_size accordingly to better fit your GPU/TPU memory.
   # Also see Q1 in g3doc/faq.md.
-  batch_size: 8
+  batch_size: 1
   crop_size: 257
   crop_size: 257
   # Skip resizing.

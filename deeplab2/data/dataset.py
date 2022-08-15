@@ -237,7 +237,7 @@ CUBICASA5K_INFORMATION = DatasetDescriptor(
     splits_to_sizes={'train': 42, # FIXME Change to 420
                      'val': 4, # FIXME Change to 40
                      'test': 4}, # FIXME Change to 40
-    num_classes=5,
+    num_classes=6,
     ignore_label=0,
     panoptic_label_divisor=1,
     class_has_instances_list=[],
