@@ -22,9 +22,10 @@ flags.DEFINE_string('output_dir', None,
                     'Path to save converted TFRecord of TensorFlow examples.',
                     required=True)
 
-_NUM_SHARDS = 2 # FIXME Change to 10
 _SPLITS_TO_SIZES = dataset.CUBICASA5K_INFORMATION.splits_to_sizes
+_LABEL_DIVISOR = dataset.CUBICASA5K_INFORMATION.panoptic_label_divisor
 
+_NUM_SHARDS = 2 # FIXME Change to 10
 
 # A map from data type to data format.
 _DATA_FORMAT_MAP = {
@@ -34,9 +35,9 @@ _DATA_FORMAT_MAP = {
 _PANOPTIC_LABEL_FORMAT = 'raw'
 
 _DATASET_SPLIT_MAP = {
-    "train" : 42, # FIXME Change to 420
-    "val" : 4, # FIXME Change to 40
-    "test" : 4, # FIXME Change to 40
+    "train" : 100, # FIXME Change to 4200
+    "val" : 10, # FIXME Change to 400
+    "test" : 10, # FIXME Change to 400
 }
 
 
@@ -83,17 +84,15 @@ def _generate_panoptic_label(panoptic_annotation_file):
         panoptic_label = data_utils.read_image(f.read())
     
     panoptic_label = np.array(panoptic_label, dtype=np.int32)
-    panoptic_label = panoptic_label[:, :, 0]
+    semantic_label = panoptic_label[:, :, 0]
+    instance_label = (panoptic_label[:, :, 1] * 256 + panoptic_label[:, :, 2])
+
+    panoptic_label = semantic_label * _LABEL_DIVISOR + instance_label
 
     return panoptic_label.astype(np.int32)
 
 
 def _create_panoptic_label(image_path):
-    # with tf.io.gfile.GFile(_get_panoptic_annotation(image_path), 'rb') as f:
-    #     label_data = f.read()
-
-    # return label_data, _DATA_FORMAT_MAP['label']
-
     panoptic_annotation_file = _get_panoptic_annotation(image_path)
     panoptic_label = _generate_panoptic_label(panoptic_annotation_file)
 

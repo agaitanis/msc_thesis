@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import cv2
-import torch
 import tensorflow as tf
 import shutil
+import cubicasa5k.labels as ccl
 from tqdm import tqdm
 from xml.dom import minidom
 from skimage.draw import polygon
@@ -18,20 +18,14 @@ flags.DEFINE_string("cubicasa5k_root", None, "CubiCasa5k dataset root folder.",
 flags.DEFINE_string("output_dir", None, "Path to save dataset for deeplab2.",
                     required=True)
 
-_SEMANTIC_LABELS = {
-    "Wall" : 2,
-    "Railing" : 3,
-    "Door" : 4,
-    "Window" : 5,
-}
-
 _DATASET_SPLIT_SIZES = {
-    "train" : 42, # FIXME Change to 420
-    "val" : 4, # FIXME Change to 40
-    "test" : 4, # FIXME Change to 40
+    "train" : 100, # FIXME Change to 4200
+    "val" : 10, # FIXME Change to 400
+    "test" : 10, # FIXME Change to 400
 }
 
-_TARGET_SIZE = (256, 256)
+# _TARGET_SIZE = (256, 256)
+_TARGET_SIZE = (512, 512)
 
 
 def _create_img_array(img_file_path):
@@ -65,18 +59,25 @@ def _clip_outside(rr, cc, height, width):
 
 def _create_labels_array(img_array, svg_file_path):
     height, width, nchannel = img_array.shape
-    labels_array = np.ones((height, width, nchannel), dtype=np.uint8)
+    labels_array = np.zeros((height, width, nchannel), dtype=np.uint8)
     
     svg = minidom.parse(svg_file_path)
     
     for e in svg.getElementsByTagName('g'):
-        attr = e.getAttribute("id")
-        
-        if attr in _SEMANTIC_LABELS:
-            X, Y = _get_points(e)
-            rr, cc = polygon(X, Y)
-            cc, rr = _clip_outside(cc, rr, height, width)
-            labels_array[cc, rr, 0] = _SEMANTIC_LABELS[attr]
+        svg_id = e.getAttribute("id")
+
+        if svg_id in ("Wall", "Railing", "Door", "Window"):
+            label = ccl.get_label(svg_id)
+        elif "Space " in e.getAttribute("class"):
+            label = e.getAttribute("class").split(" ")[1]
+            label = ccl.get_label(label)
+        else:
+            continue
+
+        X, Y = _get_points(e)
+        rr, cc = polygon(X, Y)
+        cc, rr = _clip_outside(cc, rr, height, width)
+        labels_array[cc, rr, 0] = label
     
     return labels_array
 
@@ -86,21 +87,16 @@ def _save_as_png(array, file_path):
     img.save(file_path)
 
 
-def _resize_array(array, size, mode):
-    array = np.moveaxis(array, -1, 0)
-    if mode == "bilinear":
+def _resize_image(array, size, method):
+    if method == tf.image.ResizeMethod.BILINEAR:
         array = array.astype(np.float64)
-    tensor = torch.from_numpy(array)
-    tensor = tensor.unsqueeze(0)
+    array = np.expand_dims(array, axis=0)
 
-    # TODO Try tf.image.resize, tf.image.resize_with_pad
-    tensor = torch.nn.functional.interpolate(tensor, size=size, mode=mode)
+    array = tf.image.resize(array, size=size, method=method)
 
-    tensor = tensor.squeeze(0)
-    array = tensor.numpy()
-    if mode == "bilinear":
+    array = np.squeeze(array, axis=0)
+    if method == tf.image.ResizeMethod.BILINEAR:
         array = array.astype(np.uint8)
-    array = np.moveaxis(array, 0, -1)
     
     return array
         
@@ -115,8 +111,8 @@ def _create_sample(sample_dir_path, new_sample_dir_path):
     img_array = _create_img_array(img_file_path)
     labels_array = _create_labels_array(img_array, svg_file_path)
     
-    img_array = _resize_array(img_array, _TARGET_SIZE, "bilinear")
-    labels_array = _resize_array(labels_array, _TARGET_SIZE, "nearest")
+    img_array = _resize_image(img_array, _TARGET_SIZE, tf.image.ResizeMethod.BILINEAR)
+    labels_array = _resize_image(labels_array, _TARGET_SIZE, tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     
     _save_as_png(img_array, new_img_file_path)
     _save_as_png(labels_array, labels_file_path)

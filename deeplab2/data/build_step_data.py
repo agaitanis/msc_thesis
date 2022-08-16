@@ -174,7 +174,6 @@ def _decode_panoptic_map(panoptic_map_path: str) -> Optional[str]:
   Returns:
     Panoptic map as an encoded int32 numpy array bytes or None if not existing.
   """
-  # TODO Copy from here
   if not tf.io.gfile.exists(panoptic_map_path):
     return None
   with tf.io.gfile.GFile(panoptic_map_path, 'rb') as f:

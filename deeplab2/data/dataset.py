@@ -105,6 +105,7 @@ _CUBICASA5K = 'cubicasa5k'
 CITYSCAPES_COLORMAP = 'cityscapes'
 MOTCHALLENGE_COLORMAP = 'motchallenge'
 COCO_COLORMAP = 'coco'
+CUBICASA5K_COLORMAP = 'cubicasa5k'
 
 
 # Named tuple to describe dataset properties.
@@ -234,15 +235,15 @@ COCO_PANOPTIC_INFORMATION = DatasetDescriptor(
 
 CUBICASA5K_INFORMATION = DatasetDescriptor(
     dataset_name=_CUBICASA5K,
-    splits_to_sizes={'train': 42, # FIXME Change to 420
-                     'val': 4, # FIXME Change to 40
-                     'test': 4}, # FIXME Change to 40
-    num_classes=6,
-    ignore_label=0,
-    panoptic_label_divisor=1,
+    splits_to_sizes={'train': 100, # FIXME Change to 4200
+                     'val': 10, # FIXME Change to 400
+                     'test': 10}, # FIXME Change to 400
+    num_classes=5,
+    ignore_label=255,
+    panoptic_label_divisor=1000,
     class_has_instances_list=[],
     is_video_dataset=False,
-    colormap=CITYSCAPES_COLORMAP,
+    colormap=CUBICASA5K_COLORMAP,
     is_depth_dataset=False,
     ignore_depth=None,
 )

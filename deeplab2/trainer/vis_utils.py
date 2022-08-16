@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import PIL
 import tensorflow as tf
+import cubicasa5k.labels as ccl
 
 from deeplab2.data import coco_constants
 
@@ -388,6 +389,9 @@ def create_coco_label_colormap():
     colormap[category['id']] = category['color']
   return colormap
 
+def create_cubicasa5k_colormap():
+  return ccl.get_colormap()
+
 
 def label_to_color_image(label, colormap_name='cityscapes'):
   """Adds color defined by the colormap derived from the dataset to the label.
@@ -420,6 +424,8 @@ def label_to_color_image(label, colormap_name='cityscapes'):
     colormap = create_motchallenge_label_colormap()
   elif colormap_name == 'coco':
     colormap = create_coco_label_colormap()
+  elif colormap_name == 'cubicasa5k':
+    colormap = create_cubicasa5k_colormap()
   else:
     raise ValueError('Could not find a colormap for dataset %s.' %
                      colormap_name)

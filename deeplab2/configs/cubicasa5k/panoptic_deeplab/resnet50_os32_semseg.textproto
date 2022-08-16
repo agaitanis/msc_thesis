@@ -26,7 +26,7 @@
 #   for Bottom-Up Panoptic Segmentation." In CVPR, 2020.
 
 # Use a unique experiment_name for each experiment.
-experiment_name: "experiment_001"
+experiment_name: "experiment_003"
 model_options {
   # Update the path to the initial checkpoint (e.g., ImageNet
   # pretrained checkpoint).
@@ -56,7 +56,7 @@ model_options {
       enable: false
     }
     semantic_head {
-      output_channels: 6
+      output_channels: 5
       head_channels: 256
     }
   }
@@ -74,7 +74,7 @@ trainer_options {
   }
   solver_options {
     base_learning_rate: 0.0005
-    training_number_of_steps: 5000
+    training_number_of_steps: 20000
   }
 }
 train_dataset_options {
