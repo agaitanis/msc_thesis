@@ -24,8 +24,8 @@ _DATASET_SPLIT_SIZES = {
     "test" : 10, # FIXME Change to 400
 }
 
-# _TARGET_SIZE = (256, 256)
-_TARGET_SIZE = (512, 512)
+_TARGET_SIZE = (256, 256)
+# _TARGET_SIZE = (512, 512)
 
 
 def _create_img_array(img_file_path):
