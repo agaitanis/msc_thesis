@@ -88,15 +88,15 @@ def _save_as_png(array, file_path):
 
 
 def _resize_image(array, size, method):
-    if method == tf.image.ResizeMethod.BILINEAR:
-        array = array.astype(np.float64)
-    array = np.expand_dims(array, axis=0)
+    # if method == tf.image.ResizeMethod.BILINEAR:
+    #     array = array.astype(np.float64)
+    # array = np.expand_dims(array, axis=0)
 
-    array = tf.image.resize(array, size=size, method=method)
+    # array = tf.image.resize(array, size=size, method=method)
 
-    array = np.squeeze(array, axis=0)
-    if method == tf.image.ResizeMethod.BILINEAR:
-        array = array.astype(np.uint8)
+    # array = np.squeeze(array, axis=0)
+    # if method == tf.image.ResizeMethod.BILINEAR:
+    #     array = array.astype(np.uint8)
     
     return array
         

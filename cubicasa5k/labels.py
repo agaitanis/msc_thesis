@@ -1,101 +1,93 @@
 import numpy as np
+from enum import IntEnum
 
-_SVG_LABEL_TO_COMMON_LABEL = {
-    "Alcove": "Room",
-    "Attic": "Room",
-    "Ballroom": "Room",
-    "Bar": "Room",
-    "Basement": "Room",
-    "Bath": "Room",
-    "Bedroom": "Room",
-    "Below150cm": "Room",
-    "CarPort": "Room",
-    "Church": "Room",
-    "Closet": "Room",
-    "ConferenceRoom": "Room",
-    "Conservatory": "Room",
-    "Counter": "Room",
-    "Den": "Room",
-    "Dining": "Room",
-    "DraughtLobby": "Room",
-    "DressingRoom": "Room",
-    "EatingArea": "Room",
-    "Elevated": "Room",
-    "Elevator": "Room",
-    "Entry": "Room",
-    "ExerciseRoom": "Room",
-    "Garage": "Room",
-    "Garbage": "Room",
-    "Hall": "Room",
-    "HallWay": "Room",
-    "HotTub": "Room",
-    "Kitchen": "Room",
-    "Library": "Room",
-    "LivingRoom": "Room",
-    "Loft": "Room",
-    "Lounge": "Room",
-    "MediaRoom": "Room",
-    "MeetingRoom": "Room",
-    "Museum": "Room",
-    "Nook": "Room",
-    "Office": "Room",
-    "OpenToBelow": "Room",
-    "Outdoor": "Room",
-    "Pantry": "Room",
-    "Reception": "Room",
-    "RecreationRoom": "Room",
-    "RetailSpace": "Room",
-    "Room": "Room",
-    "Sanctuary": "Room",
-    "Sauna": "Room",
-    "ServiceRoom": "Room",
-    "ServingArea": "Room",
-    "Skylights": "Room",
-    "Stable": "Room",
-    "Stage": "Room",
-    "StairWell": "Room",
-    "Storage": "Room",
-    "SunRoom": "Room",
-    "SwimmingPool": "Room",
-    "TechnicalRoom": "Room",
-    "Theatre": "Room",
-    "Undefined": "Room",
-    "UserDefined": "Room",
-    "Utility": "Room",
+class Label(IntEnum):
+    BACKGROUND = 0
+    ROOM = 1
+    WALL = 2
+    DOOR = 3
 
-    "Wall": "Wall",
-    "Railing": "Wall",
-    "Window" : "Wall",
+_SVG_LABEL_TO_LABEL = {
+    "Alcove": Label.ROOM,
+    "Attic": Label.ROOM,
+    "Ballroom": Label.ROOM,
+    "Bar": Label.ROOM,
+    "Basement": Label.ROOM,
+    "Bath": Label.ROOM,
+    "Bedroom": Label.ROOM,
+    "Below150cm": Label.ROOM,
+    "CarPort": Label.ROOM,
+    "Church": Label.ROOM,
+    "Closet": Label.ROOM,
+    "ConferenceRoom": Label.ROOM,
+    "Conservatory": Label.ROOM,
+    "Counter": Label.ROOM,
+    "Den": Label.ROOM,
+    "Dining": Label.ROOM,
+    "DraughtLobby": Label.ROOM,
+    "DressingRoom": Label.ROOM,
+    "EatingArea": Label.ROOM,
+    "Elevated": Label.ROOM,
+    "Elevator": Label.ROOM,
+    "Entry": Label.ROOM,
+    "ExerciseRoom": Label.ROOM,
+    "Garage": Label.ROOM,
+    "Garbage": Label.ROOM,
+    "Hall": Label.ROOM,
+    "HallWay": Label.ROOM,
+    "HotTub": Label.ROOM,
+    "Kitchen": Label.ROOM,
+    "Library": Label.ROOM,
+    "LivingRoom": Label.ROOM,
+    "Loft": Label.ROOM,
+    "Lounge": Label.ROOM,
+    "MediaRoom": Label.ROOM,
+    "MeetingRoom": Label.ROOM,
+    "Museum": Label.ROOM,
+    "Nook": Label.ROOM,
+    "Office": Label.ROOM,
+    "OpenToBelow": Label.ROOM,
+    "Outdoor": Label.ROOM,
+    "Pantry": Label.ROOM,
+    "Reception": Label.ROOM,
+    "RecreationRoom": Label.ROOM,
+    "RetailSpace": Label.ROOM,
+    "Room": Label.ROOM,
+    "Sanctuary": Label.ROOM,
+    "Sauna": Label.ROOM,
+    "ServiceRoom": Label.ROOM,
+    "ServingArea": Label.ROOM,
+    "Skylights": Label.ROOM,
+    "Stable": Label.ROOM,
+    "Stage": Label.ROOM,
+    "StairWell": Label.ROOM,
+    "Storage": Label.ROOM,
+    "SunRoom": Label.ROOM,
+    "SwimmingPool": Label.ROOM,
+    "TechnicalRoom": Label.ROOM,
+    "Theatre": Label.ROOM,
+    "Undefined": Label.ROOM,
+    "UserDefined": Label.ROOM,
+    "Utility": Label.ROOM,
 
-    "Door" : "Door",
-}
+    "Wall": Label.WALL,
+    "Railing": Label.WALL,
+    "Window" : Label.WALL,
 
-_COMMON_LABEL_TO_LABEL = {
-    "Background" : 0,
-    "Room" : 1,
-    "Wall" : 2,
-    "Door" : 3,
-}
-
-_COMMON_LABEL_TO_COLOR = {
-    "Background" : [255, 255, 255],
-    "Room" : [255, 204, 153],
-    "Wall" : [50, 50, 50], 
-    "Door" : [0, 255, 0],
+    "Door" : Label.DOOR,
 }
 
 
 def get_label(s):
-    if s in _COMMON_LABEL_TO_LABEL:
-        return _COMMON_LABEL_TO_LABEL[s]
-    else:
-        return _COMMON_LABEL_TO_LABEL[_SVG_LABEL_TO_COMMON_LABEL[s]]
+    return _SVG_LABEL_TO_LABEL[s]
 
 
 def get_colormap():
     colormap = np.zeros((256, 3), dtype=np.uint8)
 
-    for common_label, label in _COMMON_LABEL_TO_LABEL.items():
-        colormap[label] = _COMMON_LABEL_TO_COLOR[common_label]
+    colormap[Label.BACKGROUND] = [255, 255, 255]
+    colormap[Label.ROOM] = [255, 204, 153]
+    colormap[Label.WALL] = [0, 0, 0]
+    colormap[Label.DOOR] = [0, 255, 0]
 
     return colormap

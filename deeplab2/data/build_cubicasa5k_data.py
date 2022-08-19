@@ -25,7 +25,7 @@ flags.DEFINE_string('output_dir', None,
 _SPLITS_TO_SIZES = dataset.CUBICASA5K_INFORMATION.splits_to_sizes
 _LABEL_DIVISOR = dataset.CUBICASA5K_INFORMATION.panoptic_label_divisor
 
-_NUM_SHARDS = 2 # FIXME Change to 10
+_NUM_SHARDS = 10
 
 # A map from data type to data format.
 _DATA_FORMAT_MAP = {
@@ -71,7 +71,7 @@ def _get_image_name(image_path):
     path, _ = os.path.split(image_path)
     path, dir2 = os.path.split(path)
     _, dir1 = os.path.split(path)
-    return "/" + dir1 + "/" + dir2 + "/"
+    return dir1 + "_" + dir2
 
 
 def _get_panoptic_annotation(image_path):
