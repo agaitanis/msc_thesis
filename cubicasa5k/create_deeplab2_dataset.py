@@ -19,9 +19,9 @@ flags.DEFINE_string("output_dir", None, "Path to save dataset for deeplab2.",
                     required=True)
 
 _DATASET_SPLIT_SIZES = {
-    "train" : 100, # FIXME Change to 4200
-    "val" : 10, # FIXME Change to 400
-    "test" : 10, # FIXME Change to 400
+    "train" : 1000, # FIXME Change to 4200
+    "val" : 100, # FIXME Change to 400
+    "test" : 100, # FIXME Change to 400
 }
 
 _TARGET_SIZE = (256, 256)

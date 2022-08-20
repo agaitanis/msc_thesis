@@ -235,9 +235,9 @@ COCO_PANOPTIC_INFORMATION = DatasetDescriptor(
 
 CUBICASA5K_INFORMATION = DatasetDescriptor(
     dataset_name=_CUBICASA5K,
-    splits_to_sizes={'train': 100, # FIXME Change to 4200
-                     'val': 10, # FIXME Change to 400
-                     'test': 10}, # FIXME Change to 400
+    splits_to_sizes={'train': 1000, # FIXME Change to 4200
+                     'val': 100, # FIXME Change to 400
+                     'test': 100}, # FIXME Change to 400
     num_classes=5,
     ignore_label=255,
     panoptic_label_divisor=1000,

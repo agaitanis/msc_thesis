@@ -35,9 +35,9 @@ _DATA_FORMAT_MAP = {
 _PANOPTIC_LABEL_FORMAT = 'raw'
 
 _DATASET_SPLIT_MAP = {
-    "train" : 100, # FIXME Change to 4200
-    "val" : 10, # FIXME Change to 400
-    "test" : 10, # FIXME Change to 400
+    "train" : 1000, # FIXME Change to 4200
+    "val" : 100, # FIXME Change to 400
+    "test" : 100, # FIXME Change to 400
 }
 
 
