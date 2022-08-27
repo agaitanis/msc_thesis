@@ -201,6 +201,11 @@ def encode_one_hot(gt: tf.Tensor,
     keep_mask = tf.cast(tf.not_equal(gt, ignore_label), dtype=tf.float32)
   else:
     keep_mask = tf.ones_like(gt, dtype=tf.float32)
+  # weight_mask = 1*tf.cast(tf.equal(gt, 0), dtype=tf.float32) + \
+  # 1*tf.cast(tf.equal(gt, 1), dtype=tf.float32) + \
+  #   2*tf.cast(tf.equal(gt, 2), dtype=tf.float32) + \
+  #   4*tf.cast(tf.equal(gt, 3), dtype=tf.float32)
+  # weight_mask = tf.multiply(weight_mask, keep_mask)
   gt = tf.stop_gradient(tf.one_hot(gt, num_classes))
   weights = tf.multiply(weights, keep_mask)
   return gt, weights
