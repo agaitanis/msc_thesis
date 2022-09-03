@@ -240,8 +240,8 @@ CUBICASA5K_INFORMATION = DatasetDescriptor(
                      'test': 100}, # FIXME Change to 400
     num_classes=4,
     ignore_label=255,
-    panoptic_label_divisor=1000,
-    class_has_instances_list=[],
+    panoptic_label_divisor=256,
+    class_has_instances_list=[3],
     is_video_dataset=False,
     colormap=CUBICASA5K_COLORMAP,
     is_depth_dataset=False,

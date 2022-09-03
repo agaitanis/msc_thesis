@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import numpy as np
 import cv2
@@ -11,6 +12,8 @@ from PIL import Image
 from absl import app
 from absl import flags
 from absl import logging
+from enum import Enum
+from collections import defaultdict
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("cubicasa5k_root", None, "CubiCasa5k dataset root folder.",
@@ -23,6 +26,11 @@ _DATASET_SPLIT_SIZES = {
     "val" : 100, # FIXME Change to 400
     "test" : 100, # FIXME Change to 400
 }
+
+class Channel(int, Enum):
+    R = 0
+    G = 1
+    B = 2
 
 
 def _create_img_array(img_file_path):
@@ -55,6 +63,7 @@ def _clip_outside(rr, cc, height, width):
 
 
 def _create_labels_array(img_array, svg_file_path):
+    instance_ids = defaultdict(int)
     height, width, nchannel = img_array.shape
     labels_array = np.zeros((height, width, nchannel), dtype=np.uint8)
     
@@ -65,6 +74,8 @@ def _create_labels_array(img_array, svg_file_path):
 
         if svg_id in ("Wall", "Railing", "Door", "Window"):
             label = ccl.get_label(svg_id)
+            if svg_id in ("Door"):
+                instance_ids[label] += 1
         elif "Space " in e.getAttribute("class"):
             label = e.getAttribute("class").split(" ")[1]
             label = ccl.get_label(label)
@@ -74,7 +85,11 @@ def _create_labels_array(img_array, svg_file_path):
         X, Y = _get_points(e)
         rr, cc = polygon(X, Y)
         cc, rr = _clip_outside(cc, rr, height, width)
-        labels_array[cc, rr, 0] = label
+
+        instance_id = instance_ids[label]
+        labels_array[cc, rr, Channel.R] = label
+        labels_array[cc, rr, Channel.G] = instance_id // 256
+        labels_array[cc, rr, Channel.B] = instance_id % 256
     
     return labels_array
 
