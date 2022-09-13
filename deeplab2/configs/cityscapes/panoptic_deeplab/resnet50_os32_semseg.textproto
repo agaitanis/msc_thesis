@@ -83,7 +83,7 @@ train_dataset_options {
   file_pattern: "${TRAIN_SET}"
   # Adjust the batch_size accordingly to better fit your GPU/TPU memory.
   # Also see Q1 in g3doc/faq.md.
-  batch_size: 8
+  batch_size: 8 # Default: 8
   crop_size: 1025
   crop_size: 2049
   # Skip resizing.
