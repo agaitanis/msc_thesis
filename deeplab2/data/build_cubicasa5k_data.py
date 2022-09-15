@@ -25,7 +25,6 @@ flags.DEFINE_string('output_dir', None,
 _SPLITS_TO_SIZES = dataset.CUBICASA5K_INFORMATION.splits_to_sizes
 _LABEL_DIVISOR = dataset.CUBICASA5K_INFORMATION.panoptic_label_divisor
 
-_NUM_SHARDS = 10
 
 # A map from data type to data format.
 _DATA_FORMAT_MAP = {
@@ -35,9 +34,15 @@ _DATA_FORMAT_MAP = {
 _PANOPTIC_LABEL_FORMAT = 'raw'
 
 _DATASET_SPLIT_MAP = {
-    "train" : 1000, # FIXME Change to 4200
-    "val" : 100, # FIXME Change to 400
-    "test" : 100, # FIXME Change to 400
+    "train" : 4200, # FIXME Change to 4200
+    "val" : 400, # FIXME Change to 400
+    "test" : 400, # FIXME Change to 400
+}
+
+_NUM_SHARDS_MAP = {
+    "train" : 100,
+    "val" : 10,
+    "test" : 10,
 }
 
 
@@ -115,12 +120,13 @@ def _convert_dataset(cubicasa5k_root, dataset_split, output_dir):
         raise ValueError('Expects %d images, gets %d' %
                          (expected_dataset_size, num_images))
 
-    num_per_shard = int(math.ceil(len(image_files) / _NUM_SHARDS))
+    num_shards = _NUM_SHARDS_MAP[dataset_split]
+    num_per_shard = int(math.ceil(len(image_files) / num_shards))
 
-    for shard_id in range(_NUM_SHARDS):
-        logging.info('Creating shard %d of %d.', shard_id+1, _NUM_SHARDS)
+    for shard_id in range(num_shards):
+        logging.info('Creating shard %d of %d.', shard_id+1, num_shards)
         shard_filename = '%s-%05d-of-%05d.tfrecord' % (
-            dataset_split, shard_id, _NUM_SHARDS)
+            dataset_split, shard_id, num_shards)
         output_filename = os.path.join(output_dir, shard_filename)
         with tf.io.TFRecordWriter(output_filename) as tfrecord_writer:
             start_idx = shard_id * num_per_shard

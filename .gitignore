@@ -154,4 +154,3 @@ cython_debug/
 *.swp
 datasets
 initial_checkpoints
-results

@@ -1,0 +1,3415 @@
+I0914 01:21:32.242918 140054055876416 train.py:65] Reading the config file.
+I0914 01:21:32.244561 140054055876416 train.py:69] Starting the experiment.
+2022-09-14 01:21:32.244950: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-09-14 01:21:32.646249: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 11416 MB memory:  -> device: 0, name: NVIDIA TITAN Xp, pci bus id: 0000:65:00.0, compute capability: 6.1
+I0914 01:21:32.648058 140054055876416 train_lib.py:108] Using strategy <class 'tensorflow.python.distribute.one_device_strategy.OneDeviceStrategy'> with 1 replicas
+I0914 01:21:32.774381 140054055876416 deeplab.py:57] Synchronized Batchnorm is used.
+I0914 01:21:32.775438 140054055876416 axial_resnet_instances.py:144] Axial-ResNet final config: {'num_blocks': [3, 4, 6, 3], 'backbone_layer_multiplier': 1.0, 'width_multiplier': 1.0, 'stem_width_multiplier': 1.0, 'output_stride': 16, 'classification_mode': True, 'backbone_type': 'resnet', 'use_axial_beyond_stride': 0, 'backbone_use_transformer_beyond_stride': 0, 'extra_decoder_use_transformer_beyond_stride': 32, 'backbone_decoder_num_stacks': 0, 'backbone_decoder_blocks_per_stage': 1, 'extra_decoder_num_stacks': 0, 'extra_decoder_blocks_per_stage': 1, 'max_num_mask_slots': 128, 'num_mask_slots': 128, 'memory_channels': 256, 'base_transformer_expansion': 1.0, 'global_feed_forward_network_channels': 256, 'high_resolution_output_stride': 4, 'activation': 'relu', 'block_group_config': {'attention_bottleneck_expansion': 2, 'drop_path_keep_prob': 1.0, 'drop_path_beyond_stride': 16, 'drop_path_schedule': 'constant', 'positional_encoding_type': None, 'use_global_beyond_stride': 0, 'use_sac_beyond_stride': -1, 'use_squeeze_and_excite': False, 'conv_use_recompute_grad': False, 'axial_use_recompute_grad': True, 'recompute_within_stride': 0, 'transformer_use_recompute_grad': False, 'axial_layer_config': {'query_shape': (129, 129), 'key_expansion': 1, 'value_expansion': 2, 'memory_flange': (32, 32), 'double_global_attention': False, 'num_heads': 8, 'use_query_rpe_similarity': True, 'use_key_rpe_similarity': True, 'use_content_similarity': True, 'retrieve_value_rpe': True, 'retrieve_value_content': True, 'initialization_std_for_query_key_rpe': 1.0, 'initialization_std_for_value_rpe': 1.0, 'self_attention_activation': 'softmax'}, 'dual_path_transformer_layer_config': {'num_heads': 8, 'bottleneck_expansion': 2, 'key_expansion': 1, 'value_expansion': 2, 'feed_forward_network_channels': 2048, 'use_memory_self_attention': True, 'use_pixel2memory_feedback_attention': True, 'transformer_activation': 'softmax'}}, 'bn_layer': functools.partial(<class 'keras.layers.normalization.batch_normalization.SyncBatchNormalization'>, momentum=0.9900000095367432, epsilon=0.0010000000474974513), 'conv_kernel_weight_decay': 0.0}
+I0914 01:21:32.876280 140054055876416 deeplab.py:96] Setting pooling size to (33, 33)
+I0914 01:21:32.876394 140054055876416 aspp.py:141] Global average pooling in the ASPP pooling layer was replaced with tiled average pooling using the provided pool_size. Please make sure this behavior is intended.
+I0914 01:21:35.764856 140054055876416 controller.py:393] restoring or initializing model...
+WARNING:tensorflow:From /home/titanas/anaconda3/envs/alex_deeplab/lib/python3.8/site-packages/tensorflow/python/training/tracking/util.py:1343: NameBasedSaverStatus.__init__ (from tensorflow.python.training.tracking.util) is deprecated and will be removed in a future version.
+Instructions for updating:
+Restoring a name-based tf.train.Saver checkpoint using the object-based restore API. This mode uses global names to match variables, and so is somewhat fragile. It also adds new restore ops to the graph each time it is called when graph building. Prefer re-encoding training checkpoints in the object-based format: run save() on the object-based saver (the same one this message is coming from) and use that checkpoint in the future.
+W0914 01:21:35.780041 140054055876416 deprecation.py:341] From /home/titanas/anaconda3/envs/alex_deeplab/lib/python3.8/site-packages/tensorflow/python/training/tracking/util.py:1343: NameBasedSaverStatus.__init__ (from tensorflow.python.training.tracking.util) is deprecated and will be removed in a future version.
+Instructions for updating:
+Restoring a name-based tf.train.Saver checkpoint using the object-based restore API. This mode uses global names to match variables, and so is somewhat fragile. It also adds new restore ops to the graph each time it is called when graph building. Prefer re-encoding training checkpoints in the object-based format: run save() on the object-based saver (the same one this message is coming from) and use that checkpoint in the future.
+I0914 01:21:35.791234 140054055876416 controller.py:399] initialized model.
+I0914 01:21:36.410111 140054055876416 api.py:447] Eval with scales ListWrapper([1.0])
+I0914 01:21:37.274499 140054055876416 api.py:447] Global average pooling in the ASPP pooling layer was replaced with tiled average pooling using the provided pool_size. Please make sure this behavior is intended.
+I0914 01:21:37.292222 140054055876416 api.py:447] Eval scale 1.0; setting pooling size to [33, 33]
+I0914 01:21:40.239351 140054055876416 api.py:447] Global average pooling in the ASPP pooling layer was replaced with tiled average pooling using the provided pool_size. Please make sure this behavior is intended.
+I0914 01:21:40.607309 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-0.
+I0914 01:21:40.607813 140054055876416 controller.py:241] train | step:      0 | training until step 5000...
+2022-09-14 01:21:59.004340: I tensorflow/stream_executor/cuda/cuda_dnn.cc:366] Loaded cuDNN version 8500
+I0914 01:23:31.169089 140054055876416 controller.py:466] train | step:    100 | steps/sec:    0.9 | output: 
+    {'learning_rate': 0.00049887487,
+     'losses/train_semantic_loss': 1.118507,
+     'losses/train_total_loss': 1.118507}
+I0914 01:25:01.268118 140054055876416 controller.py:466] train | step:    200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004977494,
+     'losses/train_semantic_loss': 0.9932243,
+     'losses/train_total_loss': 0.9932243}
+I0914 01:26:32.391968 140054055876416 controller.py:466] train | step:    300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00049662375,
+     'losses/train_semantic_loss': 0.91650015,
+     'losses/train_total_loss': 0.91650015}
+I0914 01:28:04.224683 140054055876416 controller.py:466] train | step:    400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004954978,
+     'losses/train_semantic_loss': 0.8948509,
+     'losses/train_total_loss': 0.8948509}
+I0914 01:29:36.055778 140054055876416 controller.py:466] train | step:    500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004943715,
+     'losses/train_semantic_loss': 0.8779869,
+     'losses/train_total_loss': 0.8779869}
+I0914 01:31:07.394171 140054055876416 controller.py:466] train | step:    600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004932449,
+     'losses/train_semantic_loss': 0.84206563,
+     'losses/train_total_loss': 0.84206563}
+I0914 01:32:39.000553 140054055876416 controller.py:466] train | step:    700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00049211807,
+     'losses/train_semantic_loss': 0.8323593,
+     'losses/train_total_loss': 0.8323593}
+I0914 01:34:10.914827 140054055876416 controller.py:466] train | step:    800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00049099093,
+     'losses/train_semantic_loss': 0.8254416,
+     'losses/train_total_loss': 0.8254416}
+I0914 01:35:42.862117 140054055876416 controller.py:466] train | step:    900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048986357,
+     'losses/train_semantic_loss': 0.83105576,
+     'losses/train_total_loss': 0.83105576}
+I0914 01:37:15.024169 140054055876416 controller.py:466] train | step:   1000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048873585,
+     'losses/train_semantic_loss': 0.8081179,
+     'losses/train_total_loss': 0.8081179}
+I0914 01:37:15.853267 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-1000.
+I0914 01:38:48.245901 140054055876416 controller.py:466] train | step:   1100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048760785,
+     'losses/train_semantic_loss': 0.80062056,
+     'losses/train_total_loss': 0.80062056}
+I0914 01:40:19.485381 140054055876416 controller.py:466] train | step:   1200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048647955,
+     'losses/train_semantic_loss': 0.7901086,
+     'losses/train_total_loss': 0.7901086}
+I0914 01:41:51.753758 140054055876416 controller.py:466] train | step:   1300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048535096,
+     'losses/train_semantic_loss': 0.808295,
+     'losses/train_total_loss': 0.808295}
+I0914 01:43:23.175181 140054055876416 controller.py:466] train | step:   1400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004842221,
+     'losses/train_semantic_loss': 0.7604338,
+     'losses/train_total_loss': 0.7604338}
+I0914 01:44:54.757659 140054055876416 controller.py:466] train | step:   1500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004830929,
+     'losses/train_semantic_loss': 0.76515496,
+     'losses/train_total_loss': 0.76515496}
+I0914 01:46:26.302566 140054055876416 controller.py:466] train | step:   1600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048196348,
+     'losses/train_semantic_loss': 0.7373202,
+     'losses/train_total_loss': 0.7373202}
+I0914 01:47:57.999020 140054055876416 controller.py:466] train | step:   1700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004808337,
+     'losses/train_semantic_loss': 0.7601051,
+     'losses/train_total_loss': 0.7601051}
+I0914 01:49:30.102770 140054055876416 controller.py:466] train | step:   1800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047970368,
+     'losses/train_semantic_loss': 0.7527314,
+     'losses/train_total_loss': 0.7527314}
+I0914 01:51:01.152821 140054055876416 controller.py:466] train | step:   1900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047857335,
+     'losses/train_semantic_loss': 0.7445637,
+     'losses/train_total_loss': 0.7445637}
+I0914 01:52:32.641492 140054055876416 controller.py:466] train | step:   2000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004774427,
+     'losses/train_semantic_loss': 0.748528,
+     'losses/train_total_loss': 0.748528}
+I0914 01:52:33.479070 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-2000.
+I0914 01:54:05.696284 140054055876416 controller.py:466] train | step:   2100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047631178,
+     'losses/train_semantic_loss': 0.7549768,
+     'losses/train_total_loss': 0.7549768}
+I0914 01:55:37.827611 140054055876416 controller.py:466] train | step:   2200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047518054,
+     'losses/train_semantic_loss': 0.7159438,
+     'losses/train_total_loss': 0.7159438}
+I0914 01:57:09.395801 140054055876416 controller.py:466] train | step:   2300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047404898,
+     'losses/train_semantic_loss': 0.7297167,
+     'losses/train_total_loss': 0.7297167}
+I0914 01:58:41.659830 140054055876416 controller.py:466] train | step:   2400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004729172,
+     'losses/train_semantic_loss': 0.71788865,
+     'losses/train_total_loss': 0.71788865}
+I0914 02:00:13.409218 140054055876416 controller.py:466] train | step:   2500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047178505,
+     'losses/train_semantic_loss': 0.7211165,
+     'losses/train_total_loss': 0.7211165}
+I0914 02:01:45.696514 140054055876416 controller.py:466] train | step:   2600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004706526,
+     'losses/train_semantic_loss': 0.70255744,
+     'losses/train_total_loss': 0.70255744}
+I0914 02:03:17.819666 140054055876416 controller.py:466] train | step:   2700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046951987,
+     'losses/train_semantic_loss': 0.6972458,
+     'losses/train_total_loss': 0.6972458}
+I0914 02:04:50.108215 140054055876416 controller.py:466] train | step:   2800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046838683,
+     'losses/train_semantic_loss': 0.7076397,
+     'losses/train_total_loss': 0.7076397}
+I0914 02:06:22.164002 140054055876416 controller.py:466] train | step:   2900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004672535,
+     'losses/train_semantic_loss': 0.6925452,
+     'losses/train_total_loss': 0.6925452}
+I0914 02:07:54.554780 140054055876416 controller.py:466] train | step:   3000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046611985,
+     'losses/train_semantic_loss': 0.7069334,
+     'losses/train_total_loss': 0.7069334}
+I0914 02:07:55.395125 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-3000.
+I0914 02:09:27.448097 140054055876416 controller.py:466] train | step:   3100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046498587,
+     'losses/train_semantic_loss': 0.692337,
+     'losses/train_total_loss': 0.692337}
+I0914 02:10:59.626730 140054055876416 controller.py:466] train | step:   3200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004638516,
+     'losses/train_semantic_loss': 0.6801218,
+     'losses/train_total_loss': 0.6801218}
+I0914 02:12:30.941287 140054055876416 controller.py:466] train | step:   3300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046271706,
+     'losses/train_semantic_loss': 0.6968071,
+     'losses/train_total_loss': 0.6968071}
+I0914 02:14:03.240015 140054055876416 controller.py:466] train | step:   3400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046158218,
+     'losses/train_semantic_loss': 0.6943182,
+     'losses/train_total_loss': 0.6943182}
+I0914 02:15:35.684915 140054055876416 controller.py:466] train | step:   3500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000460447,
+     'losses/train_semantic_loss': 0.6655165,
+     'losses/train_total_loss': 0.6655165}
+I0914 02:17:07.852782 140054055876416 controller.py:466] train | step:   3600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045931144,
+     'losses/train_semantic_loss': 0.674924,
+     'losses/train_total_loss': 0.674924}
+I0914 02:18:40.287748 140054055876416 controller.py:466] train | step:   3700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004581756,
+     'losses/train_semantic_loss': 0.6834456,
+     'losses/train_total_loss': 0.6834456}
+I0914 02:20:11.795190 140054055876416 controller.py:466] train | step:   3800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004570395,
+     'losses/train_semantic_loss': 0.6819586,
+     'losses/train_total_loss': 0.6819586}
+I0914 02:21:43.409391 140054055876416 controller.py:466] train | step:   3900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004559031,
+     'losses/train_semantic_loss': 0.65918326,
+     'losses/train_total_loss': 0.65918326}
+I0914 02:23:15.363661 140054055876416 controller.py:466] train | step:   4000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004547663,
+     'losses/train_semantic_loss': 0.6670006,
+     'losses/train_total_loss': 0.6670006}
+I0914 02:23:16.179836 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-4000.
+I0914 02:24:48.550994 140054055876416 controller.py:466] train | step:   4100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045362924,
+     'losses/train_semantic_loss': 0.67806214,
+     'losses/train_total_loss': 0.67806214}
+I0914 02:26:20.316460 140054055876416 controller.py:466] train | step:   4200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045249183,
+     'losses/train_semantic_loss': 0.6470887,
+     'losses/train_total_loss': 0.6470887}
+I0914 02:27:52.766127 140054055876416 controller.py:466] train | step:   4300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045135414,
+     'losses/train_semantic_loss': 0.65850586,
+     'losses/train_total_loss': 0.65850586}
+I0914 02:29:25.077294 140054055876416 controller.py:466] train | step:   4400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045021612,
+     'losses/train_semantic_loss': 0.6673903,
+     'losses/train_total_loss': 0.6673903}
+I0914 02:30:57.632975 140054055876416 controller.py:466] train | step:   4500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044907775,
+     'losses/train_semantic_loss': 0.68775755,
+     'losses/train_total_loss': 0.68775755}
+restoring or initializing model...
+initialized model.
+saved checkpoint to results/exp_003/ckpt-0.
+train | step:      0 | training until step 5000...
+train | step:    100 | steps/sec:    0.9 | output: 
+    {'learning_rate': 0.00049887487,
+     'losses/train_semantic_loss': 1.118507,
+     'losses/train_total_loss': 1.118507}
+train | step:    200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004977494,
+     'losses/train_semantic_loss': 0.9932243,
+     'losses/train_total_loss': 0.9932243}
+train | step:    300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00049662375,
+     'losses/train_semantic_loss': 0.91650015,
+     'losses/train_total_loss': 0.91650015}
+train | step:    400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004954978,
+     'losses/train_semantic_loss': 0.8948509,
+     'losses/train_total_loss': 0.8948509}
+train | step:    500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004943715,
+     'losses/train_semantic_loss': 0.8779869,
+     'losses/train_total_loss': 0.8779869}
+train | step:    600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004932449,
+     'losses/train_semantic_loss': 0.84206563,
+     'losses/train_total_loss': 0.84206563}
+train | step:    700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00049211807,
+     'losses/train_semantic_loss': 0.8323593,
+     'losses/train_total_loss': 0.8323593}
+train | step:    800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00049099093,
+     'losses/train_semantic_loss': 0.8254416,
+     'losses/train_total_loss': 0.8254416}
+train | step:    900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048986357,
+     'losses/train_semantic_loss': 0.83105576,
+     'losses/train_total_loss': 0.83105576}
+train | step:   1000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048873585,
+     'losses/train_semantic_loss': 0.8081179,
+     'losses/train_total_loss': 0.8081179}
+saved checkpoint to results/exp_003/ckpt-1000.
+train | step:   1100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048760785,
+     'losses/train_semantic_loss': 0.80062056,
+     'losses/train_total_loss': 0.80062056}
+train | step:   1200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048647955,
+     'losses/train_semantic_loss': 0.7901086,
+     'losses/train_total_loss': 0.7901086}
+train | step:   1300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048535096,
+     'losses/train_semantic_loss': 0.808295,
+     'losses/train_total_loss': 0.808295}
+train | step:   1400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004842221,
+     'losses/train_semantic_loss': 0.7604338,
+     'losses/train_total_loss': 0.7604338}
+train | step:   1500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004830929,
+     'losses/train_semantic_loss': 0.76515496,
+     'losses/train_total_loss': 0.76515496}
+train | step:   1600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00048196348,
+     'losses/train_semantic_loss': 0.7373202,
+     'losses/train_total_loss': 0.7373202}
+train | step:   1700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004808337,
+     'losses/train_semantic_loss': 0.7601051,
+     'losses/train_total_loss': 0.7601051}
+train | step:   1800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047970368,
+     'losses/train_semantic_loss': 0.7527314,
+     'losses/train_total_loss': 0.7527314}
+train | step:   1900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047857335,
+     'losses/train_semantic_loss': 0.7445637,
+     'losses/train_total_loss': 0.7445637}
+train | step:   2000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004774427,
+     'losses/train_semantic_loss': 0.748528,
+     'losses/train_total_loss': 0.748528}
+saved checkpoint to results/exp_003/ckpt-2000.
+train | step:   2100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047631178,
+     'losses/train_semantic_loss': 0.7549768,
+     'losses/train_total_loss': 0.7549768}
+train | step:   2200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047518054,
+     'losses/train_semantic_loss': 0.7159438,
+     'losses/train_total_loss': 0.7159438}
+train | step:   2300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047404898,
+     'losses/train_semantic_loss': 0.7297167,
+     'losses/train_total_loss': 0.7297167}
+train | step:   2400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004729172,
+     'losses/train_semantic_loss': 0.71788865,
+     'losses/train_total_loss': 0.71788865}
+train | step:   2500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00047178505,
+     'losses/train_semantic_loss': 0.7211165,
+     'losses/train_total_loss': 0.7211165}
+train | step:   2600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004706526,
+     'losses/train_semantic_loss': 0.70255744,
+     'losses/train_total_loss': 0.70255744}
+train | step:   2700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046951987,
+     'losses/train_semantic_loss': 0.6972458,
+     'losses/train_total_loss': 0.6972458}
+train | step:   2800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046838683,
+     'losses/train_semantic_loss': 0.7076397,
+     'losses/train_total_loss': 0.7076397}
+train | step:   2900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004672535,
+     'losses/train_semantic_loss': 0.6925452,
+     'losses/train_total_loss': 0.6925452}
+train | step:   3000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046611985,
+     'losses/train_semantic_loss': 0.7069334,
+     'losses/train_total_loss': 0.7069334}
+saved checkpoint to results/exp_003/ckpt-3000.
+train | step:   3100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046498587,
+     'losses/train_semantic_loss': 0.692337,
+     'losses/train_total_loss': 0.692337}
+train | step:   3200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004638516,
+     'losses/train_semantic_loss': 0.6801218,
+     'losses/train_total_loss': 0.6801218}
+train | step:   3300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046271706,
+     'losses/train_semantic_loss': 0.6968071,
+     'losses/train_total_loss': 0.6968071}
+train | step:   3400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00046158218,
+     'losses/train_semantic_loss': 0.6943182,
+     'losses/train_total_loss': 0.6943182}
+train | step:   3500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000460447,
+     'losses/train_semantic_loss': 0.6655165,
+     'losses/train_total_loss': 0.6655165}
+train | step:   3600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045931144,
+     'losses/train_semantic_loss': 0.674924,
+     'losses/train_total_loss': 0.674924}
+train | step:   3700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004581756,
+     'losses/train_semantic_loss': 0.6834456,
+     'losses/train_total_loss': 0.6834456}
+train | step:   3800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004570395,
+     'losses/train_semantic_loss': 0.6819586,
+     'losses/train_total_loss': 0.6819586}
+train | step:   3900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004559031,
+     'losses/train_semantic_loss': 0.65918326,
+     'losses/train_total_loss': 0.65918326}
+train | step:   4000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004547663,
+     'losses/train_semantic_loss': 0.6670006,
+     'losses/train_total_loss': 0.6670006}
+saved checkpoint to results/exp_003/ckpt-4000.
+train | step:   4100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045362924,
+     'losses/train_semantic_loss': 0.67806214,
+     'losses/train_total_loss': 0.67806214}
+train | step:   4200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045249183,
+     'losses/train_semantic_loss': 0.6470887,
+     'losses/train_total_loss': 0.6470887}
+train | step:   4300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045135414,
+     'losses/train_semantic_loss': 0.65850586,
+     'losses/train_total_loss': 0.65850586}
+train | step:   4400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00045021612,
+     'losses/train_semantic_loss': 0.6673903,
+     'losses/train_total_loss': 0.6673903}
+train | step:   4500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044907775,
+     'losses/train_semantic_loss': 0.68775755,
+     'losses/train_total_loss': 0.68775755}I0914 02:32:29.575794 140054055876416 controller.py:466] train | step:   4600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044793912,
+     'losses/train_semantic_loss': 0.6624093,
+     'losses/train_total_loss': 0.6624093}
+I0914 02:34:00.994746 140054055876416 controller.py:466] train | step:   4700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004468001,
+     'losses/train_semantic_loss': 0.6477752,
+     'losses/train_total_loss': 0.6477752}
+I0914 02:35:33.180034 140054055876416 controller.py:466] train | step:   4800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044566081,
+     'losses/train_semantic_loss': 0.62636524,
+     'losses/train_total_loss': 0.62636524}
+I0914 02:37:04.923732 140054055876416 controller.py:466] train | step:   4900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044452114,
+     'losses/train_semantic_loss': 0.64733946,
+     'losses/train_total_loss': 0.64733946}
+I0914 02:38:37.553351 140054055876416 controller.py:466] train | step:   5000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044338117,
+     'losses/train_semantic_loss': 0.6416229,
+     'losses/train_total_loss': 0.6416229}
+I0914 02:38:38.641453 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-5000.
+I0914 02:38:38.642214 140054055876416 controller.py:282]  eval | step:   5000 | running complete evaluation...
+I0914 02:38:38.971909 140054055876416 api.py:447] Eval with scales ListWrapper([1.0])
+I0914 02:38:39.000035 140054055876416 api.py:447] Global average pooling in the ASPP pooling layer was replaced with tiled average pooling using the provided pool_size. Please make sure this behavior is intended.
+I0914 02:38:39.024380 140054055876416 api.py:447] Eval scale 1.0; setting pooling size to [33, 33]
+I0914 02:38:39.642728 140054055876416 api.py:447] Global average pooling in the ASPP pooling layer was replaced with tiled average pooling using the provided pool_size. Please make sure this behavior is intended.
+I0914 02:38:53.264636 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 02:38:53.287108 140054055876416 controller.py:295]  eval | step:   5000 | eval time:   14.6 sec | output: 
+    {'evaluation/iou/IoU': 0.60601914,
+     'losses/eval_semantic_loss': 0.7634885,
+     'losses/eval_total_loss': 0.7634885}
+I0914 02:38:53.289535 140054055876416 controller.py:241] train | step:   5000 | training until step 10000...
+I0914 02:40:25.413972 140054055876416 controller.py:466] train | step:   5100 | steps/sec:    0.9 | output: 
+    {'learning_rate': 0.00044224088,
+     'losses/train_semantic_loss': 0.63622564,
+     'losses/train_total_loss': 0.63622564}
+I0914 02:41:56.655421 140054055876416 controller.py:466] train | step:   5200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044110027,
+     'losses/train_semantic_loss': 0.62597907,
+     'losses/train_total_loss': 0.62597907}
+I0914 02:43:27.614375 140054055876416 controller.py:466] train | step:   5300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043995937,
+     'losses/train_semantic_loss': 0.6376778,
+     'losses/train_total_loss': 0.6376778}
+I0914 02:44:59.556502 140054055876416 controller.py:466] train | step:   5400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043881807,
+     'losses/train_semantic_loss': 0.6402677,
+     'losses/train_total_loss': 0.6402677}
+I0914 02:46:31.498043 140054055876416 controller.py:466] train | step:   5500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043767647,
+     'losses/train_semantic_loss': 0.60079783,
+     'losses/train_total_loss': 0.60079783}
+I0914 02:48:03.528727 140054055876416 controller.py:466] train | step:   5600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043653455,
+     'losses/train_semantic_loss': 0.62507033,
+     'losses/train_total_loss': 0.62507033}
+I0914 02:49:35.654519 140054055876416 controller.py:466] train | step:   5700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004353923,
+     'losses/train_semantic_loss': 0.62076086,
+     'losses/train_total_loss': 0.62076086}
+I0914 02:51:07.969074 140054055876416 controller.py:466] train | step:   5800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004342497,
+     'losses/train_semantic_loss': 0.64116997,
+     'losses/train_total_loss': 0.64116997}
+I0914 02:52:40.501140 140054055876416 controller.py:466] train | step:   5900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004331068,
+     'losses/train_semantic_loss': 0.6339075,
+     'losses/train_total_loss': 0.6339075}
+I0914 02:54:12.817998 140054055876416 controller.py:466] train | step:   6000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004319635,
+     'losses/train_semantic_loss': 0.61076677,
+     'losses/train_total_loss': 0.61076677}
+I0914 02:54:13.698184 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-6000.
+I0914 02:55:46.013971 140054055876416 controller.py:466] train | step:   6100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004308199,
+     'losses/train_semantic_loss': 0.63395035,
+     'losses/train_total_loss': 0.63395035}
+I0914 02:57:18.051414 140054055876416 controller.py:466] train | step:   6200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042967597,
+     'losses/train_semantic_loss': 0.6091893,
+     'losses/train_total_loss': 0.6091893}
+I0914 02:58:50.496243 140054055876416 controller.py:466] train | step:   6300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042853167,
+     'losses/train_semantic_loss': 0.59518707,
+     'losses/train_total_loss': 0.59518707}
+I0914 03:00:21.929097 140054055876416 controller.py:466] train | step:   6400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042738707,
+     'losses/train_semantic_loss': 0.5992755,
+     'losses/train_total_loss': 0.5992755}
+I0914 03:01:53.774432 140054055876416 controller.py:466] train | step:   6500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042624207,
+     'losses/train_semantic_loss': 0.6212453,
+     'losses/train_total_loss': 0.6212453}
+I0914 03:03:26.010645 140054055876416 controller.py:466] train | step:   6600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004250968,
+     'losses/train_semantic_loss': 0.6172602,
+     'losses/train_total_loss': 0.6172602}
+I0914 03:04:58.426575 140054055876416 controller.py:466] train | step:   6700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042395113,
+     'losses/train_semantic_loss': 0.57214665,
+     'losses/train_total_loss': 0.57214665}
+I0914 03:06:30.480983 140054055876416 controller.py:466] train | step:   6800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042280517,
+     'losses/train_semantic_loss': 0.6105919,
+     'losses/train_total_loss': 0.6105919}
+I0914 03:08:02.826455 140054055876416 controller.py:466] train | step:   6900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042165883,
+     'losses/train_semantic_loss': 0.60874087,
+     'losses/train_total_loss': 0.60874087}
+I0914 03:09:34.965704 140054055876416 controller.py:466] train | step:   7000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042051217,
+     'losses/train_semantic_loss': 0.59461856,
+     'losses/train_total_loss': 0.59461856}
+I0914 03:09:35.809939 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-7000.
+I0914 03:11:08.173325 140054055876416 controller.py:466] train | step:   7100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041936515,
+     'losses/train_semantic_loss': 0.5980772,
+     'losses/train_total_loss': 0.5980772}
+I0914 03:12:39.890117 140054055876416 controller.py:466] train | step:   7200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041821777,
+     'losses/train_semantic_loss': 0.60843426,
+     'losses/train_total_loss': 0.60843426}
+I0914 03:14:11.507511 140054055876416 controller.py:466] train | step:   7300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041707006,
+     'losses/train_semantic_loss': 0.5937328,
+     'losses/train_total_loss': 0.5937328}
+I0914 03:15:43.587618 140054055876416 controller.py:466] train | step:   7400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041592194,
+     'losses/train_semantic_loss': 0.6000261,
+     'losses/train_total_loss': 0.6000261}
+I0914 03:17:15.719850 140054055876416 controller.py:466] train | step:   7500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041477353,
+     'losses/train_semantic_loss': 0.57994205,
+     'losses/train_total_loss': 0.57994205}
+I0914 03:18:48.029394 140054055876416 controller.py:466] train | step:   7600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041362477,
+     'losses/train_semantic_loss': 0.58606553,
+     'losses/train_total_loss': 0.58606553}
+I0914 03:20:19.871896 140054055876416 controller.py:466] train | step:   7700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004124756,
+     'losses/train_semantic_loss': 0.60246164,
+     'losses/train_total_loss': 0.60246164}
+I0914 03:21:52.407324 140054055876416 controller.py:466] train | step:   7800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041132615,
+     'losses/train_semantic_loss': 0.567562,
+     'losses/train_total_loss': 0.567562}
+I0914 03:23:23.966343 140054055876416 controller.py:466] train | step:   7900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004101763,
+     'losses/train_semantic_loss': 0.5584766,
+     'losses/train_total_loss': 0.5584766}
+I0914 03:24:56.217353 140054055876416 controller.py:466] train | step:   8000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040902608,
+     'losses/train_semantic_loss': 0.5657668,
+     'losses/train_total_loss': 0.5657668}
+I0914 03:24:57.059140 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-8000.
+I0914 03:26:28.934297 140054055876416 controller.py:466] train | step:   8100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004078755,
+     'losses/train_semantic_loss': 0.5763811,
+     'losses/train_total_loss': 0.5763811}
+I0914 03:28:01.257776 140054055876416 controller.py:466] train | step:   8200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004067246,
+     'losses/train_semantic_loss': 0.58780706,
+     'losses/train_total_loss': 0.58780706}
+I0914 03:29:33.188811 140054055876416 controller.py:466] train | step:   8300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040557332,
+     'losses/train_semantic_loss': 0.5698994,
+     'losses/train_total_loss': 0.5698994}
+I0914 03:31:05.522072 140054055876416 controller.py:466] train | step:   8400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040442165,
+     'losses/train_semantic_loss': 0.5741126,
+     'losses/train_total_loss': 0.5741126}
+I0914 03:32:36.760530 140054055876416 controller.py:466] train | step:   8500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040326963,
+     'losses/train_semantic_loss': 0.55880815,
+     'losses/train_total_loss': 0.55880815}
+I0914 03:34:08.196170 140054055876416 controller.py:466] train | step:   8600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040211724,
+     'losses/train_semantic_loss': 0.55722296,
+     'losses/train_total_loss': 0.55722296}
+I0914 03:35:40.050892 140054055876416 controller.py:466] train | step:   8700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040096452,
+     'losses/train_semantic_loss': 0.58562255,
+     'losses/train_total_loss': 0.58562255}
+I0914 03:37:12.387329 140054055876416 controller.py:466] train | step:   8800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039981137,
+     'losses/train_semantic_loss': 0.5755383,
+     'losses/train_total_loss': 0.5755383}
+I0914 03:38:44.246671 140054055876416 controller.py:466] train | step:   8900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039865792,
+     'losses/train_semantic_loss': 0.5936854,
+     'losses/train_total_loss': 0.5936854}
+
+train | step:   4600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044793912,
+     'losses/train_semantic_loss': 0.6624093,
+     'losses/train_total_loss': 0.6624093}
+train | step:   4700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004468001,
+     'losses/train_semantic_loss': 0.6477752,
+     'losses/train_total_loss': 0.6477752}
+train | step:   4800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044566081,
+     'losses/train_semantic_loss': 0.62636524,
+     'losses/train_total_loss': 0.62636524}
+train | step:   4900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044452114,
+     'losses/train_semantic_loss': 0.64733946,
+     'losses/train_total_loss': 0.64733946}
+train | step:   5000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044338117,
+     'losses/train_semantic_loss': 0.6416229,
+     'losses/train_total_loss': 0.6416229}
+saved checkpoint to results/exp_003/ckpt-5000.
+ eval | step:   5000 | running complete evaluation...
+ eval | step:   5000 | eval time:   14.6 sec | output: 
+    {'evaluation/iou/IoU': 0.60601914,
+     'losses/eval_semantic_loss': 0.7634885,
+     'losses/eval_total_loss': 0.7634885}
+train | step:   5000 | training until step 10000...
+train | step:   5100 | steps/sec:    0.9 | output: 
+    {'learning_rate': 0.00044224088,
+     'losses/train_semantic_loss': 0.63622564,
+     'losses/train_total_loss': 0.63622564}
+train | step:   5200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00044110027,
+     'losses/train_semantic_loss': 0.62597907,
+     'losses/train_total_loss': 0.62597907}
+train | step:   5300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043995937,
+     'losses/train_semantic_loss': 0.6376778,
+     'losses/train_total_loss': 0.6376778}
+train | step:   5400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043881807,
+     'losses/train_semantic_loss': 0.6402677,
+     'losses/train_total_loss': 0.6402677}
+train | step:   5500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043767647,
+     'losses/train_semantic_loss': 0.60079783,
+     'losses/train_total_loss': 0.60079783}
+train | step:   5600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00043653455,
+     'losses/train_semantic_loss': 0.62507033,
+     'losses/train_total_loss': 0.62507033}
+train | step:   5700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004353923,
+     'losses/train_semantic_loss': 0.62076086,
+     'losses/train_total_loss': 0.62076086}
+train | step:   5800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004342497,
+     'losses/train_semantic_loss': 0.64116997,
+     'losses/train_total_loss': 0.64116997}
+train | step:   5900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004331068,
+     'losses/train_semantic_loss': 0.6339075,
+     'losses/train_total_loss': 0.6339075}
+train | step:   6000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004319635,
+     'losses/train_semantic_loss': 0.61076677,
+     'losses/train_total_loss': 0.61076677}
+saved checkpoint to results/exp_003/ckpt-6000.
+train | step:   6100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004308199,
+     'losses/train_semantic_loss': 0.63395035,
+     'losses/train_total_loss': 0.63395035}
+train | step:   6200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042967597,
+     'losses/train_semantic_loss': 0.6091893,
+     'losses/train_total_loss': 0.6091893}
+train | step:   6300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042853167,
+     'losses/train_semantic_loss': 0.59518707,
+     'losses/train_total_loss': 0.59518707}
+train | step:   6400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042738707,
+     'losses/train_semantic_loss': 0.5992755,
+     'losses/train_total_loss': 0.5992755}
+train | step:   6500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042624207,
+     'losses/train_semantic_loss': 0.6212453,
+     'losses/train_total_loss': 0.6212453}
+train | step:   6600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004250968,
+     'losses/train_semantic_loss': 0.6172602,
+     'losses/train_total_loss': 0.6172602}
+train | step:   6700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042395113,
+     'losses/train_semantic_loss': 0.57214665,
+     'losses/train_total_loss': 0.57214665}
+train | step:   6800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042280517,
+     'losses/train_semantic_loss': 0.6105919,
+     'losses/train_total_loss': 0.6105919}
+train | step:   6900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042165883,
+     'losses/train_semantic_loss': 0.60874087,
+     'losses/train_total_loss': 0.60874087}
+train | step:   7000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00042051217,
+     'losses/train_semantic_loss': 0.59461856,
+     'losses/train_total_loss': 0.59461856}
+saved checkpoint to results/exp_003/ckpt-7000.
+train | step:   7100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041936515,
+     'losses/train_semantic_loss': 0.5980772,
+     'losses/train_total_loss': 0.5980772}
+train | step:   7200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041821777,
+     'losses/train_semantic_loss': 0.60843426,
+     'losses/train_total_loss': 0.60843426}
+train | step:   7300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041707006,
+     'losses/train_semantic_loss': 0.5937328,
+     'losses/train_total_loss': 0.5937328}
+train | step:   7400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041592194,
+     'losses/train_semantic_loss': 0.6000261,
+     'losses/train_total_loss': 0.6000261}
+train | step:   7500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041477353,
+     'losses/train_semantic_loss': 0.57994205,
+     'losses/train_total_loss': 0.57994205}
+train | step:   7600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041362477,
+     'losses/train_semantic_loss': 0.58606553,
+     'losses/train_total_loss': 0.58606553}
+train | step:   7700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004124756,
+     'losses/train_semantic_loss': 0.60246164,
+     'losses/train_total_loss': 0.60246164}
+train | step:   7800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00041132615,
+     'losses/train_semantic_loss': 0.567562,
+     'losses/train_total_loss': 0.567562}
+train | step:   7900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004101763,
+     'losses/train_semantic_loss': 0.5584766,
+     'losses/train_total_loss': 0.5584766}
+train | step:   8000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040902608,
+     'losses/train_semantic_loss': 0.5657668,
+     'losses/train_total_loss': 0.5657668}
+saved checkpoint to results/exp_003/ckpt-8000.
+train | step:   8100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004078755,
+     'losses/train_semantic_loss': 0.5763811,
+     'losses/train_total_loss': 0.5763811}
+train | step:   8200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0004067246,
+     'losses/train_semantic_loss': 0.58780706,
+     'losses/train_total_loss': 0.58780706}
+train | step:   8300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040557332,
+     'losses/train_semantic_loss': 0.5698994,
+     'losses/train_total_loss': 0.5698994}
+train | step:   8400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040442165,
+     'losses/train_semantic_loss': 0.5741126,
+     'losses/train_total_loss': 0.5741126}
+train | step:   8500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040326963,
+     'losses/train_semantic_loss': 0.55880815,
+     'losses/train_total_loss': 0.55880815}
+train | step:   8600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040211724,
+     'losses/train_semantic_loss': 0.55722296,
+     'losses/train_total_loss': 0.55722296}
+train | step:   8700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00040096452,
+     'losses/train_semantic_loss': 0.58562255,
+     'losses/train_total_loss': 0.58562255}
+train | step:   8800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039981137,
+     'losses/train_semantic_loss': 0.5755383,
+     'losses/train_total_loss': 0.5755383}
+train | step:   8900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039865792,
+     'losses/train_semantic_loss': 0.5936854,
+     'losses/train_total_loss': 0.5936854}I0914 03:40:16.439983 140054055876416 controller.py:466] train | step:   9000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039750402,
+     'losses/train_semantic_loss': 0.5438503,
+     'losses/train_total_loss': 0.5438503}
+I0914 03:40:17.162210 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-9000.
+I0914 03:41:48.823545 140054055876416 controller.py:466] train | step:   9100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039634982,
+     'losses/train_semantic_loss': 0.5598856,
+     'losses/train_total_loss': 0.5598856}
+I0914 03:43:20.503921 140054055876416 controller.py:466] train | step:   9200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003951952,
+     'losses/train_semantic_loss': 0.54909766,
+     'losses/train_total_loss': 0.54909766}
+I0914 03:44:52.708079 140054055876416 controller.py:466] train | step:   9300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039404025,
+     'losses/train_semantic_loss': 0.5574356,
+     'losses/train_total_loss': 0.5574356}
+I0914 03:46:24.879835 140054055876416 controller.py:466] train | step:   9400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039288486,
+     'losses/train_semantic_loss': 0.5415413,
+     'losses/train_total_loss': 0.5415413}
+I0914 03:47:56.465709 140054055876416 controller.py:466] train | step:   9500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039172915,
+     'losses/train_semantic_loss': 0.53993285,
+     'losses/train_total_loss': 0.53993285}
+I0914 03:49:28.545841 140054055876416 controller.py:466] train | step:   9600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039057303,
+     'losses/train_semantic_loss': 0.5259964,
+     'losses/train_total_loss': 0.5259964}
+I0914 03:51:01.126280 140054055876416 controller.py:466] train | step:   9700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038941653,
+     'losses/train_semantic_loss': 0.57622266,
+     'losses/train_total_loss': 0.57622266}
+I0914 03:52:33.423444 140054055876416 controller.py:466] train | step:   9800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003882597,
+     'losses/train_semantic_loss': 0.5323527,
+     'losses/train_total_loss': 0.5323527}
+I0914 03:54:05.516513 140054055876416 controller.py:466] train | step:   9900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003871024,
+     'losses/train_semantic_loss': 0.5252599,
+     'losses/train_total_loss': 0.5252599}
+I0914 03:55:37.475633 140054055876416 controller.py:466] train | step:  10000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038594473,
+     'losses/train_semantic_loss': 0.54439104,
+     'losses/train_total_loss': 0.54439104}
+I0914 03:55:38.167809 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-10000.
+I0914 03:55:38.168407 140054055876416 controller.py:282]  eval | step:  10000 | running complete evaluation...
+I0914 03:55:50.464315 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 03:55:50.475125 140054055876416 controller.py:295]  eval | step:  10000 | eval time:   12.3 sec | output: 
+    {'evaluation/iou/IoU': 0.62062776,
+     'losses/eval_semantic_loss': 0.8599207,
+     'losses/eval_total_loss': 0.8599207}
+I0914 03:55:50.479427 140054055876416 controller.py:241] train | step:  10000 | training until step 15000...
+I0914 03:57:22.068651 140054055876416 controller.py:466] train | step:  10100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.00038478675,
+     'losses/train_semantic_loss': 0.562984,
+     'losses/train_total_loss': 0.562984}
+I0914 03:58:54.578940 140054055876416 controller.py:466] train | step:  10200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038362833,
+     'losses/train_semantic_loss': 0.54080176,
+     'losses/train_total_loss': 0.54080176}
+I0914 04:00:26.280518 140054055876416 controller.py:466] train | step:  10300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038246953,
+     'losses/train_semantic_loss': 0.52015436,
+     'losses/train_total_loss': 0.52015436}
+I0914 04:01:57.981173 140054055876416 controller.py:466] train | step:  10400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038131032,
+     'losses/train_semantic_loss': 0.51950353,
+     'losses/train_total_loss': 0.51950353}
+I0914 04:03:30.672342 140054055876416 controller.py:466] train | step:  10500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038015074,
+     'losses/train_semantic_loss': 0.538554,
+     'losses/train_total_loss': 0.538554}
+I0914 04:05:02.714528 140054055876416 controller.py:466] train | step:  10600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037899075,
+     'losses/train_semantic_loss': 0.5175468,
+     'losses/train_total_loss': 0.5175468}
+I0914 04:06:34.766762 140054055876416 controller.py:466] train | step:  10700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037783038,
+     'losses/train_semantic_loss': 0.52752554,
+     'losses/train_total_loss': 0.52752554}
+I0914 04:08:06.822777 140054055876416 controller.py:466] train | step:  10800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037666963,
+     'losses/train_semantic_loss': 0.53293294,
+     'losses/train_total_loss': 0.53293294}
+I0914 04:09:39.227324 140054055876416 controller.py:466] train | step:  10900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037550845,
+     'losses/train_semantic_loss': 0.5557425,
+     'losses/train_total_loss': 0.5557425}
+I0914 04:11:11.374302 140054055876416 controller.py:466] train | step:  11000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003743469,
+     'losses/train_semantic_loss': 0.52537596,
+     'losses/train_total_loss': 0.52537596}
+I0914 04:11:12.012240 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-11000.
+I0914 04:12:44.396531 140054055876416 controller.py:466] train | step:  11100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037318494,
+     'losses/train_semantic_loss': 0.5154311,
+     'losses/train_total_loss': 0.5154311}
+I0914 04:14:16.738114 140054055876416 controller.py:466] train | step:  11200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037202256,
+     'losses/train_semantic_loss': 0.5382921,
+     'losses/train_total_loss': 0.5382921}
+I0914 04:15:48.830482 140054055876416 controller.py:466] train | step:  11300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037085975,
+     'losses/train_semantic_loss': 0.5226141,
+     'losses/train_total_loss': 0.5226141}
+I0914 04:17:20.841216 140054055876416 controller.py:466] train | step:  11400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036969662,
+     'losses/train_semantic_loss': 0.52719957,
+     'losses/train_total_loss': 0.52719957}
+I0914 04:18:53.366577 140054055876416 controller.py:466] train | step:  11500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036853302,
+     'losses/train_semantic_loss': 0.5114894,
+     'losses/train_total_loss': 0.5114894}
+I0914 04:20:25.597738 140054055876416 controller.py:466] train | step:  11600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036736907,
+     'losses/train_semantic_loss': 0.5152495,
+     'losses/train_total_loss': 0.5152495}
+I0914 04:21:57.688203 140054055876416 controller.py:466] train | step:  11700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003662046,
+     'losses/train_semantic_loss': 0.51333755,
+     'losses/train_total_loss': 0.51333755}
+I0914 04:23:29.512254 140054055876416 controller.py:466] train | step:  11800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003650398,
+     'losses/train_semantic_loss': 0.51635885,
+     'losses/train_total_loss': 0.51635885}
+I0914 04:25:02.007168 140054055876416 controller.py:466] train | step:  11900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003638746,
+     'losses/train_semantic_loss': 0.5113437,
+     'losses/train_total_loss': 0.5113437}
+I0914 04:26:34.495278 140054055876416 controller.py:466] train | step:  12000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036270893,
+     'losses/train_semantic_loss': 0.49351674,
+     'losses/train_total_loss': 0.49351674}
+I0914 04:26:35.152036 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-12000.
+I0914 04:28:06.448984 140054055876416 controller.py:466] train | step:  12100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003615429,
+     'losses/train_semantic_loss': 0.52929056,
+     'losses/train_total_loss': 0.52929056}
+I0914 04:29:38.881276 140054055876416 controller.py:466] train | step:  12200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003603764,
+     'losses/train_semantic_loss': 0.49920014,
+     'losses/train_total_loss': 0.49920014}
+I0914 04:31:11.051182 140054055876416 controller.py:466] train | step:  12300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035920952,
+     'losses/train_semantic_loss': 0.5021808,
+     'losses/train_total_loss': 0.5021808}
+I0914 04:32:43.609879 140054055876416 controller.py:466] train | step:  12400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035804222,
+     'losses/train_semantic_loss': 0.51221335,
+     'losses/train_total_loss': 0.51221335}
+I0914 04:34:16.315111 140054055876416 controller.py:466] train | step:  12500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035687446,
+     'losses/train_semantic_loss': 0.5131937,
+     'losses/train_total_loss': 0.5131937}
+I0914 04:35:48.747751 140054055876416 controller.py:466] train | step:  12600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035570626,
+     'losses/train_semantic_loss': 0.4930328,
+     'losses/train_total_loss': 0.4930328}
+I0914 04:37:21.367565 140054055876416 controller.py:466] train | step:  12700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035453768,
+     'losses/train_semantic_loss': 0.4903036,
+     'losses/train_total_loss': 0.4903036}
+I0914 04:38:53.612050 140054055876416 controller.py:466] train | step:  12800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003533687,
+     'losses/train_semantic_loss': 0.4913229,
+     'losses/train_total_loss': 0.4913229}
+I0914 04:40:26.202218 140054055876416 controller.py:466] train | step:  12900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035219922,
+     'losses/train_semantic_loss': 0.51269835,
+     'losses/train_total_loss': 0.51269835}
+I0914 04:41:58.897497 140054055876416 controller.py:466] train | step:  13000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035102933,
+     'losses/train_semantic_loss': 0.50722957,
+     'losses/train_total_loss': 0.50722957}
+I0914 04:41:59.567915 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-13000.
+I0914 04:43:31.881318 140054055876416 controller.py:466] train | step:  13100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000349859,
+     'losses/train_semantic_loss': 0.4733429,
+     'losses/train_total_loss': 0.4733429}
+I0914 04:45:04.374587 140054055876416 controller.py:466] train | step:  13200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034868822,
+     'losses/train_semantic_loss': 0.47824162,
+     'losses/train_total_loss': 0.47824162}
+
+train | step:   9000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039750402,
+     'losses/train_semantic_loss': 0.5438503,
+     'losses/train_total_loss': 0.5438503}
+saved checkpoint to results/exp_003/ckpt-9000.
+train | step:   9100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039634982,
+     'losses/train_semantic_loss': 0.5598856,
+     'losses/train_total_loss': 0.5598856}
+train | step:   9200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003951952,
+     'losses/train_semantic_loss': 0.54909766,
+     'losses/train_total_loss': 0.54909766}
+train | step:   9300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039404025,
+     'losses/train_semantic_loss': 0.5574356,
+     'losses/train_total_loss': 0.5574356}
+train | step:   9400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039288486,
+     'losses/train_semantic_loss': 0.5415413,
+     'losses/train_total_loss': 0.5415413}
+train | step:   9500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039172915,
+     'losses/train_semantic_loss': 0.53993285,
+     'losses/train_total_loss': 0.53993285}
+train | step:   9600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00039057303,
+     'losses/train_semantic_loss': 0.5259964,
+     'losses/train_total_loss': 0.5259964}
+train | step:   9700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038941653,
+     'losses/train_semantic_loss': 0.57622266,
+     'losses/train_total_loss': 0.57622266}
+train | step:   9800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003882597,
+     'losses/train_semantic_loss': 0.5323527,
+     'losses/train_total_loss': 0.5323527}
+train | step:   9900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003871024,
+     'losses/train_semantic_loss': 0.5252599,
+     'losses/train_total_loss': 0.5252599}
+train | step:  10000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038594473,
+     'losses/train_semantic_loss': 0.54439104,
+     'losses/train_total_loss': 0.54439104}
+saved checkpoint to results/exp_003/ckpt-10000.
+ eval | step:  10000 | running complete evaluation...
+ eval | step:  10000 | eval time:   12.3 sec | output: 
+    {'evaluation/iou/IoU': 0.62062776,
+     'losses/eval_semantic_loss': 0.8599207,
+     'losses/eval_total_loss': 0.8599207}
+train | step:  10000 | training until step 15000...
+train | step:  10100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.00038478675,
+     'losses/train_semantic_loss': 0.562984,
+     'losses/train_total_loss': 0.562984}
+train | step:  10200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038362833,
+     'losses/train_semantic_loss': 0.54080176,
+     'losses/train_total_loss': 0.54080176}
+train | step:  10300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038246953,
+     'losses/train_semantic_loss': 0.52015436,
+     'losses/train_total_loss': 0.52015436}
+train | step:  10400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038131032,
+     'losses/train_semantic_loss': 0.51950353,
+     'losses/train_total_loss': 0.51950353}
+train | step:  10500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00038015074,
+     'losses/train_semantic_loss': 0.538554,
+     'losses/train_total_loss': 0.538554}
+train | step:  10600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037899075,
+     'losses/train_semantic_loss': 0.5175468,
+     'losses/train_total_loss': 0.5175468}
+train | step:  10700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037783038,
+     'losses/train_semantic_loss': 0.52752554,
+     'losses/train_total_loss': 0.52752554}
+train | step:  10800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037666963,
+     'losses/train_semantic_loss': 0.53293294,
+     'losses/train_total_loss': 0.53293294}
+train | step:  10900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037550845,
+     'losses/train_semantic_loss': 0.5557425,
+     'losses/train_total_loss': 0.5557425}
+train | step:  11000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003743469,
+     'losses/train_semantic_loss': 0.52537596,
+     'losses/train_total_loss': 0.52537596}
+saved checkpoint to results/exp_003/ckpt-11000.
+train | step:  11100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037318494,
+     'losses/train_semantic_loss': 0.5154311,
+     'losses/train_total_loss': 0.5154311}
+train | step:  11200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037202256,
+     'losses/train_semantic_loss': 0.5382921,
+     'losses/train_total_loss': 0.5382921}
+train | step:  11300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00037085975,
+     'losses/train_semantic_loss': 0.5226141,
+     'losses/train_total_loss': 0.5226141}
+train | step:  11400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036969662,
+     'losses/train_semantic_loss': 0.52719957,
+     'losses/train_total_loss': 0.52719957}
+train | step:  11500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036853302,
+     'losses/train_semantic_loss': 0.5114894,
+     'losses/train_total_loss': 0.5114894}
+train | step:  11600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036736907,
+     'losses/train_semantic_loss': 0.5152495,
+     'losses/train_total_loss': 0.5152495}
+train | step:  11700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003662046,
+     'losses/train_semantic_loss': 0.51333755,
+     'losses/train_total_loss': 0.51333755}
+train | step:  11800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003650398,
+     'losses/train_semantic_loss': 0.51635885,
+     'losses/train_total_loss': 0.51635885}
+train | step:  11900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003638746,
+     'losses/train_semantic_loss': 0.5113437,
+     'losses/train_total_loss': 0.5113437}
+train | step:  12000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00036270893,
+     'losses/train_semantic_loss': 0.49351674,
+     'losses/train_total_loss': 0.49351674}
+saved checkpoint to results/exp_003/ckpt-12000.
+train | step:  12100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003615429,
+     'losses/train_semantic_loss': 0.52929056,
+     'losses/train_total_loss': 0.52929056}
+train | step:  12200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003603764,
+     'losses/train_semantic_loss': 0.49920014,
+     'losses/train_total_loss': 0.49920014}
+train | step:  12300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035920952,
+     'losses/train_semantic_loss': 0.5021808,
+     'losses/train_total_loss': 0.5021808}
+train | step:  12400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035804222,
+     'losses/train_semantic_loss': 0.51221335,
+     'losses/train_total_loss': 0.51221335}
+train | step:  12500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035687446,
+     'losses/train_semantic_loss': 0.5131937,
+     'losses/train_total_loss': 0.5131937}
+train | step:  12600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035570626,
+     'losses/train_semantic_loss': 0.4930328,
+     'losses/train_total_loss': 0.4930328}
+train | step:  12700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035453768,
+     'losses/train_semantic_loss': 0.4903036,
+     'losses/train_total_loss': 0.4903036}
+train | step:  12800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003533687,
+     'losses/train_semantic_loss': 0.4913229,
+     'losses/train_total_loss': 0.4913229}
+train | step:  12900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035219922,
+     'losses/train_semantic_loss': 0.51269835,
+     'losses/train_total_loss': 0.51269835}
+train | step:  13000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00035102933,
+     'losses/train_semantic_loss': 0.50722957,
+     'losses/train_total_loss': 0.50722957}
+saved checkpoint to results/exp_003/ckpt-13000.
+train | step:  13100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000349859,
+     'losses/train_semantic_loss': 0.4733429,
+     'losses/train_total_loss': 0.4733429}
+train | step:  13200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034868822,
+     'losses/train_semantic_loss': 0.47824162,
+     'losses/train_total_loss': 0.47824162}I0914 04:46:36.694921 140054055876416 controller.py:466] train | step:  13300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034751708,
+     'losses/train_semantic_loss': 0.4962888,
+     'losses/train_total_loss': 0.4962888}
+I0914 04:48:08.789577 140054055876416 controller.py:466] train | step:  13400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034634545,
+     'losses/train_semantic_loss': 0.48528606,
+     'losses/train_total_loss': 0.48528606}
+I0914 04:49:40.880231 140054055876416 controller.py:466] train | step:  13500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003451734,
+     'losses/train_semantic_loss': 0.47700796,
+     'losses/train_total_loss': 0.47700796}
+I0914 04:51:12.786394 140054055876416 controller.py:466] train | step:  13600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034400087,
+     'losses/train_semantic_loss': 0.4810085,
+     'losses/train_total_loss': 0.4810085}
+I0914 04:52:45.059445 140054055876416 controller.py:466] train | step:  13700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034282793,
+     'losses/train_semantic_loss': 0.5032331,
+     'losses/train_total_loss': 0.5032331}
+I0914 04:54:17.499486 140054055876416 controller.py:466] train | step:  13800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003416545,
+     'losses/train_semantic_loss': 0.48494533,
+     'losses/train_total_loss': 0.48494533}
+I0914 04:55:48.923555 140054055876416 controller.py:466] train | step:  13900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003404807,
+     'losses/train_semantic_loss': 0.47062466,
+     'losses/train_total_loss': 0.47062466}
+I0914 04:57:20.819647 140054055876416 controller.py:466] train | step:  14000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033930637,
+     'losses/train_semantic_loss': 0.47645587,
+     'losses/train_total_loss': 0.47645587}
+I0914 04:57:21.484656 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-14000.
+I0914 04:58:53.603097 140054055876416 controller.py:466] train | step:  14100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033813165,
+     'losses/train_semantic_loss': 0.48145917,
+     'losses/train_total_loss': 0.48145917}
+I0914 05:00:25.720599 140054055876416 controller.py:466] train | step:  14200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033695647,
+     'losses/train_semantic_loss': 0.4884785,
+     'losses/train_total_loss': 0.4884785}
+I0914 05:01:57.520836 140054055876416 controller.py:466] train | step:  14300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033578082,
+     'losses/train_semantic_loss': 0.45992523,
+     'losses/train_total_loss': 0.45992523}
+I0914 05:03:29.351045 140054055876416 controller.py:466] train | step:  14400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033460467,
+     'losses/train_semantic_loss': 0.46752906,
+     'losses/train_total_loss': 0.46752906}
+I0914 05:05:01.306163 140054055876416 controller.py:466] train | step:  14500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003334281,
+     'losses/train_semantic_loss': 0.49255586,
+     'losses/train_total_loss': 0.49255586}
+I0914 05:06:33.532241 140054055876416 controller.py:466] train | step:  14600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033225105,
+     'losses/train_semantic_loss': 0.47024837,
+     'losses/train_total_loss': 0.47024837}
+I0914 05:08:04.718864 140054055876416 controller.py:466] train | step:  14700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033107356,
+     'losses/train_semantic_loss': 0.46052936,
+     'losses/train_total_loss': 0.46052936}
+I0914 05:09:36.402430 140054055876416 controller.py:466] train | step:  14800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003298956,
+     'losses/train_semantic_loss': 0.4555194,
+     'losses/train_total_loss': 0.4555194}
+I0914 05:11:08.035009 140054055876416 controller.py:466] train | step:  14900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032871717,
+     'losses/train_semantic_loss': 0.48231742,
+     'losses/train_total_loss': 0.48231742}
+I0914 05:12:39.722280 140054055876416 controller.py:466] train | step:  15000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032753826,
+     'losses/train_semantic_loss': 0.45822006,
+     'losses/train_total_loss': 0.45822006}
+I0914 05:12:40.585170 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-15000.
+I0914 05:12:40.585746 140054055876416 controller.py:282]  eval | step:  15000 | running complete evaluation...
+I0914 05:12:52.709840 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 05:12:52.711978 140054055876416 controller.py:295]  eval | step:  15000 | eval time:   12.1 sec | output: 
+    {'evaluation/iou/IoU': 0.6879709,
+     'losses/eval_semantic_loss': 0.68082666,
+     'losses/eval_total_loss': 0.68082666}
+I0914 05:12:52.716897 140054055876416 controller.py:241] train | step:  15000 | training until step 20000...
+I0914 05:14:24.455069 140054055876416 controller.py:466] train | step:  15100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.0003263589,
+     'losses/train_semantic_loss': 0.44609454,
+     'losses/train_total_loss': 0.44609454}
+I0914 05:15:57.451873 140054055876416 controller.py:466] train | step:  15200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032517905,
+     'losses/train_semantic_loss': 0.465809,
+     'losses/train_total_loss': 0.465809}
+I0914 05:17:30.202334 140054055876416 controller.py:466] train | step:  15300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032399874,
+     'losses/train_semantic_loss': 0.48275998,
+     'losses/train_total_loss': 0.48275998}
+I0914 05:19:03.563713 140054055876416 controller.py:466] train | step:  15400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003228179,
+     'losses/train_semantic_loss': 0.44295657,
+     'losses/train_total_loss': 0.44295657}
+I0914 05:20:36.402768 140054055876416 controller.py:466] train | step:  15500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032163665,
+     'losses/train_semantic_loss': 0.4399531,
+     'losses/train_total_loss': 0.4399531}
+I0914 05:22:08.743095 140054055876416 controller.py:466] train | step:  15600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032045488,
+     'losses/train_semantic_loss': 0.4688628,
+     'losses/train_total_loss': 0.4688628}
+I0914 05:23:41.321739 140054055876416 controller.py:466] train | step:  15700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003192726,
+     'losses/train_semantic_loss': 0.47574675,
+     'losses/train_total_loss': 0.47574675}
+I0914 05:25:13.722659 140054055876416 controller.py:466] train | step:  15800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031808988,
+     'losses/train_semantic_loss': 0.46326798,
+     'losses/train_total_loss': 0.46326798}
+I0914 05:26:46.668366 140054055876416 controller.py:466] train | step:  15900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031690663,
+     'losses/train_semantic_loss': 0.43100095,
+     'losses/train_total_loss': 0.43100095}
+I0914 05:28:19.788336 140054055876416 controller.py:466] train | step:  16000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031572295,
+     'losses/train_semantic_loss': 0.4388678,
+     'losses/train_total_loss': 0.4388678}
+I0914 05:28:20.460611 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-16000.
+I0914 05:29:52.576117 140054055876416 controller.py:466] train | step:  16100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031453875,
+     'losses/train_semantic_loss': 0.44588262,
+     'losses/train_total_loss': 0.44588262}
+I0914 05:31:24.687847 140054055876416 controller.py:466] train | step:  16200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031335407,
+     'losses/train_semantic_loss': 0.44032452,
+     'losses/train_total_loss': 0.44032452}
+I0914 05:32:57.002237 140054055876416 controller.py:466] train | step:  16300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031216882,
+     'losses/train_semantic_loss': 0.44324178,
+     'losses/train_total_loss': 0.44324178}
+I0914 05:34:29.222854 140054055876416 controller.py:466] train | step:  16400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031098313,
+     'losses/train_semantic_loss': 0.43808582,
+     'losses/train_total_loss': 0.43808582}
+I0914 05:36:01.374326 140054055876416 controller.py:466] train | step:  16500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030979692,
+     'losses/train_semantic_loss': 0.45732725,
+     'losses/train_total_loss': 0.45732725}
+I0914 05:37:33.484809 140054055876416 controller.py:466] train | step:  16600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003086102,
+     'losses/train_semantic_loss': 0.44251007,
+     'losses/train_total_loss': 0.44251007}
+I0914 05:39:05.155561 140054055876416 controller.py:466] train | step:  16700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030742298,
+     'losses/train_semantic_loss': 0.43198213,
+     'losses/train_total_loss': 0.43198213}
+I0914 05:40:36.847164 140054055876416 controller.py:466] train | step:  16800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003062353,
+     'losses/train_semantic_loss': 0.44339335,
+     'losses/train_total_loss': 0.44339335}
+I0914 05:42:08.896002 140054055876416 controller.py:466] train | step:  16900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030504703,
+     'losses/train_semantic_loss': 0.46589288,
+     'losses/train_total_loss': 0.46589288}
+I0914 05:43:40.280194 140054055876416 controller.py:466] train | step:  17000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003038583,
+     'losses/train_semantic_loss': 0.4228527,
+     'losses/train_total_loss': 0.4228527}
+I0914 05:43:40.917722 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-17000.
+I0914 05:45:13.106020 140054055876416 controller.py:466] train | step:  17100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000302669,
+     'losses/train_semantic_loss': 0.45276085,
+     'losses/train_total_loss': 0.45276085}
+I0914 05:46:45.545857 140054055876416 controller.py:466] train | step:  17200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030147925,
+     'losses/train_semantic_loss': 0.43790188,
+     'losses/train_total_loss': 0.43790188}
+I0914 05:48:17.377638 140054055876416 controller.py:466] train | step:  17300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030028893,
+     'losses/train_semantic_loss': 0.44680148,
+     'losses/train_total_loss': 0.44680148}
+I0914 05:49:49.748120 140054055876416 controller.py:466] train | step:  17400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002990981,
+     'losses/train_semantic_loss': 0.4483861,
+     'losses/train_total_loss': 0.4483861}
+I0914 05:51:22.304305 140054055876416 controller.py:466] train | step:  17500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029790672,
+     'losses/train_semantic_loss': 0.41870907,
+     'losses/train_total_loss': 0.41870907}
+I0914 05:52:54.808976 140054055876416 controller.py:466] train | step:  17600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029671483,
+     'losses/train_semantic_loss': 0.44622856,
+     'losses/train_total_loss': 0.44622856}
+
+train | step:  13300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034751708,
+     'losses/train_semantic_loss': 0.4962888,
+     'losses/train_total_loss': 0.4962888}
+train | step:  13400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034634545,
+     'losses/train_semantic_loss': 0.48528606,
+     'losses/train_total_loss': 0.48528606}
+train | step:  13500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003451734,
+     'losses/train_semantic_loss': 0.47700796,
+     'losses/train_total_loss': 0.47700796}
+train | step:  13600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034400087,
+     'losses/train_semantic_loss': 0.4810085,
+     'losses/train_total_loss': 0.4810085}
+train | step:  13700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00034282793,
+     'losses/train_semantic_loss': 0.5032331,
+     'losses/train_total_loss': 0.5032331}
+train | step:  13800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003416545,
+     'losses/train_semantic_loss': 0.48494533,
+     'losses/train_total_loss': 0.48494533}
+train | step:  13900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003404807,
+     'losses/train_semantic_loss': 0.47062466,
+     'losses/train_total_loss': 0.47062466}
+train | step:  14000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033930637,
+     'losses/train_semantic_loss': 0.47645587,
+     'losses/train_total_loss': 0.47645587}
+saved checkpoint to results/exp_003/ckpt-14000.
+train | step:  14100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033813165,
+     'losses/train_semantic_loss': 0.48145917,
+     'losses/train_total_loss': 0.48145917}
+train | step:  14200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033695647,
+     'losses/train_semantic_loss': 0.4884785,
+     'losses/train_total_loss': 0.4884785}
+train | step:  14300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033578082,
+     'losses/train_semantic_loss': 0.45992523,
+     'losses/train_total_loss': 0.45992523}
+train | step:  14400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033460467,
+     'losses/train_semantic_loss': 0.46752906,
+     'losses/train_total_loss': 0.46752906}
+train | step:  14500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003334281,
+     'losses/train_semantic_loss': 0.49255586,
+     'losses/train_total_loss': 0.49255586}
+train | step:  14600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033225105,
+     'losses/train_semantic_loss': 0.47024837,
+     'losses/train_total_loss': 0.47024837}
+train | step:  14700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00033107356,
+     'losses/train_semantic_loss': 0.46052936,
+     'losses/train_total_loss': 0.46052936}
+train | step:  14800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003298956,
+     'losses/train_semantic_loss': 0.4555194,
+     'losses/train_total_loss': 0.4555194}
+train | step:  14900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032871717,
+     'losses/train_semantic_loss': 0.48231742,
+     'losses/train_total_loss': 0.48231742}
+train | step:  15000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032753826,
+     'losses/train_semantic_loss': 0.45822006,
+     'losses/train_total_loss': 0.45822006}
+saved checkpoint to results/exp_003/ckpt-15000.
+ eval | step:  15000 | running complete evaluation...
+ eval | step:  15000 | eval time:   12.1 sec | output: 
+    {'evaluation/iou/IoU': 0.6879709,
+     'losses/eval_semantic_loss': 0.68082666,
+     'losses/eval_total_loss': 0.68082666}
+train | step:  15000 | training until step 20000...
+train | step:  15100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.0003263589,
+     'losses/train_semantic_loss': 0.44609454,
+     'losses/train_total_loss': 0.44609454}
+train | step:  15200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032517905,
+     'losses/train_semantic_loss': 0.465809,
+     'losses/train_total_loss': 0.465809}
+train | step:  15300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032399874,
+     'losses/train_semantic_loss': 0.48275998,
+     'losses/train_total_loss': 0.48275998}
+train | step:  15400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003228179,
+     'losses/train_semantic_loss': 0.44295657,
+     'losses/train_total_loss': 0.44295657}
+train | step:  15500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032163665,
+     'losses/train_semantic_loss': 0.4399531,
+     'losses/train_total_loss': 0.4399531}
+train | step:  15600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00032045488,
+     'losses/train_semantic_loss': 0.4688628,
+     'losses/train_total_loss': 0.4688628}
+train | step:  15700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003192726,
+     'losses/train_semantic_loss': 0.47574675,
+     'losses/train_total_loss': 0.47574675}
+train | step:  15800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031808988,
+     'losses/train_semantic_loss': 0.46326798,
+     'losses/train_total_loss': 0.46326798}
+train | step:  15900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031690663,
+     'losses/train_semantic_loss': 0.43100095,
+     'losses/train_total_loss': 0.43100095}
+train | step:  16000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031572295,
+     'losses/train_semantic_loss': 0.4388678,
+     'losses/train_total_loss': 0.4388678}
+saved checkpoint to results/exp_003/ckpt-16000.
+train | step:  16100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031453875,
+     'losses/train_semantic_loss': 0.44588262,
+     'losses/train_total_loss': 0.44588262}
+train | step:  16200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031335407,
+     'losses/train_semantic_loss': 0.44032452,
+     'losses/train_total_loss': 0.44032452}
+train | step:  16300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031216882,
+     'losses/train_semantic_loss': 0.44324178,
+     'losses/train_total_loss': 0.44324178}
+train | step:  16400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00031098313,
+     'losses/train_semantic_loss': 0.43808582,
+     'losses/train_total_loss': 0.43808582}
+train | step:  16500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030979692,
+     'losses/train_semantic_loss': 0.45732725,
+     'losses/train_total_loss': 0.45732725}
+train | step:  16600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003086102,
+     'losses/train_semantic_loss': 0.44251007,
+     'losses/train_total_loss': 0.44251007}
+train | step:  16700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030742298,
+     'losses/train_semantic_loss': 0.43198213,
+     'losses/train_total_loss': 0.43198213}
+train | step:  16800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003062353,
+     'losses/train_semantic_loss': 0.44339335,
+     'losses/train_total_loss': 0.44339335}
+train | step:  16900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030504703,
+     'losses/train_semantic_loss': 0.46589288,
+     'losses/train_total_loss': 0.46589288}
+train | step:  17000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0003038583,
+     'losses/train_semantic_loss': 0.4228527,
+     'losses/train_total_loss': 0.4228527}
+saved checkpoint to results/exp_003/ckpt-17000.
+train | step:  17100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000302669,
+     'losses/train_semantic_loss': 0.45276085,
+     'losses/train_total_loss': 0.45276085}
+train | step:  17200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030147925,
+     'losses/train_semantic_loss': 0.43790188,
+     'losses/train_total_loss': 0.43790188}
+train | step:  17300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00030028893,
+     'losses/train_semantic_loss': 0.44680148,
+     'losses/train_total_loss': 0.44680148}
+train | step:  17400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002990981,
+     'losses/train_semantic_loss': 0.4483861,
+     'losses/train_total_loss': 0.4483861}
+train | step:  17500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029790672,
+     'losses/train_semantic_loss': 0.41870907,
+     'losses/train_total_loss': 0.41870907}
+train | step:  17600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029671483,
+     'losses/train_semantic_loss': 0.44622856,
+     'losses/train_total_loss': 0.44622856}I0914 05:54:27.354909 140054055876416 controller.py:466] train | step:  17700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029552242,
+     'losses/train_semantic_loss': 0.44402134,
+     'losses/train_total_loss': 0.44402134}
+I0914 05:55:59.174676 140054055876416 controller.py:466] train | step:  17800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029432945,
+     'losses/train_semantic_loss': 0.43977442,
+     'losses/train_total_loss': 0.43977442}
+I0914 05:57:31.410683 140054055876416 controller.py:466] train | step:  17900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029313596,
+     'losses/train_semantic_loss': 0.4280951,
+     'losses/train_total_loss': 0.4280951}
+I0914 05:59:02.925822 140054055876416 controller.py:466] train | step:  18000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002919419,
+     'losses/train_semantic_loss': 0.41570118,
+     'losses/train_total_loss': 0.41570118}
+I0914 05:59:03.576664 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-18000.
+I0914 06:00:35.818642 140054055876416 controller.py:466] train | step:  18100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029074732,
+     'losses/train_semantic_loss': 0.4395005,
+     'losses/train_total_loss': 0.4395005}
+I0914 06:02:07.653241 140054055876416 controller.py:466] train | step:  18200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002895522,
+     'losses/train_semantic_loss': 0.421522,
+     'losses/train_total_loss': 0.421522}
+I0914 06:03:40.199300 140054055876416 controller.py:466] train | step:  18300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028835653,
+     'losses/train_semantic_loss': 0.41297248,
+     'losses/train_total_loss': 0.41297248}
+I0914 06:05:12.704256 140054055876416 controller.py:466] train | step:  18400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028716028,
+     'losses/train_semantic_loss': 0.41732013,
+     'losses/train_total_loss': 0.41732013}
+I0914 06:06:45.085893 140054055876416 controller.py:466] train | step:  18500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028596356,
+     'losses/train_semantic_loss': 0.43610486,
+     'losses/train_total_loss': 0.43610486}
+I0914 06:08:17.746773 140054055876416 controller.py:466] train | step:  18600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028476617,
+     'losses/train_semantic_loss': 0.4339454,
+     'losses/train_total_loss': 0.4339454}
+I0914 06:09:50.330873 140054055876416 controller.py:466] train | step:  18700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002835683,
+     'losses/train_semantic_loss': 0.40824142,
+     'losses/train_total_loss': 0.40824142}
+I0914 06:11:22.610403 140054055876416 controller.py:466] train | step:  18800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028236985,
+     'losses/train_semantic_loss': 0.41527,
+     'losses/train_total_loss': 0.41527}
+I0914 06:12:55.571172 140054055876416 controller.py:466] train | step:  18900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028117083,
+     'losses/train_semantic_loss': 0.42041302,
+     'losses/train_total_loss': 0.42041302}
+I0914 06:14:27.854657 140054055876416 controller.py:466] train | step:  19000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002799712,
+     'losses/train_semantic_loss': 0.4317307,
+     'losses/train_total_loss': 0.4317307}
+I0914 06:14:28.519445 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-19000.
+I0914 06:16:00.549562 140054055876416 controller.py:466] train | step:  19100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027877107,
+     'losses/train_semantic_loss': 0.41239497,
+     'losses/train_total_loss': 0.41239497}
+I0914 06:17:32.788818 140054055876416 controller.py:466] train | step:  19200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027757033,
+     'losses/train_semantic_loss': 0.4190253,
+     'losses/train_total_loss': 0.4190253}
+I0914 06:19:05.579158 140054055876416 controller.py:466] train | step:  19300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000276369,
+     'losses/train_semantic_loss': 0.42072564,
+     'losses/train_total_loss': 0.42072564}
+I0914 06:20:37.472127 140054055876416 controller.py:466] train | step:  19400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027516708,
+     'losses/train_semantic_loss': 0.40783584,
+     'losses/train_total_loss': 0.40783584}
+I0914 06:22:10.178306 140054055876416 controller.py:466] train | step:  19500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027396463,
+     'losses/train_semantic_loss': 0.4059499,
+     'losses/train_total_loss': 0.4059499}
+I0914 06:23:42.705100 140054055876416 controller.py:466] train | step:  19600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027276156,
+     'losses/train_semantic_loss': 0.41291532,
+     'losses/train_total_loss': 0.41291532}
+I0914 06:25:14.900507 140054055876416 controller.py:466] train | step:  19700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027155795,
+     'losses/train_semantic_loss': 0.41401124,
+     'losses/train_total_loss': 0.41401124}
+I0914 06:26:47.176920 140054055876416 controller.py:466] train | step:  19800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027035366,
+     'losses/train_semantic_loss': 0.4014743,
+     'losses/train_total_loss': 0.4014743}
+I0914 06:28:19.854212 140054055876416 controller.py:466] train | step:  19900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026914882,
+     'losses/train_semantic_loss': 0.3885183,
+     'losses/train_total_loss': 0.3885183}
+I0914 06:29:52.350286 140054055876416 controller.py:466] train | step:  20000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002679434,
+     'losses/train_semantic_loss': 0.3914749,
+     'losses/train_total_loss': 0.3914749}
+I0914 06:29:52.970286 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-20000.
+I0914 06:29:52.970867 140054055876416 controller.py:282]  eval | step:  20000 | running complete evaluation...
+I0914 06:30:05.311432 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 06:30:05.327418 140054055876416 controller.py:295]  eval | step:  20000 | eval time:   12.4 sec | output: 
+    {'evaluation/iou/IoU': 0.6727894,
+     'losses/eval_semantic_loss': 0.8505594,
+     'losses/eval_total_loss': 0.8505594}
+I0914 06:30:05.333214 140054055876416 controller.py:241] train | step:  20000 | training until step 25000...
+I0914 06:31:37.120939 140054055876416 controller.py:466] train | step:  20100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.00026673733,
+     'losses/train_semantic_loss': 0.42708597,
+     'losses/train_total_loss': 0.42708597}
+I0914 06:33:09.341229 140054055876416 controller.py:466] train | step:  20200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002655307,
+     'losses/train_semantic_loss': 0.42421585,
+     'losses/train_total_loss': 0.42421585}
+I0914 06:34:41.617837 140054055876416 controller.py:466] train | step:  20300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026432343,
+     'losses/train_semantic_loss': 0.39854804,
+     'losses/train_total_loss': 0.39854804}
+I0914 06:36:13.552050 140054055876416 controller.py:466] train | step:  20400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026311554,
+     'losses/train_semantic_loss': 0.4120512,
+     'losses/train_total_loss': 0.4120512}
+I0914 06:37:45.988716 140054055876416 controller.py:466] train | step:  20500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026190706,
+     'losses/train_semantic_loss': 0.4144521,
+     'losses/train_total_loss': 0.4144521}
+I0914 06:39:17.923032 140054055876416 controller.py:466] train | step:  20600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026069794,
+     'losses/train_semantic_loss': 0.41220212,
+     'losses/train_total_loss': 0.41220212}
+I0914 06:40:49.297916 140054055876416 controller.py:466] train | step:  20700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002594882,
+     'losses/train_semantic_loss': 0.39874905,
+     'losses/train_total_loss': 0.39874905}
+I0914 06:42:21.262112 140054055876416 controller.py:466] train | step:  20800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025827784,
+     'losses/train_semantic_loss': 0.39367598,
+     'losses/train_total_loss': 0.39367598}
+I0914 06:43:52.858041 140054055876416 controller.py:466] train | step:  20900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025706686,
+     'losses/train_semantic_loss': 0.39580172,
+     'losses/train_total_loss': 0.39580172}
+I0914 06:45:24.575290 140054055876416 controller.py:466] train | step:  21000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002558552,
+     'losses/train_semantic_loss': 0.39455727,
+     'losses/train_total_loss': 0.39455727}
+I0914 06:45:25.213993 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-21000.
+I0914 06:46:56.611997 140054055876416 controller.py:466] train | step:  21100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025464298,
+     'losses/train_semantic_loss': 0.3828067,
+     'losses/train_total_loss': 0.3828067}
+I0914 06:48:28.252095 140054055876416 controller.py:466] train | step:  21200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025343004,
+     'losses/train_semantic_loss': 0.38527384,
+     'losses/train_total_loss': 0.38527384}
+I0914 06:50:00.159117 140054055876416 controller.py:466] train | step:  21300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025221647,
+     'losses/train_semantic_loss': 0.3991265,
+     'losses/train_total_loss': 0.3991265}
+I0914 06:51:31.552362 140054055876416 controller.py:466] train | step:  21400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002510023,
+     'losses/train_semantic_loss': 0.39397943,
+     'losses/train_total_loss': 0.39397943}
+I0914 06:53:03.072860 140054055876416 controller.py:466] train | step:  21500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002497874,
+     'losses/train_semantic_loss': 0.38965604,
+     'losses/train_total_loss': 0.38965604}
+I0914 06:54:34.630913 140054055876416 controller.py:466] train | step:  21600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024857192,
+     'losses/train_semantic_loss': 0.37340087,
+     'losses/train_total_loss': 0.37340087}
+I0914 06:56:05.769487 140054055876416 controller.py:466] train | step:  21700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024735578,
+     'losses/train_semantic_loss': 0.39695063,
+     'losses/train_total_loss': 0.39695063}
+I0914 06:57:37.418411 140054055876416 controller.py:466] train | step:  21800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024613892,
+     'losses/train_semantic_loss': 0.3867226,
+     'losses/train_total_loss': 0.3867226}
+I0914 06:59:08.927463 140054055876416 controller.py:466] train | step:  21900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024492142,
+     'losses/train_semantic_loss': 0.3956022,
+     'losses/train_total_loss': 0.3956022}
+I0914 07:00:40.008108 140054055876416 controller.py:466] train | step:  22000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024370321,
+     'losses/train_semantic_loss': 0.37598708,
+     'losses/train_total_loss': 0.37598708}
+
+train | step:  17700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029552242,
+     'losses/train_semantic_loss': 0.44402134,
+     'losses/train_total_loss': 0.44402134}
+train | step:  17800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029432945,
+     'losses/train_semantic_loss': 0.43977442,
+     'losses/train_total_loss': 0.43977442}
+train | step:  17900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029313596,
+     'losses/train_semantic_loss': 0.4280951,
+     'losses/train_total_loss': 0.4280951}
+train | step:  18000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002919419,
+     'losses/train_semantic_loss': 0.41570118,
+     'losses/train_total_loss': 0.41570118}
+saved checkpoint to results/exp_003/ckpt-18000.
+train | step:  18100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00029074732,
+     'losses/train_semantic_loss': 0.4395005,
+     'losses/train_total_loss': 0.4395005}
+train | step:  18200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002895522,
+     'losses/train_semantic_loss': 0.421522,
+     'losses/train_total_loss': 0.421522}
+train | step:  18300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028835653,
+     'losses/train_semantic_loss': 0.41297248,
+     'losses/train_total_loss': 0.41297248}
+train | step:  18400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028716028,
+     'losses/train_semantic_loss': 0.41732013,
+     'losses/train_total_loss': 0.41732013}
+train | step:  18500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028596356,
+     'losses/train_semantic_loss': 0.43610486,
+     'losses/train_total_loss': 0.43610486}
+train | step:  18600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028476617,
+     'losses/train_semantic_loss': 0.4339454,
+     'losses/train_total_loss': 0.4339454}
+train | step:  18700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002835683,
+     'losses/train_semantic_loss': 0.40824142,
+     'losses/train_total_loss': 0.40824142}
+train | step:  18800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028236985,
+     'losses/train_semantic_loss': 0.41527,
+     'losses/train_total_loss': 0.41527}
+train | step:  18900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00028117083,
+     'losses/train_semantic_loss': 0.42041302,
+     'losses/train_total_loss': 0.42041302}
+train | step:  19000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002799712,
+     'losses/train_semantic_loss': 0.4317307,
+     'losses/train_total_loss': 0.4317307}
+saved checkpoint to results/exp_003/ckpt-19000.
+train | step:  19100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027877107,
+     'losses/train_semantic_loss': 0.41239497,
+     'losses/train_total_loss': 0.41239497}
+train | step:  19200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027757033,
+     'losses/train_semantic_loss': 0.4190253,
+     'losses/train_total_loss': 0.4190253}
+train | step:  19300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000276369,
+     'losses/train_semantic_loss': 0.42072564,
+     'losses/train_total_loss': 0.42072564}
+train | step:  19400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027516708,
+     'losses/train_semantic_loss': 0.40783584,
+     'losses/train_total_loss': 0.40783584}
+train | step:  19500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027396463,
+     'losses/train_semantic_loss': 0.4059499,
+     'losses/train_total_loss': 0.4059499}
+train | step:  19600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027276156,
+     'losses/train_semantic_loss': 0.41291532,
+     'losses/train_total_loss': 0.41291532}
+train | step:  19700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027155795,
+     'losses/train_semantic_loss': 0.41401124,
+     'losses/train_total_loss': 0.41401124}
+train | step:  19800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00027035366,
+     'losses/train_semantic_loss': 0.4014743,
+     'losses/train_total_loss': 0.4014743}
+train | step:  19900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026914882,
+     'losses/train_semantic_loss': 0.3885183,
+     'losses/train_total_loss': 0.3885183}
+train | step:  20000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002679434,
+     'losses/train_semantic_loss': 0.3914749,
+     'losses/train_total_loss': 0.3914749}
+saved checkpoint to results/exp_003/ckpt-20000.
+ eval | step:  20000 | running complete evaluation...
+ eval | step:  20000 | eval time:   12.4 sec | output: 
+    {'evaluation/iou/IoU': 0.6727894,
+     'losses/eval_semantic_loss': 0.8505594,
+     'losses/eval_total_loss': 0.8505594}
+train | step:  20000 | training until step 25000...
+train | step:  20100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.00026673733,
+     'losses/train_semantic_loss': 0.42708597,
+     'losses/train_total_loss': 0.42708597}
+train | step:  20200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002655307,
+     'losses/train_semantic_loss': 0.42421585,
+     'losses/train_total_loss': 0.42421585}
+train | step:  20300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026432343,
+     'losses/train_semantic_loss': 0.39854804,
+     'losses/train_total_loss': 0.39854804}
+train | step:  20400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026311554,
+     'losses/train_semantic_loss': 0.4120512,
+     'losses/train_total_loss': 0.4120512}
+train | step:  20500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026190706,
+     'losses/train_semantic_loss': 0.4144521,
+     'losses/train_total_loss': 0.4144521}
+train | step:  20600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00026069794,
+     'losses/train_semantic_loss': 0.41220212,
+     'losses/train_total_loss': 0.41220212}
+train | step:  20700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002594882,
+     'losses/train_semantic_loss': 0.39874905,
+     'losses/train_total_loss': 0.39874905}
+train | step:  20800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025827784,
+     'losses/train_semantic_loss': 0.39367598,
+     'losses/train_total_loss': 0.39367598}
+train | step:  20900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025706686,
+     'losses/train_semantic_loss': 0.39580172,
+     'losses/train_total_loss': 0.39580172}
+train | step:  21000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002558552,
+     'losses/train_semantic_loss': 0.39455727,
+     'losses/train_total_loss': 0.39455727}
+saved checkpoint to results/exp_003/ckpt-21000.
+train | step:  21100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025464298,
+     'losses/train_semantic_loss': 0.3828067,
+     'losses/train_total_loss': 0.3828067}
+train | step:  21200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025343004,
+     'losses/train_semantic_loss': 0.38527384,
+     'losses/train_total_loss': 0.38527384}
+train | step:  21300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00025221647,
+     'losses/train_semantic_loss': 0.3991265,
+     'losses/train_total_loss': 0.3991265}
+train | step:  21400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002510023,
+     'losses/train_semantic_loss': 0.39397943,
+     'losses/train_total_loss': 0.39397943}
+train | step:  21500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002497874,
+     'losses/train_semantic_loss': 0.38965604,
+     'losses/train_total_loss': 0.38965604}
+train | step:  21600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024857192,
+     'losses/train_semantic_loss': 0.37340087,
+     'losses/train_total_loss': 0.37340087}
+train | step:  21700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024735578,
+     'losses/train_semantic_loss': 0.39695063,
+     'losses/train_total_loss': 0.39695063}
+train | step:  21800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024613892,
+     'losses/train_semantic_loss': 0.3867226,
+     'losses/train_total_loss': 0.3867226}
+train | step:  21900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024492142,
+     'losses/train_semantic_loss': 0.3956022,
+     'losses/train_total_loss': 0.3956022}
+train | step:  22000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024370321,
+     'losses/train_semantic_loss': 0.37598708,
+     'losses/train_total_loss': 0.37598708}I0914 07:00:40.650628 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-22000.
+I0914 07:02:12.050987 140054055876416 controller.py:466] train | step:  22100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024248436,
+     'losses/train_semantic_loss': 0.4074855,
+     'losses/train_total_loss': 0.4074855}
+I0914 07:03:43.437030 140054055876416 controller.py:466] train | step:  22200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024126485,
+     'losses/train_semantic_loss': 0.35993466,
+     'losses/train_total_loss': 0.35993466}
+I0914 07:05:14.850872 140054055876416 controller.py:466] train | step:  22300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024004461,
+     'losses/train_semantic_loss': 0.35850114,
+     'losses/train_total_loss': 0.35850114}
+I0914 07:06:46.463221 140054055876416 controller.py:466] train | step:  22400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002388237,
+     'losses/train_semantic_loss': 0.36968642,
+     'losses/train_total_loss': 0.36968642}
+I0914 07:08:18.185400 140054055876416 controller.py:466] train | step:  22500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002376021,
+     'losses/train_semantic_loss': 0.3852336,
+     'losses/train_total_loss': 0.3852336}
+I0914 07:09:49.493540 140054055876416 controller.py:466] train | step:  22600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023637981,
+     'losses/train_semantic_loss': 0.39489755,
+     'losses/train_total_loss': 0.39489755}
+I0914 07:11:20.649890 140054055876416 controller.py:466] train | step:  22700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023515681,
+     'losses/train_semantic_loss': 0.3571632,
+     'losses/train_total_loss': 0.3571632}
+I0914 07:12:51.894158 140054055876416 controller.py:466] train | step:  22800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023393307,
+     'losses/train_semantic_loss': 0.37741458,
+     'losses/train_total_loss': 0.37741458}
+I0914 07:14:23.589610 140054055876416 controller.py:466] train | step:  22900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023270865,
+     'losses/train_semantic_loss': 0.40265748,
+     'losses/train_total_loss': 0.40265748}
+I0914 07:15:54.790950 140054055876416 controller.py:466] train | step:  23000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023148351,
+     'losses/train_semantic_loss': 0.37055647,
+     'losses/train_total_loss': 0.37055647}
+I0914 07:15:55.469132 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-23000.
+I0914 07:17:26.835253 140054055876416 controller.py:466] train | step:  23100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023025766,
+     'losses/train_semantic_loss': 0.36315846,
+     'losses/train_total_loss': 0.36315846}
+I0914 07:18:57.698830 140054055876416 controller.py:466] train | step:  23200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022903107,
+     'losses/train_semantic_loss': 0.3698872,
+     'losses/train_total_loss': 0.3698872}
+I0914 07:20:29.419158 140054055876416 controller.py:466] train | step:  23300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022780376,
+     'losses/train_semantic_loss': 0.36588463,
+     'losses/train_total_loss': 0.36588463}
+I0914 07:22:00.466778 140054055876416 controller.py:466] train | step:  23400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002265757,
+     'losses/train_semantic_loss': 0.38176736,
+     'losses/train_total_loss': 0.38176736}
+I0914 07:23:32.080278 140054055876416 controller.py:466] train | step:  23500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022534691,
+     'losses/train_semantic_loss': 0.3613805,
+     'losses/train_total_loss': 0.3613805}
+I0914 07:25:03.335217 140054055876416 controller.py:466] train | step:  23600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022411738,
+     'losses/train_semantic_loss': 0.3686066,
+     'losses/train_total_loss': 0.3686066}
+I0914 07:26:34.696055 140054055876416 controller.py:466] train | step:  23700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022288707,
+     'losses/train_semantic_loss': 0.38503194,
+     'losses/train_total_loss': 0.38503194}
+I0914 07:28:05.892255 140054055876416 controller.py:466] train | step:  23800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022165602,
+     'losses/train_semantic_loss': 0.35804302,
+     'losses/train_total_loss': 0.35804302}
+I0914 07:29:36.520011 140054055876416 controller.py:466] train | step:  23900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002204242,
+     'losses/train_semantic_loss': 0.36555803,
+     'losses/train_total_loss': 0.36555803}
+I0914 07:31:07.586440 140054055876416 controller.py:466] train | step:  24000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021919166,
+     'losses/train_semantic_loss': 0.36137617,
+     'losses/train_total_loss': 0.36137617}
+I0914 07:31:08.249115 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-24000.
+I0914 07:32:38.951698 140054055876416 controller.py:466] train | step:  24100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021795831,
+     'losses/train_semantic_loss': 0.37751117,
+     'losses/train_total_loss': 0.37751117}
+I0914 07:34:10.138183 140054055876416 controller.py:466] train | step:  24200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021672418,
+     'losses/train_semantic_loss': 0.3553439,
+     'losses/train_total_loss': 0.3553439}
+I0914 07:35:40.724039 140054055876416 controller.py:466] train | step:  24300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021548932,
+     'losses/train_semantic_loss': 0.36054716,
+     'losses/train_total_loss': 0.36054716}
+I0914 07:37:11.619467 140054055876416 controller.py:466] train | step:  24400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021425361,
+     'losses/train_semantic_loss': 0.35132396,
+     'losses/train_total_loss': 0.35132396}
+I0914 07:38:42.094846 140054055876416 controller.py:466] train | step:  24500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021301713,
+     'losses/train_semantic_loss': 0.36923447,
+     'losses/train_total_loss': 0.36923447}
+I0914 07:40:12.901479 140054055876416 controller.py:466] train | step:  24600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021177987,
+     'losses/train_semantic_loss': 0.37353724,
+     'losses/train_total_loss': 0.37353724}
+I0914 07:41:43.655352 140054055876416 controller.py:466] train | step:  24700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002105418,
+     'losses/train_semantic_loss': 0.35322568,
+     'losses/train_total_loss': 0.35322568}
+I0914 07:43:14.689043 140054055876416 controller.py:466] train | step:  24800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020930292,
+     'losses/train_semantic_loss': 0.36331758,
+     'losses/train_total_loss': 0.36331758}
+I0914 07:44:45.435627 140054055876416 controller.py:466] train | step:  24900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020806321,
+     'losses/train_semantic_loss': 0.38696706,
+     'losses/train_total_loss': 0.38696706}
+I0914 07:46:16.434761 140054055876416 controller.py:466] train | step:  25000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020682267,
+     'losses/train_semantic_loss': 0.35702622,
+     'losses/train_total_loss': 0.35702622}
+I0914 07:46:17.114998 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-25000.
+I0914 07:46:17.115582 140054055876416 controller.py:282]  eval | step:  25000 | running complete evaluation...
+I0914 07:46:29.390242 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 07:46:29.403607 140054055876416 controller.py:295]  eval | step:  25000 | eval time:   12.3 sec | output: 
+    {'evaluation/iou/IoU': 0.7045123,
+     'losses/eval_semantic_loss': 0.71944773,
+     'losses/eval_total_loss': 0.71944773}
+I0914 07:46:29.411263 140054055876416 controller.py:241] train | step:  25000 | training until step 30000...
+I0914 07:47:59.828005 140054055876416 controller.py:466] train | step:  25100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.00020558134,
+     'losses/train_semantic_loss': 0.3514837,
+     'losses/train_total_loss': 0.3514837}
+I0914 07:49:30.507206 140054055876416 controller.py:466] train | step:  25200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020433914,
+     'losses/train_semantic_loss': 0.35525835,
+     'losses/train_total_loss': 0.35525835}
+I0914 07:51:00.341623 140054055876416 controller.py:466] train | step:  25300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020309615,
+     'losses/train_semantic_loss': 0.3704368,
+     'losses/train_total_loss': 0.3704368}
+I0914 07:52:30.427515 140054055876416 controller.py:466] train | step:  25400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020185225,
+     'losses/train_semantic_loss': 0.3460701,
+     'losses/train_total_loss': 0.3460701}
+I0914 07:54:01.086563 140054055876416 controller.py:466] train | step:  25500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020060755,
+     'losses/train_semantic_loss': 0.35188946,
+     'losses/train_total_loss': 0.35188946}
+I0914 07:55:31.559871 140054055876416 controller.py:466] train | step:  25600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019936197,
+     'losses/train_semantic_loss': 0.35129318,
+     'losses/train_total_loss': 0.35129318}
+I0914 07:57:02.356099 140054055876416 controller.py:466] train | step:  25700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019811552,
+     'losses/train_semantic_loss': 0.34792355,
+     'losses/train_total_loss': 0.34792355}
+I0914 07:58:33.243844 140054055876416 controller.py:466] train | step:  25800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019686819,
+     'losses/train_semantic_loss': 0.34166908,
+     'losses/train_total_loss': 0.34166908}
+I0914 08:00:03.900799 140054055876416 controller.py:466] train | step:  25900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019562001,
+     'losses/train_semantic_loss': 0.34698907,
+     'losses/train_total_loss': 0.34698907}
+I0914 08:01:34.558530 140054055876416 controller.py:466] train | step:  26000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019437094,
+     'losses/train_semantic_loss': 0.332604,
+     'losses/train_total_loss': 0.332604}
+I0914 08:01:35.351193 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-26000.
+I0914 08:03:06.080109 140054055876416 controller.py:466] train | step:  26100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019312096,
+     'losses/train_semantic_loss': 0.353952,
+     'losses/train_total_loss': 0.353952}
+I0914 08:04:37.019182 140054055876416 controller.py:466] train | step:  26200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019187007,
+     'losses/train_semantic_loss': 0.3480531,
+     'losses/train_total_loss': 0.3480531}
+I0914 08:06:07.840621 140054055876416 controller.py:466] train | step:  26300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019061826,
+     'losses/train_semantic_loss': 0.33320522,
+     'losses/train_total_loss': 0.33320522}
+
+saved checkpoint to results/exp_003/ckpt-22000.
+train | step:  22100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024248436,
+     'losses/train_semantic_loss': 0.4074855,
+     'losses/train_total_loss': 0.4074855}
+train | step:  22200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024126485,
+     'losses/train_semantic_loss': 0.35993466,
+     'losses/train_total_loss': 0.35993466}
+train | step:  22300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00024004461,
+     'losses/train_semantic_loss': 0.35850114,
+     'losses/train_total_loss': 0.35850114}
+train | step:  22400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002388237,
+     'losses/train_semantic_loss': 0.36968642,
+     'losses/train_total_loss': 0.36968642}
+train | step:  22500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002376021,
+     'losses/train_semantic_loss': 0.3852336,
+     'losses/train_total_loss': 0.3852336}
+train | step:  22600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023637981,
+     'losses/train_semantic_loss': 0.39489755,
+     'losses/train_total_loss': 0.39489755}
+train | step:  22700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023515681,
+     'losses/train_semantic_loss': 0.3571632,
+     'losses/train_total_loss': 0.3571632}
+train | step:  22800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023393307,
+     'losses/train_semantic_loss': 0.37741458,
+     'losses/train_total_loss': 0.37741458}
+train | step:  22900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023270865,
+     'losses/train_semantic_loss': 0.40265748,
+     'losses/train_total_loss': 0.40265748}
+train | step:  23000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023148351,
+     'losses/train_semantic_loss': 0.37055647,
+     'losses/train_total_loss': 0.37055647}
+saved checkpoint to results/exp_003/ckpt-23000.
+train | step:  23100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00023025766,
+     'losses/train_semantic_loss': 0.36315846,
+     'losses/train_total_loss': 0.36315846}
+train | step:  23200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022903107,
+     'losses/train_semantic_loss': 0.3698872,
+     'losses/train_total_loss': 0.3698872}
+train | step:  23300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022780376,
+     'losses/train_semantic_loss': 0.36588463,
+     'losses/train_total_loss': 0.36588463}
+train | step:  23400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002265757,
+     'losses/train_semantic_loss': 0.38176736,
+     'losses/train_total_loss': 0.38176736}
+train | step:  23500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022534691,
+     'losses/train_semantic_loss': 0.3613805,
+     'losses/train_total_loss': 0.3613805}
+train | step:  23600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022411738,
+     'losses/train_semantic_loss': 0.3686066,
+     'losses/train_total_loss': 0.3686066}
+train | step:  23700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022288707,
+     'losses/train_semantic_loss': 0.38503194,
+     'losses/train_total_loss': 0.38503194}
+train | step:  23800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00022165602,
+     'losses/train_semantic_loss': 0.35804302,
+     'losses/train_total_loss': 0.35804302}
+train | step:  23900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002204242,
+     'losses/train_semantic_loss': 0.36555803,
+     'losses/train_total_loss': 0.36555803}
+train | step:  24000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021919166,
+     'losses/train_semantic_loss': 0.36137617,
+     'losses/train_total_loss': 0.36137617}
+saved checkpoint to results/exp_003/ckpt-24000.
+train | step:  24100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021795831,
+     'losses/train_semantic_loss': 0.37751117,
+     'losses/train_total_loss': 0.37751117}
+train | step:  24200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021672418,
+     'losses/train_semantic_loss': 0.3553439,
+     'losses/train_total_loss': 0.3553439}
+train | step:  24300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021548932,
+     'losses/train_semantic_loss': 0.36054716,
+     'losses/train_total_loss': 0.36054716}
+train | step:  24400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021425361,
+     'losses/train_semantic_loss': 0.35132396,
+     'losses/train_total_loss': 0.35132396}
+train | step:  24500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021301713,
+     'losses/train_semantic_loss': 0.36923447,
+     'losses/train_total_loss': 0.36923447}
+train | step:  24600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00021177987,
+     'losses/train_semantic_loss': 0.37353724,
+     'losses/train_total_loss': 0.37353724}
+train | step:  24700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0002105418,
+     'losses/train_semantic_loss': 0.35322568,
+     'losses/train_total_loss': 0.35322568}
+train | step:  24800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020930292,
+     'losses/train_semantic_loss': 0.36331758,
+     'losses/train_total_loss': 0.36331758}
+train | step:  24900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020806321,
+     'losses/train_semantic_loss': 0.38696706,
+     'losses/train_total_loss': 0.38696706}
+train | step:  25000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020682267,
+     'losses/train_semantic_loss': 0.35702622,
+     'losses/train_total_loss': 0.35702622}
+saved checkpoint to results/exp_003/ckpt-25000.
+ eval | step:  25000 | running complete evaluation...
+ eval | step:  25000 | eval time:   12.3 sec | output: 
+    {'evaluation/iou/IoU': 0.7045123,
+     'losses/eval_semantic_loss': 0.71944773,
+     'losses/eval_total_loss': 0.71944773}
+train | step:  25000 | training until step 30000...
+train | step:  25100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 0.00020558134,
+     'losses/train_semantic_loss': 0.3514837,
+     'losses/train_total_loss': 0.3514837}
+train | step:  25200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020433914,
+     'losses/train_semantic_loss': 0.35525835,
+     'losses/train_total_loss': 0.35525835}
+train | step:  25300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020309615,
+     'losses/train_semantic_loss': 0.3704368,
+     'losses/train_total_loss': 0.3704368}
+train | step:  25400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020185225,
+     'losses/train_semantic_loss': 0.3460701,
+     'losses/train_total_loss': 0.3460701}
+train | step:  25500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00020060755,
+     'losses/train_semantic_loss': 0.35188946,
+     'losses/train_total_loss': 0.35188946}
+train | step:  25600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019936197,
+     'losses/train_semantic_loss': 0.35129318,
+     'losses/train_total_loss': 0.35129318}
+train | step:  25700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019811552,
+     'losses/train_semantic_loss': 0.34792355,
+     'losses/train_total_loss': 0.34792355}
+train | step:  25800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019686819,
+     'losses/train_semantic_loss': 0.34166908,
+     'losses/train_total_loss': 0.34166908}
+train | step:  25900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019562001,
+     'losses/train_semantic_loss': 0.34698907,
+     'losses/train_total_loss': 0.34698907}
+train | step:  26000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019437094,
+     'losses/train_semantic_loss': 0.332604,
+     'losses/train_total_loss': 0.332604}
+saved checkpoint to results/exp_003/ckpt-26000.
+train | step:  26100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019312096,
+     'losses/train_semantic_loss': 0.353952,
+     'losses/train_total_loss': 0.353952}
+train | step:  26200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019187007,
+     'losses/train_semantic_loss': 0.3480531,
+     'losses/train_total_loss': 0.3480531}
+train | step:  26300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00019061826,
+     'losses/train_semantic_loss': 0.33320522,
+     'losses/train_total_loss': 0.33320522}I0914 08:07:37.744792 140054055876416 controller.py:466] train | step:  26400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018936557,
+     'losses/train_semantic_loss': 0.34682125,
+     'losses/train_total_loss': 0.34682125}
+I0914 08:09:09.111516 140054055876416 controller.py:466] train | step:  26500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018811195,
+     'losses/train_semantic_loss': 0.33798826,
+     'losses/train_total_loss': 0.33798826}
+I0914 08:10:39.323058 140054055876416 controller.py:466] train | step:  26600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018685742,
+     'losses/train_semantic_loss': 0.33978882,
+     'losses/train_total_loss': 0.33978882}
+I0914 08:12:09.736935 140054055876416 controller.py:466] train | step:  26700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018560192,
+     'losses/train_semantic_loss': 0.3387014,
+     'losses/train_total_loss': 0.3387014}
+I0914 08:13:40.375558 140054055876416 controller.py:466] train | step:  26800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018434551,
+     'losses/train_semantic_loss': 0.33100036,
+     'losses/train_total_loss': 0.33100036}
+I0914 08:15:11.546653 140054055876416 controller.py:466] train | step:  26900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018308814,
+     'losses/train_semantic_loss': 0.3477674,
+     'losses/train_total_loss': 0.3477674}
+I0914 08:16:42.653710 140054055876416 controller.py:466] train | step:  27000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018182979,
+     'losses/train_semantic_loss': 0.34026286,
+     'losses/train_total_loss': 0.34026286}
+I0914 08:16:43.457811 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-27000.
+I0914 08:18:14.756253 140054055876416 controller.py:466] train | step:  27100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018057048,
+     'losses/train_semantic_loss': 0.33025467,
+     'losses/train_total_loss': 0.33025467}
+I0914 08:19:45.870102 140054055876416 controller.py:466] train | step:  27200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001793102,
+     'losses/train_semantic_loss': 0.33645713,
+     'losses/train_total_loss': 0.33645713}
+I0914 08:21:16.442641 140054055876416 controller.py:466] train | step:  27300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017804893,
+     'losses/train_semantic_loss': 0.35537806,
+     'losses/train_total_loss': 0.35537806}
+I0914 08:22:47.812174 140054055876416 controller.py:466] train | step:  27400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017678666,
+     'losses/train_semantic_loss': 0.34181744,
+     'losses/train_total_loss': 0.34181744}
+I0914 08:24:19.378267 140054055876416 controller.py:466] train | step:  27500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017552341,
+     'losses/train_semantic_loss': 0.34028375,
+     'losses/train_total_loss': 0.34028375}
+I0914 08:25:50.945036 140054055876416 controller.py:466] train | step:  27600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017425913,
+     'losses/train_semantic_loss': 0.3374952,
+     'losses/train_total_loss': 0.3374952}
+I0914 08:27:22.797804 140054055876416 controller.py:466] train | step:  27700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017299385,
+     'losses/train_semantic_loss': 0.33217445,
+     'losses/train_total_loss': 0.33217445}
+I0914 08:28:54.341879 140054055876416 controller.py:466] train | step:  27800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001717275,
+     'losses/train_semantic_loss': 0.33546433,
+     'losses/train_total_loss': 0.33546433}
+I0914 08:30:25.715103 140054055876416 controller.py:466] train | step:  27900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017046016,
+     'losses/train_semantic_loss': 0.33411762,
+     'losses/train_total_loss': 0.33411762}
+I0914 08:31:56.637993 140054055876416 controller.py:466] train | step:  28000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016919174,
+     'losses/train_semantic_loss': 0.33539858,
+     'losses/train_total_loss': 0.33539858}
+I0914 08:31:57.395610 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-28000.
+I0914 08:33:28.595952 140054055876416 controller.py:466] train | step:  28100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016792228,
+     'losses/train_semantic_loss': 0.33830366,
+     'losses/train_total_loss': 0.33830366}
+I0914 08:35:00.673839 140054055876416 controller.py:466] train | step:  28200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016665173,
+     'losses/train_semantic_loss': 0.3355263,
+     'losses/train_total_loss': 0.3355263}
+I0914 08:36:32.409008 140054055876416 controller.py:466] train | step:  28300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016538013,
+     'losses/train_semantic_loss': 0.33944052,
+     'losses/train_total_loss': 0.33944052}
+I0914 08:38:03.802253 140054055876416 controller.py:466] train | step:  28400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016410745,
+     'losses/train_semantic_loss': 0.32812634,
+     'losses/train_total_loss': 0.32812634}
+I0914 08:39:35.925987 140054055876416 controller.py:466] train | step:  28500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016283363,
+     'losses/train_semantic_loss': 0.34511033,
+     'losses/train_total_loss': 0.34511033}
+I0914 08:41:08.049315 140054055876416 controller.py:466] train | step:  28600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016155874,
+     'losses/train_semantic_loss': 0.31413758,
+     'losses/train_total_loss': 0.31413758}
+I0914 08:42:40.535273 140054055876416 controller.py:466] train | step:  28700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016028271,
+     'losses/train_semantic_loss': 0.33801895,
+     'losses/train_total_loss': 0.33801895}
+I0914 08:44:13.053337 140054055876416 controller.py:466] train | step:  28800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015900553,
+     'losses/train_semantic_loss': 0.3204065,
+     'losses/train_total_loss': 0.3204065}
+I0914 08:45:45.879031 140054055876416 controller.py:466] train | step:  28900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015772722,
+     'losses/train_semantic_loss': 0.3281964,
+     'losses/train_total_loss': 0.3281964}
+I0914 08:47:18.446252 140054055876416 controller.py:466] train | step:  29000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015644779,
+     'losses/train_semantic_loss': 0.32365623,
+     'losses/train_total_loss': 0.32365623}
+I0914 08:47:19.249931 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-29000.
+I0914 08:48:51.618172 140054055876416 controller.py:466] train | step:  29100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015516719,
+     'losses/train_semantic_loss': 0.327592,
+     'losses/train_total_loss': 0.327592}
+I0914 08:50:24.053499 140054055876416 controller.py:466] train | step:  29200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015388538,
+     'losses/train_semantic_loss': 0.33089533,
+     'losses/train_total_loss': 0.33089533}
+I0914 08:51:56.961355 140054055876416 controller.py:466] train | step:  29300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015260243,
+     'losses/train_semantic_loss': 0.33083713,
+     'losses/train_total_loss': 0.33083713}
+I0914 08:53:29.689117 140054055876416 controller.py:466] train | step:  29400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015131824,
+     'losses/train_semantic_loss': 0.333704,
+     'losses/train_total_loss': 0.333704}
+I0914 08:55:02.092747 140054055876416 controller.py:466] train | step:  29500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015003285,
+     'losses/train_semantic_loss': 0.34438255,
+     'losses/train_total_loss': 0.34438255}
+I0914 08:56:34.690878 140054055876416 controller.py:466] train | step:  29600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014874624,
+     'losses/train_semantic_loss': 0.3219228,
+     'losses/train_total_loss': 0.3219228}
+I0914 08:58:07.186016 140054055876416 controller.py:466] train | step:  29700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001474584,
+     'losses/train_semantic_loss': 0.32510594,
+     'losses/train_total_loss': 0.32510594}
+I0914 08:59:39.657381 140054055876416 controller.py:466] train | step:  29800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001461693,
+     'losses/train_semantic_loss': 0.32167855,
+     'losses/train_total_loss': 0.32167855}
+I0914 09:01:12.065304 140054055876416 controller.py:466] train | step:  29900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014487894,
+     'losses/train_semantic_loss': 0.30891192,
+     'losses/train_total_loss': 0.30891192}
+I0914 09:02:43.773638 140054055876416 controller.py:466] train | step:  30000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014358731,
+     'losses/train_semantic_loss': 0.30541274,
+     'losses/train_total_loss': 0.30541274}
+I0914 09:02:44.632901 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-30000.
+I0914 09:02:44.633500 140054055876416 controller.py:282]  eval | step:  30000 | running complete evaluation...
+I0914 09:02:57.485073 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 09:02:57.501136 140054055876416 controller.py:295]  eval | step:  30000 | eval time:   12.9 sec | output: 
+    {'evaluation/iou/IoU': 0.71402067,
+     'losses/eval_semantic_loss': 0.74280477,
+     'losses/eval_total_loss': 0.74280477}
+I0914 09:02:57.508826 140054055876416 controller.py:241] train | step:  30000 | training until step 35000...
+I0914 09:04:29.146512 140054055876416 controller.py:466] train | step:  30100 | steps/sec:    0.9 | output: 
+    {'learning_rate': 0.00014229439,
+     'losses/train_semantic_loss': 0.31767148,
+     'losses/train_total_loss': 0.31767148}
+I0914 09:06:01.138989 140054055876416 controller.py:466] train | step:  30200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014100014,
+     'losses/train_semantic_loss': 0.337983,
+     'losses/train_total_loss': 0.337983}
+I0914 09:07:33.001571 140054055876416 controller.py:466] train | step:  30300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013970456,
+     'losses/train_semantic_loss': 0.3166415,
+     'losses/train_total_loss': 0.3166415}
+I0914 09:09:05.513550 140054055876416 controller.py:466] train | step:  30400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013840769,
+     'losses/train_semantic_loss': 0.31618768,
+     'losses/train_total_loss': 0.31618768}
+I0914 09:10:38.203325 140054055876416 controller.py:466] train | step:  30500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013710944,
+     'losses/train_semantic_loss': 0.32165676,
+     'losses/train_total_loss': 0.32165676}
+I0914 09:12:10.950800 140054055876416 controller.py:466] train | step:  30600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013580981,
+     'losses/train_semantic_loss': 0.30165982,
+     'losses/train_total_loss': 0.30165982}
+I0914 09:13:43.604963 140054055876416 controller.py:466] train | step:  30700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013450881,
+     'losses/train_semantic_loss': 0.3083657,
+     'losses/train_total_loss': 0.3083657}
+
+train | step:  26400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018936557,
+     'losses/train_semantic_loss': 0.34682125,
+     'losses/train_total_loss': 0.34682125}
+train | step:  26500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018811195,
+     'losses/train_semantic_loss': 0.33798826,
+     'losses/train_total_loss': 0.33798826}
+train | step:  26600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018685742,
+     'losses/train_semantic_loss': 0.33978882,
+     'losses/train_total_loss': 0.33978882}
+train | step:  26700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018560192,
+     'losses/train_semantic_loss': 0.3387014,
+     'losses/train_total_loss': 0.3387014}
+train | step:  26800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018434551,
+     'losses/train_semantic_loss': 0.33100036,
+     'losses/train_total_loss': 0.33100036}
+train | step:  26900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018308814,
+     'losses/train_semantic_loss': 0.3477674,
+     'losses/train_total_loss': 0.3477674}
+train | step:  27000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018182979,
+     'losses/train_semantic_loss': 0.34026286,
+     'losses/train_total_loss': 0.34026286}
+saved checkpoint to results/exp_003/ckpt-27000.
+train | step:  27100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00018057048,
+     'losses/train_semantic_loss': 0.33025467,
+     'losses/train_total_loss': 0.33025467}
+train | step:  27200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001793102,
+     'losses/train_semantic_loss': 0.33645713,
+     'losses/train_total_loss': 0.33645713}
+train | step:  27300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017804893,
+     'losses/train_semantic_loss': 0.35537806,
+     'losses/train_total_loss': 0.35537806}
+train | step:  27400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017678666,
+     'losses/train_semantic_loss': 0.34181744,
+     'losses/train_total_loss': 0.34181744}
+train | step:  27500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017552341,
+     'losses/train_semantic_loss': 0.34028375,
+     'losses/train_total_loss': 0.34028375}
+train | step:  27600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017425913,
+     'losses/train_semantic_loss': 0.3374952,
+     'losses/train_total_loss': 0.3374952}
+train | step:  27700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017299385,
+     'losses/train_semantic_loss': 0.33217445,
+     'losses/train_total_loss': 0.33217445}
+train | step:  27800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001717275,
+     'losses/train_semantic_loss': 0.33546433,
+     'losses/train_total_loss': 0.33546433}
+train | step:  27900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00017046016,
+     'losses/train_semantic_loss': 0.33411762,
+     'losses/train_total_loss': 0.33411762}
+train | step:  28000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016919174,
+     'losses/train_semantic_loss': 0.33539858,
+     'losses/train_total_loss': 0.33539858}
+saved checkpoint to results/exp_003/ckpt-28000.
+train | step:  28100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016792228,
+     'losses/train_semantic_loss': 0.33830366,
+     'losses/train_total_loss': 0.33830366}
+train | step:  28200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016665173,
+     'losses/train_semantic_loss': 0.3355263,
+     'losses/train_total_loss': 0.3355263}
+train | step:  28300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016538013,
+     'losses/train_semantic_loss': 0.33944052,
+     'losses/train_total_loss': 0.33944052}
+train | step:  28400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016410745,
+     'losses/train_semantic_loss': 0.32812634,
+     'losses/train_total_loss': 0.32812634}
+train | step:  28500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016283363,
+     'losses/train_semantic_loss': 0.34511033,
+     'losses/train_total_loss': 0.34511033}
+train | step:  28600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016155874,
+     'losses/train_semantic_loss': 0.31413758,
+     'losses/train_total_loss': 0.31413758}
+train | step:  28700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00016028271,
+     'losses/train_semantic_loss': 0.33801895,
+     'losses/train_total_loss': 0.33801895}
+train | step:  28800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015900553,
+     'losses/train_semantic_loss': 0.3204065,
+     'losses/train_total_loss': 0.3204065}
+train | step:  28900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015772722,
+     'losses/train_semantic_loss': 0.3281964,
+     'losses/train_total_loss': 0.3281964}
+train | step:  29000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015644779,
+     'losses/train_semantic_loss': 0.32365623,
+     'losses/train_total_loss': 0.32365623}
+saved checkpoint to results/exp_003/ckpt-29000.
+train | step:  29100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015516719,
+     'losses/train_semantic_loss': 0.327592,
+     'losses/train_total_loss': 0.327592}
+train | step:  29200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015388538,
+     'losses/train_semantic_loss': 0.33089533,
+     'losses/train_total_loss': 0.33089533}
+train | step:  29300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015260243,
+     'losses/train_semantic_loss': 0.33083713,
+     'losses/train_total_loss': 0.33083713}
+train | step:  29400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015131824,
+     'losses/train_semantic_loss': 0.333704,
+     'losses/train_total_loss': 0.333704}
+train | step:  29500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00015003285,
+     'losses/train_semantic_loss': 0.34438255,
+     'losses/train_total_loss': 0.34438255}
+train | step:  29600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014874624,
+     'losses/train_semantic_loss': 0.3219228,
+     'losses/train_total_loss': 0.3219228}
+train | step:  29700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001474584,
+     'losses/train_semantic_loss': 0.32510594,
+     'losses/train_total_loss': 0.32510594}
+train | step:  29800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001461693,
+     'losses/train_semantic_loss': 0.32167855,
+     'losses/train_total_loss': 0.32167855}
+train | step:  29900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014487894,
+     'losses/train_semantic_loss': 0.30891192,
+     'losses/train_total_loss': 0.30891192}
+train | step:  30000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014358731,
+     'losses/train_semantic_loss': 0.30541274,
+     'losses/train_total_loss': 0.30541274}
+saved checkpoint to results/exp_003/ckpt-30000.
+ eval | step:  30000 | running complete evaluation...
+ eval | step:  30000 | eval time:   12.9 sec | output: 
+    {'evaluation/iou/IoU': 0.71402067,
+     'losses/eval_semantic_loss': 0.74280477,
+     'losses/eval_total_loss': 0.74280477}
+train | step:  30000 | training until step 35000...
+train | step:  30100 | steps/sec:    0.9 | output: 
+    {'learning_rate': 0.00014229439,
+     'losses/train_semantic_loss': 0.31767148,
+     'losses/train_total_loss': 0.31767148}
+train | step:  30200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00014100014,
+     'losses/train_semantic_loss': 0.337983,
+     'losses/train_total_loss': 0.337983}
+train | step:  30300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013970456,
+     'losses/train_semantic_loss': 0.3166415,
+     'losses/train_total_loss': 0.3166415}
+train | step:  30400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013840769,
+     'losses/train_semantic_loss': 0.31618768,
+     'losses/train_total_loss': 0.31618768}
+train | step:  30500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013710944,
+     'losses/train_semantic_loss': 0.32165676,
+     'losses/train_total_loss': 0.32165676}
+train | step:  30600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013580981,
+     'losses/train_semantic_loss': 0.30165982,
+     'losses/train_total_loss': 0.30165982}
+train | step:  30700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013450881,
+     'losses/train_semantic_loss': 0.3083657,
+     'losses/train_total_loss': 0.3083657}I0914 09:15:15.927884 140054055876416 controller.py:466] train | step:  30800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001332064,
+     'losses/train_semantic_loss': 0.3153422,
+     'losses/train_total_loss': 0.3153422}
+I0914 09:16:48.318765 140054055876416 controller.py:466] train | step:  30900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013190259,
+     'losses/train_semantic_loss': 0.3116039,
+     'losses/train_total_loss': 0.3116039}
+I0914 09:18:20.911201 140054055876416 controller.py:466] train | step:  31000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013059736,
+     'losses/train_semantic_loss': 0.3170816,
+     'losses/train_total_loss': 0.3170816}
+I0914 09:18:21.673485 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-31000.
+I0914 09:19:54.174508 140054055876416 controller.py:466] train | step:  31100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012929064,
+     'losses/train_semantic_loss': 0.30881265,
+     'losses/train_total_loss': 0.30881265}
+I0914 09:21:26.855117 140054055876416 controller.py:466] train | step:  31200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012798246,
+     'losses/train_semantic_loss': 0.32147053,
+     'losses/train_total_loss': 0.32147053}
+I0914 09:22:59.303414 140054055876416 controller.py:466] train | step:  31300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012667278,
+     'losses/train_semantic_loss': 0.31974402,
+     'losses/train_total_loss': 0.31974402}
+I0914 09:24:32.081761 140054055876416 controller.py:466] train | step:  31400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012536162,
+     'losses/train_semantic_loss': 0.31414825,
+     'losses/train_total_loss': 0.31414825}
+I0914 09:26:04.442447 140054055876416 controller.py:466] train | step:  31500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012404894,
+     'losses/train_semantic_loss': 0.31140774,
+     'losses/train_total_loss': 0.31140774}
+I0914 09:27:37.067998 140054055876416 controller.py:466] train | step:  31600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001227347,
+     'losses/train_semantic_loss': 0.31981665,
+     'losses/train_total_loss': 0.31981665}
+I0914 09:29:09.186698 140054055876416 controller.py:466] train | step:  31700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012141889,
+     'losses/train_semantic_loss': 0.3243187,
+     'losses/train_total_loss': 0.3243187}
+I0914 09:30:42.175701 140054055876416 controller.py:466] train | step:  31800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012010152,
+     'losses/train_semantic_loss': 0.30844182,
+     'losses/train_total_loss': 0.30844182}
+I0914 09:32:14.312537 140054055876416 controller.py:466] train | step:  31900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011878252,
+     'losses/train_semantic_loss': 0.3149575,
+     'losses/train_total_loss': 0.3149575}
+I0914 09:33:46.579252 140054055876416 controller.py:466] train | step:  32000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011746189,
+     'losses/train_semantic_loss': 0.30830312,
+     'losses/train_total_loss': 0.30830312}
+I0914 09:33:47.377247 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-32000.
+I0914 09:35:19.716394 140054055876416 controller.py:466] train | step:  32100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000116139614,
+     'losses/train_semantic_loss': 0.31017873,
+     'losses/train_total_loss': 0.31017873}
+I0914 09:36:52.161801 140054055876416 controller.py:466] train | step:  32200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000114815666,
+     'losses/train_semantic_loss': 0.3073284,
+     'losses/train_total_loss': 0.3073284}
+I0914 09:38:24.316821 140054055876416 controller.py:466] train | step:  32300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011349003,
+     'losses/train_semantic_loss': 0.297721,
+     'losses/train_total_loss': 0.297721}
+I0914 09:39:56.638741 140054055876416 controller.py:466] train | step:  32400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011216264,
+     'losses/train_semantic_loss': 0.32215264,
+     'losses/train_total_loss': 0.32215264}
+I0914 09:41:28.906435 140054055876416 controller.py:466] train | step:  32500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011083353,
+     'losses/train_semantic_loss': 0.30719146,
+     'losses/train_total_loss': 0.30719146}
+I0914 09:43:01.052591 140054055876416 controller.py:466] train | step:  32600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010950263,
+     'losses/train_semantic_loss': 0.31041646,
+     'losses/train_total_loss': 0.31041646}
+I0914 09:44:33.268913 140054055876416 controller.py:466] train | step:  32700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010816996,
+     'losses/train_semantic_loss': 0.30642697,
+     'losses/train_total_loss': 0.30642697}
+I0914 09:46:05.519794 140054055876416 controller.py:466] train | step:  32800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010683544,
+     'losses/train_semantic_loss': 0.29564413,
+     'losses/train_total_loss': 0.29564413}
+I0914 09:47:37.899694 140054055876416 controller.py:466] train | step:  32900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010549906,
+     'losses/train_semantic_loss': 0.29965675,
+     'losses/train_total_loss': 0.29965675}
+I0914 09:49:10.085849 140054055876416 controller.py:466] train | step:  33000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001041608,
+     'losses/train_semantic_loss': 0.29133958,
+     'losses/train_total_loss': 0.29133958}
+I0914 09:49:11.087094 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-33000.
+I0914 09:50:43.265331 140054055876416 controller.py:466] train | step:  33100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010282063,
+     'losses/train_semantic_loss': 0.2841679,
+     'losses/train_total_loss': 0.2841679}
+I0914 09:52:15.647837 140054055876416 controller.py:466] train | step:  33200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010147853,
+     'losses/train_semantic_loss': 0.30403903,
+     'losses/train_total_loss': 0.30403903}
+I0914 09:53:48.017166 140054055876416 controller.py:466] train | step:  33300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010013443,
+     'losses/train_semantic_loss': 0.3014911,
+     'losses/train_total_loss': 0.3014911}
+I0914 09:55:19.984309 140054055876416 controller.py:466] train | step:  33400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.8788325e-05,
+     'losses/train_semantic_loss': 0.3133697,
+     'losses/train_total_loss': 0.3133697}
+I0914 09:56:52.204674 140054055876416 controller.py:466] train | step:  33500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.7440185e-05,
+     'losses/train_semantic_loss': 0.29446888,
+     'losses/train_total_loss': 0.29446888}
+I0914 09:58:24.395352 140054055876416 controller.py:466] train | step:  33600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.608998e-05,
+     'losses/train_semantic_loss': 0.2900482,
+     'losses/train_total_loss': 0.2900482}
+I0914 09:59:56.697091 140054055876416 controller.py:466] train | step:  33700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.473764e-05,
+     'losses/train_semantic_loss': 0.2944014,
+     'losses/train_total_loss': 0.2944014}
+I0914 10:01:29.019639 140054055876416 controller.py:466] train | step:  33800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.338314e-05,
+     'losses/train_semantic_loss': 0.30543235,
+     'losses/train_total_loss': 0.30543235}
+I0914 10:03:00.949196 140054055876416 controller.py:466] train | step:  33900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.2026494e-05,
+     'losses/train_semantic_loss': 0.30694115,
+     'losses/train_total_loss': 0.30694115}
+I0914 10:04:32.904269 140054055876416 controller.py:466] train | step:  34000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.066759e-05,
+     'losses/train_semantic_loss': 0.3025881,
+     'losses/train_total_loss': 0.3025881}
+I0914 10:04:33.778573 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-34000.
+I0914 10:06:06.102300 140054055876416 controller.py:466] train | step:  34100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.930646e-05,
+     'losses/train_semantic_loss': 0.295776,
+     'losses/train_total_loss': 0.295776}
+I0914 10:07:38.032295 140054055876416 controller.py:466] train | step:  34200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.7942986e-05,
+     'losses/train_semantic_loss': 0.30062357,
+     'losses/train_total_loss': 0.30062357}
+I0914 10:09:10.088541 140054055876416 controller.py:466] train | step:  34300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.6577165e-05,
+     'losses/train_semantic_loss': 0.2992341,
+     'losses/train_total_loss': 0.2992341}
+I0914 10:10:42.595946 140054055876416 controller.py:466] train | step:  34400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.520896e-05,
+     'losses/train_semantic_loss': 0.30200177,
+     'losses/train_total_loss': 0.30200177}
+I0914 10:12:15.020500 140054055876416 controller.py:466] train | step:  34500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.3838306e-05,
+     'losses/train_semantic_loss': 0.29990956,
+     'losses/train_total_loss': 0.29990956}
+I0914 10:13:47.323535 140054055876416 controller.py:466] train | step:  34600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.2465136e-05,
+     'losses/train_semantic_loss': 0.28845286,
+     'losses/train_total_loss': 0.28845286}
+I0914 10:15:19.627939 140054055876416 controller.py:466] train | step:  34700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.1089434e-05,
+     'losses/train_semantic_loss': 0.2898341,
+     'losses/train_total_loss': 0.2898341}
+I0914 10:16:51.099334 140054055876416 controller.py:466] train | step:  34800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.971114e-05,
+     'losses/train_semantic_loss': 0.29911774,
+     'losses/train_total_loss': 0.29911774}
+I0914 10:18:23.835146 140054055876416 controller.py:466] train | step:  34900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.8330195e-05,
+     'losses/train_semantic_loss': 0.29150522,
+     'losses/train_total_loss': 0.29150522}
+I0914 10:19:55.439654 140054055876416 controller.py:466] train | step:  35000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.694654e-05,
+     'losses/train_semantic_loss': 0.2908042,
+     'losses/train_total_loss': 0.2908042}
+I0914 10:19:56.241982 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-35000.
+I0914 10:19:56.242558 140054055876416 controller.py:282]  eval | step:  35000 | running complete evaluation...
+I0914 10:20:09.076209 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 10:20:09.079673 140054055876416 controller.py:295]  eval | step:  35000 | eval time:   12.8 sec | output: 
+    {'evaluation/iou/IoU': 0.7222697,
+     'losses/eval_semantic_loss': 0.7584848,
+     'losses/eval_total_loss': 0.7584848}
+I0914 10:20:09.084816 140054055876416 controller.py:241] train | step:  35000 | training until step 40000...
+
+train | step:  30800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001332064,
+     'losses/train_semantic_loss': 0.3153422,
+     'losses/train_total_loss': 0.3153422}
+train | step:  30900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013190259,
+     'losses/train_semantic_loss': 0.3116039,
+     'losses/train_total_loss': 0.3116039}
+train | step:  31000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00013059736,
+     'losses/train_semantic_loss': 0.3170816,
+     'losses/train_total_loss': 0.3170816}
+saved checkpoint to results/exp_003/ckpt-31000.
+train | step:  31100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012929064,
+     'losses/train_semantic_loss': 0.30881265,
+     'losses/train_total_loss': 0.30881265}
+train | step:  31200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012798246,
+     'losses/train_semantic_loss': 0.32147053,
+     'losses/train_total_loss': 0.32147053}
+train | step:  31300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012667278,
+     'losses/train_semantic_loss': 0.31974402,
+     'losses/train_total_loss': 0.31974402}
+train | step:  31400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012536162,
+     'losses/train_semantic_loss': 0.31414825,
+     'losses/train_total_loss': 0.31414825}
+train | step:  31500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012404894,
+     'losses/train_semantic_loss': 0.31140774,
+     'losses/train_total_loss': 0.31140774}
+train | step:  31600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001227347,
+     'losses/train_semantic_loss': 0.31981665,
+     'losses/train_total_loss': 0.31981665}
+train | step:  31700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012141889,
+     'losses/train_semantic_loss': 0.3243187,
+     'losses/train_total_loss': 0.3243187}
+train | step:  31800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00012010152,
+     'losses/train_semantic_loss': 0.30844182,
+     'losses/train_total_loss': 0.30844182}
+train | step:  31900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011878252,
+     'losses/train_semantic_loss': 0.3149575,
+     'losses/train_total_loss': 0.3149575}
+train | step:  32000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011746189,
+     'losses/train_semantic_loss': 0.30830312,
+     'losses/train_total_loss': 0.30830312}
+saved checkpoint to results/exp_003/ckpt-32000.
+train | step:  32100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000116139614,
+     'losses/train_semantic_loss': 0.31017873,
+     'losses/train_total_loss': 0.31017873}
+train | step:  32200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.000114815666,
+     'losses/train_semantic_loss': 0.3073284,
+     'losses/train_total_loss': 0.3073284}
+train | step:  32300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011349003,
+     'losses/train_semantic_loss': 0.297721,
+     'losses/train_total_loss': 0.297721}
+train | step:  32400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011216264,
+     'losses/train_semantic_loss': 0.32215264,
+     'losses/train_total_loss': 0.32215264}
+train | step:  32500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00011083353,
+     'losses/train_semantic_loss': 0.30719146,
+     'losses/train_total_loss': 0.30719146}
+train | step:  32600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010950263,
+     'losses/train_semantic_loss': 0.31041646,
+     'losses/train_total_loss': 0.31041646}
+train | step:  32700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010816996,
+     'losses/train_semantic_loss': 0.30642697,
+     'losses/train_total_loss': 0.30642697}
+train | step:  32800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010683544,
+     'losses/train_semantic_loss': 0.29564413,
+     'losses/train_total_loss': 0.29564413}
+train | step:  32900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010549906,
+     'losses/train_semantic_loss': 0.29965675,
+     'losses/train_total_loss': 0.29965675}
+train | step:  33000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0001041608,
+     'losses/train_semantic_loss': 0.29133958,
+     'losses/train_total_loss': 0.29133958}
+saved checkpoint to results/exp_003/ckpt-33000.
+train | step:  33100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010282063,
+     'losses/train_semantic_loss': 0.2841679,
+     'losses/train_total_loss': 0.2841679}
+train | step:  33200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010147853,
+     'losses/train_semantic_loss': 0.30403903,
+     'losses/train_total_loss': 0.30403903}
+train | step:  33300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.00010013443,
+     'losses/train_semantic_loss': 0.3014911,
+     'losses/train_total_loss': 0.3014911}
+train | step:  33400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.8788325e-05,
+     'losses/train_semantic_loss': 0.3133697,
+     'losses/train_total_loss': 0.3133697}
+train | step:  33500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.7440185e-05,
+     'losses/train_semantic_loss': 0.29446888,
+     'losses/train_total_loss': 0.29446888}
+train | step:  33600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.608998e-05,
+     'losses/train_semantic_loss': 0.2900482,
+     'losses/train_total_loss': 0.2900482}
+train | step:  33700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.473764e-05,
+     'losses/train_semantic_loss': 0.2944014,
+     'losses/train_total_loss': 0.2944014}
+train | step:  33800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.338314e-05,
+     'losses/train_semantic_loss': 0.30543235,
+     'losses/train_total_loss': 0.30543235}
+train | step:  33900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.2026494e-05,
+     'losses/train_semantic_loss': 0.30694115,
+     'losses/train_total_loss': 0.30694115}
+train | step:  34000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.066759e-05,
+     'losses/train_semantic_loss': 0.3025881,
+     'losses/train_total_loss': 0.3025881}
+saved checkpoint to results/exp_003/ckpt-34000.
+train | step:  34100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.930646e-05,
+     'losses/train_semantic_loss': 0.295776,
+     'losses/train_total_loss': 0.295776}
+train | step:  34200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.7942986e-05,
+     'losses/train_semantic_loss': 0.30062357,
+     'losses/train_total_loss': 0.30062357}
+train | step:  34300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.6577165e-05,
+     'losses/train_semantic_loss': 0.2992341,
+     'losses/train_total_loss': 0.2992341}
+train | step:  34400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.520896e-05,
+     'losses/train_semantic_loss': 0.30200177,
+     'losses/train_total_loss': 0.30200177}
+train | step:  34500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.3838306e-05,
+     'losses/train_semantic_loss': 0.29990956,
+     'losses/train_total_loss': 0.29990956}
+train | step:  34600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.2465136e-05,
+     'losses/train_semantic_loss': 0.28845286,
+     'losses/train_total_loss': 0.28845286}
+train | step:  34700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 8.1089434e-05,
+     'losses/train_semantic_loss': 0.2898341,
+     'losses/train_total_loss': 0.2898341}
+train | step:  34800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.971114e-05,
+     'losses/train_semantic_loss': 0.29911774,
+     'losses/train_total_loss': 0.29911774}
+train | step:  34900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.8330195e-05,
+     'losses/train_semantic_loss': 0.29150522,
+     'losses/train_total_loss': 0.29150522}
+train | step:  35000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.694654e-05,
+     'losses/train_semantic_loss': 0.2908042,
+     'losses/train_total_loss': 0.2908042}
+saved checkpoint to results/exp_003/ckpt-35000.
+ eval | step:  35000 | running complete evaluation...
+ eval | step:  35000 | eval time:   12.8 sec | output: 
+    {'evaluation/iou/IoU': 0.7222697,
+     'losses/eval_semantic_loss': 0.7584848,
+     'losses/eval_total_loss': 0.7584848}
+train | step:  35000 | training until step 40000...I0914 10:21:40.689801 140054055876416 controller.py:466] train | step:  35100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 7.55601e-05,
+     'losses/train_semantic_loss': 0.2826878,
+     'losses/train_total_loss': 0.2826878}
+I0914 10:23:13.138190 140054055876416 controller.py:466] train | step:  35200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.417084e-05,
+     'losses/train_semantic_loss': 0.29181024,
+     'losses/train_total_loss': 0.29181024}
+I0914 10:24:45.627936 140054055876416 controller.py:466] train | step:  35300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.2778676e-05,
+     'losses/train_semantic_loss': 0.30060142,
+     'losses/train_total_loss': 0.30060142}
+I0914 10:26:16.990497 140054055876416 controller.py:466] train | step:  35400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.138355e-05,
+     'losses/train_semantic_loss': 0.28690326,
+     'losses/train_total_loss': 0.28690326}
+I0914 10:27:49.358102 140054055876416 controller.py:466] train | step:  35500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.9985384e-05,
+     'losses/train_semantic_loss': 0.29057828,
+     'losses/train_total_loss': 0.29057828}
+I0914 10:29:21.906477 140054055876416 controller.py:466] train | step:  35600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.858411e-05,
+     'losses/train_semantic_loss': 0.27731046,
+     'losses/train_total_loss': 0.27731046}
+I0914 10:30:54.395036 140054055876416 controller.py:466] train | step:  35700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.7179644e-05,
+     'losses/train_semantic_loss': 0.2788607,
+     'losses/train_total_loss': 0.2788607}
+I0914 10:32:26.765542 140054055876416 controller.py:466] train | step:  35800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.577192e-05,
+     'losses/train_semantic_loss': 0.27908766,
+     'losses/train_total_loss': 0.27908766}
+I0914 10:33:58.999927 140054055876416 controller.py:466] train | step:  35900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.436082e-05,
+     'losses/train_semantic_loss': 0.27549446,
+     'losses/train_total_loss': 0.27549446}
+I0914 10:35:31.769342 140054055876416 controller.py:466] train | step:  36000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.29463e-05,
+     'losses/train_semantic_loss': 0.28419563,
+     'losses/train_total_loss': 0.28419563}
+I0914 10:35:32.633423 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-36000.
+I0914 10:37:04.447820 140054055876416 controller.py:466] train | step:  36100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.152822e-05,
+     'losses/train_semantic_loss': 0.28843832,
+     'losses/train_total_loss': 0.28843832}
+I0914 10:38:36.561285 140054055876416 controller.py:466] train | step:  36200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.0106497e-05,
+     'losses/train_semantic_loss': 0.2869587,
+     'losses/train_total_loss': 0.2869587}
+I0914 10:40:08.912746 140054055876416 controller.py:466] train | step:  36300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.8680995e-05,
+     'losses/train_semantic_loss': 0.29021287,
+     'losses/train_total_loss': 0.29021287}
+I0914 10:41:41.055931 140054055876416 controller.py:466] train | step:  36400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.7251673e-05,
+     'losses/train_semantic_loss': 0.2849205,
+     'losses/train_total_loss': 0.2849205}
+I0914 10:43:13.493945 140054055876416 controller.py:466] train | step:  36500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.581837e-05,
+     'losses/train_semantic_loss': 0.28190714,
+     'losses/train_total_loss': 0.28190714}
+I0914 10:44:45.623437 140054055876416 controller.py:466] train | step:  36600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.4380973e-05,
+     'losses/train_semantic_loss': 0.28180745,
+     'losses/train_total_loss': 0.28180745}
+I0914 10:46:17.182270 140054055876416 controller.py:466] train | step:  36700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.2939344e-05,
+     'losses/train_semantic_loss': 0.27551642,
+     'losses/train_total_loss': 0.27551642}
+I0914 10:47:48.537486 140054055876416 controller.py:466] train | step:  36800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.1493324e-05,
+     'losses/train_semantic_loss': 0.28403512,
+     'losses/train_total_loss': 0.28403512}
+I0914 10:49:20.455647 140054055876416 controller.py:466] train | step:  36900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.0042792e-05,
+     'losses/train_semantic_loss': 0.2972213,
+     'losses/train_total_loss': 0.2972213}
+I0914 10:50:51.477427 140054055876416 controller.py:466] train | step:  37000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.8587568e-05,
+     'losses/train_semantic_loss': 0.29137295,
+     'losses/train_total_loss': 0.29137295}
+I0914 10:50:52.246370 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-37000.
+I0914 10:52:24.062256 140054055876416 controller.py:466] train | step:  37100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.712748e-05,
+     'losses/train_semantic_loss': 0.27970815,
+     'losses/train_total_loss': 0.27970815}
+I0914 10:53:55.533651 140054055876416 controller.py:466] train | step:  37200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.5662342e-05,
+     'losses/train_semantic_loss': 0.2788047,
+     'losses/train_total_loss': 0.2788047}
+I0914 10:55:27.323765 140054055876416 controller.py:466] train | step:  37300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.4191976e-05,
+     'losses/train_semantic_loss': 0.28465378,
+     'losses/train_total_loss': 0.28465378}
+I0914 10:56:59.618731 140054055876416 controller.py:466] train | step:  37400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.2716143e-05,
+     'losses/train_semantic_loss': 0.2787267,
+     'losses/train_total_loss': 0.2787267}
+I0914 10:58:30.987886 140054055876416 controller.py:466] train | step:  37500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.123463e-05,
+     'losses/train_semantic_loss': 0.2882072,
+     'losses/train_total_loss': 0.2882072}
+I0914 11:00:02.882692 140054055876416 controller.py:466] train | step:  37600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.9747174e-05,
+     'losses/train_semantic_loss': 0.26553118,
+     'losses/train_total_loss': 0.26553118}
+I0914 11:01:34.355384 140054055876416 controller.py:466] train | step:  37700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.8253496e-05,
+     'losses/train_semantic_loss': 0.27669698,
+     'losses/train_total_loss': 0.27669698}
+I0914 11:03:06.252722 140054055876416 controller.py:466] train | step:  37800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.6753318e-05,
+     'losses/train_semantic_loss': 0.2762743,
+     'losses/train_total_loss': 0.2762743}
+I0914 11:04:38.106389 140054055876416 controller.py:466] train | step:  37900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.52463e-05,
+     'losses/train_semantic_loss': 0.27526283,
+     'losses/train_total_loss': 0.27526283}
+I0914 11:06:08.919743 140054055876416 controller.py:466] train | step:  38000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.373209e-05,
+     'losses/train_semantic_loss': 0.2948696,
+     'losses/train_total_loss': 0.2948696}
+I0914 11:06:09.642917 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-38000.
+I0914 11:07:41.491574 140054055876416 controller.py:466] train | step:  38100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.221028e-05,
+     'losses/train_semantic_loss': 0.28591147,
+     'losses/train_total_loss': 0.28591147}
+I0914 11:09:13.309741 140054055876416 controller.py:466] train | step:  38200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.068043e-05,
+     'losses/train_semantic_loss': 0.27879226,
+     'losses/train_total_loss': 0.27879226}
+I0914 11:10:44.432884 140054055876416 controller.py:466] train | step:  38300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.914206e-05,
+     'losses/train_semantic_loss': 0.28562334,
+     'losses/train_total_loss': 0.28562334}
+I0914 11:12:15.953951 140054055876416 controller.py:466] train | step:  38400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.7594608e-05,
+     'losses/train_semantic_loss': 0.28122824,
+     'losses/train_total_loss': 0.28122824}
+I0914 11:13:47.086639 140054055876416 controller.py:466] train | step:  38500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.6037449e-05,
+     'losses/train_semantic_loss': 0.2676208,
+     'losses/train_total_loss': 0.2676208}
+I0914 11:15:17.603020 140054055876416 controller.py:466] train | step:  38600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.4469862e-05,
+     'losses/train_semantic_loss': 0.27151904,
+     'losses/train_total_loss': 0.27151904}
+I0914 11:16:48.950591 140054055876416 controller.py:466] train | step:  38700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.2891034e-05,
+     'losses/train_semantic_loss': 0.27789542,
+     'losses/train_total_loss': 0.27789542}
+I0914 11:18:20.605504 140054055876416 controller.py:466] train | step:  38800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.1299958e-05,
+     'losses/train_semantic_loss': 0.2706334,
+     'losses/train_total_loss': 0.2706334}
+I0914 11:19:52.096139 140054055876416 controller.py:466] train | step:  38900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.9695593e-05,
+     'losses/train_semantic_loss': 0.27657646,
+     'losses/train_total_loss': 0.27657646}
+I0914 11:21:23.923898 140054055876416 controller.py:466] train | step:  39000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.8076556e-05,
+     'losses/train_semantic_loss': 0.2754211,
+     'losses/train_total_loss': 0.2754211}
+I0914 11:21:24.575297 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-39000.
+I0914 11:22:56.112344 140054055876416 controller.py:466] train | step:  39100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.644122e-05,
+     'losses/train_semantic_loss': 0.27161384,
+     'losses/train_total_loss': 0.27161384}
+I0914 11:24:27.478725 140054055876416 controller.py:466] train | step:  39200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.4787565e-05,
+     'losses/train_semantic_loss': 0.28106004,
+     'losses/train_total_loss': 0.28106004}
+I0914 11:25:59.409364 140054055876416 controller.py:466] train | step:  39300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.3113057e-05,
+     'losses/train_semantic_loss': 0.274825,
+     'losses/train_total_loss': 0.274825}
+I0914 11:27:31.366592 140054055876416 controller.py:466] train | step:  39400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.1414367e-05,
+     'losses/train_semantic_loss': 0.2692277,
+     'losses/train_total_loss': 0.2692277}
+I0914 11:29:03.211579 140054055876416 controller.py:466] train | step:  39500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.686987e-06,
+     'losses/train_semantic_loss': 0.2689189,
+     'losses/train_total_loss': 0.2689189}
+
+train | step:  35100 | steps/sec:    1.0 | output: 
+    {'learning_rate': 7.55601e-05,
+     'losses/train_semantic_loss': 0.2826878,
+     'losses/train_total_loss': 0.2826878}
+train | step:  35200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.417084e-05,
+     'losses/train_semantic_loss': 0.29181024,
+     'losses/train_total_loss': 0.29181024}
+train | step:  35300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.2778676e-05,
+     'losses/train_semantic_loss': 0.30060142,
+     'losses/train_total_loss': 0.30060142}
+train | step:  35400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.138355e-05,
+     'losses/train_semantic_loss': 0.28690326,
+     'losses/train_total_loss': 0.28690326}
+train | step:  35500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.9985384e-05,
+     'losses/train_semantic_loss': 0.29057828,
+     'losses/train_total_loss': 0.29057828}
+train | step:  35600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.858411e-05,
+     'losses/train_semantic_loss': 0.27731046,
+     'losses/train_total_loss': 0.27731046}
+train | step:  35700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.7179644e-05,
+     'losses/train_semantic_loss': 0.2788607,
+     'losses/train_total_loss': 0.2788607}
+train | step:  35800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.577192e-05,
+     'losses/train_semantic_loss': 0.27908766,
+     'losses/train_total_loss': 0.27908766}
+train | step:  35900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.436082e-05,
+     'losses/train_semantic_loss': 0.27549446,
+     'losses/train_total_loss': 0.27549446}
+train | step:  36000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.29463e-05,
+     'losses/train_semantic_loss': 0.28419563,
+     'losses/train_total_loss': 0.28419563}
+saved checkpoint to results/exp_003/ckpt-36000.
+train | step:  36100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.152822e-05,
+     'losses/train_semantic_loss': 0.28843832,
+     'losses/train_total_loss': 0.28843832}
+train | step:  36200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.0106497e-05,
+     'losses/train_semantic_loss': 0.2869587,
+     'losses/train_total_loss': 0.2869587}
+train | step:  36300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.8680995e-05,
+     'losses/train_semantic_loss': 0.29021287,
+     'losses/train_total_loss': 0.29021287}
+train | step:  36400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.7251673e-05,
+     'losses/train_semantic_loss': 0.2849205,
+     'losses/train_total_loss': 0.2849205}
+train | step:  36500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.581837e-05,
+     'losses/train_semantic_loss': 0.28190714,
+     'losses/train_total_loss': 0.28190714}
+train | step:  36600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.4380973e-05,
+     'losses/train_semantic_loss': 0.28180745,
+     'losses/train_total_loss': 0.28180745}
+train | step:  36700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.2939344e-05,
+     'losses/train_semantic_loss': 0.27551642,
+     'losses/train_total_loss': 0.27551642}
+train | step:  36800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.1493324e-05,
+     'losses/train_semantic_loss': 0.28403512,
+     'losses/train_total_loss': 0.28403512}
+train | step:  36900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 5.0042792e-05,
+     'losses/train_semantic_loss': 0.2972213,
+     'losses/train_total_loss': 0.2972213}
+train | step:  37000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.8587568e-05,
+     'losses/train_semantic_loss': 0.29137295,
+     'losses/train_total_loss': 0.29137295}
+saved checkpoint to results/exp_003/ckpt-37000.
+train | step:  37100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.712748e-05,
+     'losses/train_semantic_loss': 0.27970815,
+     'losses/train_total_loss': 0.27970815}
+train | step:  37200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.5662342e-05,
+     'losses/train_semantic_loss': 0.2788047,
+     'losses/train_total_loss': 0.2788047}
+train | step:  37300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.4191976e-05,
+     'losses/train_semantic_loss': 0.28465378,
+     'losses/train_total_loss': 0.28465378}
+train | step:  37400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.2716143e-05,
+     'losses/train_semantic_loss': 0.2787267,
+     'losses/train_total_loss': 0.2787267}
+train | step:  37500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.123463e-05,
+     'losses/train_semantic_loss': 0.2882072,
+     'losses/train_total_loss': 0.2882072}
+train | step:  37600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.9747174e-05,
+     'losses/train_semantic_loss': 0.26553118,
+     'losses/train_total_loss': 0.26553118}
+train | step:  37700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.8253496e-05,
+     'losses/train_semantic_loss': 0.27669698,
+     'losses/train_total_loss': 0.27669698}
+train | step:  37800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.6753318e-05,
+     'losses/train_semantic_loss': 0.2762743,
+     'losses/train_total_loss': 0.2762743}
+train | step:  37900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.52463e-05,
+     'losses/train_semantic_loss': 0.27526283,
+     'losses/train_total_loss': 0.27526283}
+train | step:  38000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.373209e-05,
+     'losses/train_semantic_loss': 0.2948696,
+     'losses/train_total_loss': 0.2948696}
+saved checkpoint to results/exp_003/ckpt-38000.
+train | step:  38100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.221028e-05,
+     'losses/train_semantic_loss': 0.28591147,
+     'losses/train_total_loss': 0.28591147}
+train | step:  38200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 3.068043e-05,
+     'losses/train_semantic_loss': 0.27879226,
+     'losses/train_total_loss': 0.27879226}
+train | step:  38300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.914206e-05,
+     'losses/train_semantic_loss': 0.28562334,
+     'losses/train_total_loss': 0.28562334}
+train | step:  38400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.7594608e-05,
+     'losses/train_semantic_loss': 0.28122824,
+     'losses/train_total_loss': 0.28122824}
+train | step:  38500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.6037449e-05,
+     'losses/train_semantic_loss': 0.2676208,
+     'losses/train_total_loss': 0.2676208}
+train | step:  38600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.4469862e-05,
+     'losses/train_semantic_loss': 0.27151904,
+     'losses/train_total_loss': 0.27151904}
+train | step:  38700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.2891034e-05,
+     'losses/train_semantic_loss': 0.27789542,
+     'losses/train_total_loss': 0.27789542}
+train | step:  38800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.1299958e-05,
+     'losses/train_semantic_loss': 0.2706334,
+     'losses/train_total_loss': 0.2706334}
+train | step:  38900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.9695593e-05,
+     'losses/train_semantic_loss': 0.27657646,
+     'losses/train_total_loss': 0.27657646}
+train | step:  39000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.8076556e-05,
+     'losses/train_semantic_loss': 0.2754211,
+     'losses/train_total_loss': 0.2754211}
+saved checkpoint to results/exp_003/ckpt-39000.
+train | step:  39100 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.644122e-05,
+     'losses/train_semantic_loss': 0.27161384,
+     'losses/train_total_loss': 0.27161384}
+train | step:  39200 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.4787565e-05,
+     'losses/train_semantic_loss': 0.28106004,
+     'losses/train_total_loss': 0.28106004}
+train | step:  39300 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.3113057e-05,
+     'losses/train_semantic_loss': 0.274825,
+     'losses/train_total_loss': 0.274825}
+train | step:  39400 | steps/sec:    1.1 | output: 
+    {'learning_rate': 1.1414367e-05,
+     'losses/train_semantic_loss': 0.2692277,
+     'losses/train_total_loss': 0.2692277}
+train | step:  39500 | steps/sec:    1.1 | output: 
+    {'learning_rate': 9.686987e-06,
+     'losses/train_semantic_loss': 0.2689189,
+     'losses/train_total_loss': 0.2689189}I0914 11:30:35.233530 140054055876416 controller.py:466] train | step:  39600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.924459e-06,
+     'losses/train_semantic_loss': 0.27382782,
+     'losses/train_total_loss': 0.27382782}
+I0914 11:32:06.263983 140054055876416 controller.py:466] train | step:  39700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.116807e-06,
+     'losses/train_semantic_loss': 0.27370661,
+     'losses/train_total_loss': 0.27370661}
+I0914 11:33:37.785545 140054055876416 controller.py:466] train | step:  39800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.2466136e-06,
+     'losses/train_semantic_loss': 0.27597514,
+     'losses/train_total_loss': 0.27597514}
+I0914 11:35:09.326058 140054055876416 controller.py:466] train | step:  39900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.2757035e-06,
+     'losses/train_semantic_loss': 0.2799396,
+     'losses/train_total_loss': 0.2799396}
+I0914 11:36:41.885480 140054055876416 controller.py:466] train | step:  40000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0,
+     'losses/train_semantic_loss': 0.28136045,
+     'losses/train_total_loss': 0.28136045}
+I0914 11:36:42.554411 140054055876416 controller.py:495] saved checkpoint to results/exp_003/ckpt-40000.
+I0914 11:36:42.554952 140054055876416 controller.py:282]  eval | step:  40000 | running complete evaluation...
+I0914 11:36:54.949090 140054055876416 loop_fns.py:81] The dataset iterator is exhausted after 100 steps.
+I0914 11:36:54.958918 140054055876416 controller.py:295]  eval | step:  40000 | eval time:   12.4 sec | output: 
+    {'evaluation/iou/IoU': 0.72615314,
+     'losses/eval_semantic_loss': 0.75687677,
+     'losses/eval_total_loss': 0.75687677}
+
+train | step:  39600 | steps/sec:    1.1 | output: 
+    {'learning_rate': 7.924459e-06,
+     'losses/train_semantic_loss': 0.27382782,
+     'losses/train_total_loss': 0.27382782}
+train | step:  39700 | steps/sec:    1.1 | output: 
+    {'learning_rate': 6.116807e-06,
+     'losses/train_semantic_loss': 0.27370661,
+     'losses/train_total_loss': 0.27370661}
+train | step:  39800 | steps/sec:    1.1 | output: 
+    {'learning_rate': 4.2466136e-06,
+     'losses/train_semantic_loss': 0.27597514,
+     'losses/train_total_loss': 0.27597514}
+train | step:  39900 | steps/sec:    1.1 | output: 
+    {'learning_rate': 2.2757035e-06,
+     'losses/train_semantic_loss': 0.2799396,
+     'losses/train_total_loss': 0.2799396}
+train | step:  40000 | steps/sec:    1.1 | output: 
+    {'learning_rate': 0.0,
+     'losses/train_semantic_loss': 0.28136045,
+     'losses/train_total_loss': 0.28136045}
+saved checkpoint to results/exp_003/ckpt-40000.
+ eval | step:  40000 | running complete evaluation...
+ eval | step:  40000 | eval time:   12.4 sec | output: 
+    {'evaluation/iou/IoU': 0.72615314,
+     'losses/eval_semantic_loss': 0.75687677,
+     'losses/eval_total_loss': 0.75687677}
