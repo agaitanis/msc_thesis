@@ -22,9 +22,9 @@ flags.DEFINE_string("output_dir", None, "Path to save dataset for deeplab2.",
                     required=True)
 
 _DATASET_SPLIT_SIZES = {
-    "train" : 4200, # FIXME Change to 4200
-    "val" : 400, # FIXME Change to 400
-    "test" : 400, # FIXME Change to 400
+    "train" : 100, # FIXME Change to 4200
+    "val" : 10, # FIXME Change to 400
+    "test" : 10, # FIXME Change to 400
 }
 
 class Channel(int, Enum):
