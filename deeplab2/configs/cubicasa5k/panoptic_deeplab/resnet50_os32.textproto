@@ -103,8 +103,8 @@ trainer_options {
   }
   solver_options {
     base_learning_rate: 0.0005
-    training_number_of_steps: 10000
-    warmup_steps: 2000
+    training_number_of_steps: 1000
+    warmup_steps: 200
   }
 }
 train_dataset_options {
@@ -142,7 +142,7 @@ eval_dataset_options {
 }
 evaluator_options {
   continuous_eval_timeout: -1
-  stuff_area_limit: 4096 # TODO Change
+# stuff_area_limit: 4096 # TODO Change
   center_score_threshold: 0.1
   nms_kernel: 41
   save_predictions: true
@@ -152,7 +152,7 @@ evaluator_options {
   # implementation under the folder `tensorflow_ops`, and set
   # merge_semantic_and_instance_with_tf_op to true.
   merge_semantic_and_instance_with_tf_op: true
-  eval_interval: 1000
-  num_vis_samples: 20
+  eval_interval: 100
+  num_vis_samples: 10
 }
 
