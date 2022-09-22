@@ -26,7 +26,7 @@
 #   for Bottom-Up Panoptic Segmentation." In CVPR, 2020.
 
 # Use a unique experiment_name for each experiment.
-experiment_name: "exp_004"
+experiment_name: "exp_007"
 model_options {
   # Update the path to the initial checkpoint (e.g., ImageNet
   # pretrained checkpoint).
@@ -108,6 +108,7 @@ evaluator_options {
   continuous_eval_timeout: -1
   save_predictions: true
   save_raw_predictions: false
-  num_vis_samples : 10
   detailed_ap_metrics : True
+  eval_interval: 1000
+  num_vis_samples: 20
 }

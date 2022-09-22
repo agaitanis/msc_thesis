@@ -73,7 +73,7 @@ trainer_options {
     }
   }
   solver_options {
-    base_learning_rate: 0.001 # Default: 0.0005
+    base_learning_rate: 0.0005 # Default: 0.0005
     training_number_of_steps: 20000 # Default: 60000
   }
 }

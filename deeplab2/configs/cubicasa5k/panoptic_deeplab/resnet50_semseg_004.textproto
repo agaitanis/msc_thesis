@@ -26,22 +26,22 @@
 #   for Bottom-Up Panoptic Segmentation." In CVPR, 2020.
 
 # Use a unique experiment_name for each experiment.
-experiment_name: "exp_007"
+experiment_name: "exp_004"
 model_options {
   # Update the path to the initial checkpoint (e.g., ImageNet
   # pretrained checkpoint).
   initial_checkpoint: "deeplab2/initial_checkpoints/resnet50_imagenet1k_strong_training_strategy/ckpt-350.index"
   backbone {
     name: "resnet50"
-    output_stride: 16 # Default: 32
+    output_stride: 32 # Default: 32
   }
   decoder {
     feature_key: "res5"
     decoder_channels: 256
     aspp_channels: 256
-    atrous_rates: 6 # Default: 3
-    atrous_rates: 12 # Default: 6
-    atrous_rates: 18 # Default: 9
+    atrous_rates: 3 # Default: 3
+    atrous_rates: 6 # Default: 6
+    atrous_rates: 9 # Default: 9
   }
   panoptic_deeplab {
     low_level {
@@ -73,7 +73,7 @@ trainer_options {
     }
   }
   solver_options {
-    base_learning_rate: 0.0002 # Default: 0.0005
+    base_learning_rate: 0.002 # Default: 0.0005
     training_number_of_steps: 20000 # Default: 60000
   }
 }
@@ -108,7 +108,7 @@ evaluator_options {
   continuous_eval_timeout: -1
   save_predictions: true
   save_raw_predictions: false
-  eval_interval: 4000
+  eval_interval: 1000
   num_vis_samples: 20
   detailed_ap_metrics: True
 }
