@@ -27,6 +27,8 @@ _DATASET_SPLIT_SIZES = {
     "test" : 10, # FIXME Change to 400
 }
 
+_MAX_IMG_SIZE = 1024
+
 class Channel(int, Enum):
     R = 0
     G = 1
@@ -99,6 +101,25 @@ def _save_as_png(array, file_path):
     img.save(file_path)
 
 
+def _resize_image(array, method):
+    height, width, _ = array.shape
+    if height <= _MAX_IMG_SIZE and width <= _MAX_IMG_SIZE:
+        return array
+
+    if method == tf.image.ResizeMethod.BILINEAR:
+        array = array.astype(np.float64)
+    array = np.expand_dims(array, axis=0)
+
+    size = (_MAX_IMG_SIZE, _MAX_IMG_SIZE)
+    array = tf.image.resize(array, size=size, method=method, preserve_aspect_ratio=True)
+
+    array = np.squeeze(array, axis=0)
+    if method == tf.image.ResizeMethod.BILINEAR:
+        array = array.astype(np.uint8)
+    
+    return array
+
+
 def _create_sample(sample_dir_path, new_sample_dir_path):
     img_file_path = os.path.join(sample_dir_path, "F1_scaled.png")
     svg_file_path = os.path.join(sample_dir_path, "model.svg")
@@ -108,6 +129,9 @@ def _create_sample(sample_dir_path, new_sample_dir_path):
     
     img_array = _create_img_array(img_file_path)
     labels_array = _create_labels_array(img_array, svg_file_path)
+
+    img_array = _resize_image(img_array, tf.image.ResizeMethod.BILINEAR)
+    labels_array = _resize_image(labels_array, tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     
     _save_as_png(img_array, new_img_file_path)
     _save_as_png(labels_array, labels_file_path)
