@@ -191,7 +191,7 @@ class Evaluator(orbit.StandardEvaluator):
     tf.assert_equal(
         tf.shape(inputs[common.IMAGE])[0], 1, 'Currently only a '
         'batchsize of 1 is supported in evaluation due to resizing.')
-    outputs = self._model(inputs[common.IMAGE], training=False)
+    outputs = self._model(inputs[common.IMAGE], training=False) #TODO Important
     raw_size = [
         inputs[common.GT_SIZE_RAW][0, 0], inputs[common.GT_SIZE_RAW][0, 1]
     ]

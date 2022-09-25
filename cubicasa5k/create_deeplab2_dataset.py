@@ -15,19 +15,27 @@ from absl import logging
 from enum import Enum
 from collections import defaultdict
 
+flags.DEFINE_string("cubicasa5k_root", 
+    default=None, 
+    help="CubiCasa5k dataset root folder.",
+    required=True)
+
+flags.DEFINE_string("output_dir",
+    default=None,
+    help="Path to save dataset for deeplab2.",
+    required=True)
+
 FLAGS = flags.FLAGS
-flags.DEFINE_string("cubicasa5k_root", None, "CubiCasa5k dataset root folder.",
-                    required=True)
-flags.DEFINE_string("output_dir", None, "Path to save dataset for deeplab2.",
-                    required=True)
+
 
 _DATASET_SPLIT_SIZES = {
-    "train" : 100, # FIXME Change to 4200
-    "val" : 10, # FIXME Change to 400
-    "test" : 10, # FIXME Change to 400
+    "train" : 4200, # FIXME Change to 4200
+    "val" : 400, # FIXME Change to 400
+    "test" : 400, # FIXME Change to 400
 }
 
 _MAX_IMG_SIZE = 1024
+
 
 class Channel(int, Enum):
     R = 0
@@ -155,7 +163,7 @@ def _create_dataset(cubicasa5k_root, output_dir, dataset_split):
             _create_sample(sample_dir_path, new_sample_dir_path)
 
 
-def main(unused_argv):
+def main(_):
     logging.get_absl_handler().setFormatter(None)
 
     try:

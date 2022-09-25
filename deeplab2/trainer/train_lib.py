@@ -128,7 +128,7 @@ def run_experiment(mode: Text, config: config_pb2.ExperimentOptions,
   trainer = None
   evaluator = None
   with strategy.scope():
-    deeplab_model = create_deeplab_model(
+    deeplab_model = create_deeplab_model( # TODO Important
         config, dataset.MAP_NAME_TO_DATASET_INFO[dataset_name])
     losses = loss_builder.DeepLabFamilyLoss(
         loss_options=config.trainer_options.loss_options,
