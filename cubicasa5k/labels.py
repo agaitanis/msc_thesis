@@ -3,8 +3,8 @@ from enum import IntEnum
 
 class Label(IntEnum):
     BACKGROUND = 0
-    ROOM = 1
-    WALL = 2
+    WALL = 1
+    ROOM = 2
     DOOR = 3
 
 _SVG_LABEL_TO_LABEL = {
@@ -86,8 +86,8 @@ def get_colormap():
     colormap = np.zeros((256, 3), dtype=np.uint8)
 
     colormap[Label.BACKGROUND] = [255, 255, 255]
-    colormap[Label.ROOM] = [255, 204, 153]
     colormap[Label.WALL] = [0, 0, 0]
+    colormap[Label.ROOM] = [255, 204, 153]
     colormap[Label.DOOR] = [0, 255, 0]
 
     return colormap
