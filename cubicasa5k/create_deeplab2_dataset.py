@@ -89,6 +89,7 @@ def _create_labels_array(img_array, svg_file_path):
         elif "Space " in e.getAttribute("class"):
             label = e.getAttribute("class").split(" ")[1]
             label = ccl.get_label(label)
+            instance_ids[label] += 1
         else:
             continue
 
