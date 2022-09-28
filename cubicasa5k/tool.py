@@ -1,18 +1,20 @@
 import sys
-from PyQt5.QtCore import QSize
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, QFileDialog, 
+    QVBoxLayout, QHBoxLayout, QLabel, QWidget)
 
 
 class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
-        self._file_dialog = QFileDialog(self)
+        self._image_label = None
         self._create_win()
 
 
     def _create_win(self):
         self.setWindowTitle("Floor Plan Recognition")
-        self.setMinimumSize(QSize(800, 600))
+        self.resize(QSize(800, 600))
 
         open_action = QAction("Open", self)
         open_action.setShortcut("Ctrl+O")
@@ -22,19 +24,32 @@ class MainWin(QMainWindow):
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu("&File")
         file_menu.addAction(open_action)
+
+        v_layout = QVBoxLayout()
+        widget = QWidget()
+        widget.setLayout(v_layout)
+        self.setCentralWidget(widget)
+
+        h_layout = QHBoxLayout()
+        v_layout.addLayout(h_layout)
+        h_layout.setAlignment(Qt.AlignCenter)
+
+        self._image_label = QLabel()
+        h_layout.addWidget(self._image_label)
     
 
     def _draw_image(self, fname):
-        pass # FIXME
+        image = QImage(fname)
+        self._image_label.setPixmap(QPixmap.fromImage(image))
 
 
     def _open_image(self):
-        self._file_dialog = QFileDialog(self)
-        self._file_dialog.setWindowTitle("Open Image")
-        self._file_dialog.setNameFilter("Images (*.png)")
+        file_dialog = QFileDialog(self)
+        file_dialog.setWindowTitle("Open Image")
+        file_dialog.setNameFilter("Images (*.png)")
 
-        if self._file_dialog.exec() == QFileDialog.Accepted:
-            fname = self._file_dialog.selectedFiles()[0]
+        if file_dialog.exec() == QFileDialog.Accepted:
+            fname = file_dialog.selectedFiles()[0]
             self._draw_image(fname)
 
 
