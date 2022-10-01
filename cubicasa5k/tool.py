@@ -2,19 +2,20 @@ import sys
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, QFileDialog, 
-    QVBoxLayout, QHBoxLayout, QLabel, QWidget)
+    QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTreeView)
 
 
 class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
         self._image_label = None
+        self._tree_view = None
         self._create_win()
 
 
     def _create_win(self):
         self.setWindowTitle("Floor Plan Recognition")
-        self.resize(QSize(800, 600))
+        # self.setMinimumSize(QSize(800, 600))
 
         open_action = QAction("Open", self)
         open_action.setShortcut("Ctrl+O")
@@ -36,6 +37,11 @@ class MainWin(QMainWindow):
 
         self._image_label = QLabel()
         h_layout.addWidget(self._image_label)
+        self._image_label.setMinimumSize(QSize(600, 500))
+
+        self._tree_view = QTreeView()
+        h_layout.addWidget(self._tree_view)
+        self._tree_view.setMinimumWidth(200)
     
 
     def _draw_image(self, fname):
