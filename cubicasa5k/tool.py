@@ -1,15 +1,29 @@
+from contextlib import contextmanager
+import numpy as np
 import sys
+import tensorflow as tf
+from PIL import Image
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtGui import QPixmap, QImage, QCursor
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, QFileDialog, 
-    QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTreeView)
+    QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTreeView, QPushButton)
+
+
+@contextmanager
+def wait_cursor():
+    try:
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        yield
+    finally:
+        QApplication.restoreOverrideCursor()
 
 
 class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
-        self._image_label = None
+        self._img_label = None
         self._tree_view = None
+        self._img_fname = None
         self._create_win()
 
 
@@ -35,18 +49,18 @@ class MainWin(QMainWindow):
         v_layout.addLayout(h_layout)
         h_layout.setAlignment(Qt.AlignCenter)
 
-        self._image_label = QLabel()
-        h_layout.addWidget(self._image_label)
-        self._image_label.setMinimumSize(QSize(600, 500))
+        self._img_label = QLabel()
+        h_layout.addWidget(self._img_label)
+        self._img_label.setMinimumSize(QSize(600, 500))
 
         self._tree_view = QTreeView()
         h_layout.addWidget(self._tree_view)
         self._tree_view.setMinimumWidth(200)
-    
 
-    def _draw_image(self, fname):
-        image = QImage(fname)
-        self._image_label.setPixmap(QPixmap.fromImage(image))
+        self._predict_button = QPushButton("Predict")
+        v_layout.addWidget(self._predict_button)
+        self._predict_button.clicked.connect(self._predict)
+        self._predict_button.setEnabled(False)
 
 
     def _open_image(self):
@@ -55,8 +69,16 @@ class MainWin(QMainWindow):
         file_dialog.setNameFilter("Images (*.png)")
 
         if file_dialog.exec() == QFileDialog.Accepted:
-            fname = file_dialog.selectedFiles()[0]
-            self._draw_image(fname)
+            self._img_fname = file_dialog.selectedFiles()[0]
+            self._img_label.setPixmap(QPixmap.fromImage(QImage(self._img_fname)))
+            self._predict_button.setEnabled(True)
+    
+
+    def _predict(self):
+        with wait_cursor():
+            model = tf.saved_model.load("cubicasa5k/model")
+            img_array = np.array(Image.open(self._img_fname))
+            output = model(tf.cast(img_array, tf.uint8))
 
 
 def main():
