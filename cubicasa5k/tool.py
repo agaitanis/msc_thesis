@@ -1,7 +1,8 @@
-from contextlib import contextmanager
+import cubicasa5k.labels as ccl
 import numpy as np
 import sys
 import tensorflow as tf
+from contextlib import contextmanager
 from PIL import Image
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QPixmap, QImage, QCursor
@@ -79,6 +80,26 @@ class MainWin(QMainWindow):
             model = tf.saved_model.load("cubicasa5k/model")
             img_array = np.array(Image.open(self._img_fname))
             output = model(tf.cast(img_array, tf.uint8))
+            # output is a dict with keys: 
+            # center_heatmap, instance_center_pred, instance_pred, 
+            # panoptic_pred, offset_map, semantic_pred, 
+            # semantic_logits, instance_scores, semantic_probs
+
+            panoptic_pred = output['panoptic_pred']
+            semantic_pred = output['semantic_pred']
+            instance_pred = output['instance_pred']
+            print(tf.shape(instance_pred))
+            panoptic_pred = panoptic_pred.numpy()
+            semantic_pred = semantic_pred.numpy()
+            instance_pred = instance_pred.numpy()
+            print(instance_pred.shape)
+
+            print("panoptic_pred =", np.unique(panoptic_pred))
+            print("semantic_pred =", np.unique(semantic_pred))
+            print("instance_pred =", np.unique(instance_pred))
+
+            im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
+            im.save("cubicasa5k/semantice_pred.png")
 
 
 def main():

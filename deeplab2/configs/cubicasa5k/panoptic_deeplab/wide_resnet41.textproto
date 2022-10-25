@@ -158,5 +158,5 @@ evaluator_options {
   # instance maps. For faster speed, compile TensorFlow with provided kernel
   # implementation under the folder `tensorflow_ops`, and set
   # merge_semantic_and_instance_with_tf_op to true.
-  merge_semantic_and_instance_with_tf_op: false
+  merge_semantic_and_instance_with_tf_op: true
 }
