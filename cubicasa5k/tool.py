@@ -77,8 +77,10 @@ class MainWin(QMainWindow):
 
     def _predict(self):
         with wait_cursor():
-            model = tf.saved_model.load("cubicasa5k/model")
             img_array = np.array(Image.open(self._img_fname))
+
+            model = tf.saved_model.load("cubicasa5k/model")
+
             output = model(tf.cast(img_array, tf.uint8))
             # output is a dict with keys: 
             # center_heatmap, instance_center_pred, instance_pred, 
@@ -88,18 +90,18 @@ class MainWin(QMainWindow):
             panoptic_pred = output['panoptic_pred']
             semantic_pred = output['semantic_pred']
             instance_pred = output['instance_pred']
-            print(tf.shape(instance_pred))
+            print(semantic_pred)
             panoptic_pred = panoptic_pred.numpy()
             semantic_pred = semantic_pred.numpy()
             instance_pred = instance_pred.numpy()
-            print(instance_pred.shape)
+            print(semantic_pred)
 
             print("panoptic_pred =", np.unique(panoptic_pred))
             print("semantic_pred =", np.unique(semantic_pred))
             print("instance_pred =", np.unique(instance_pred))
 
             im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
-            im.save("cubicasa5k/semantice_pred.png")
+            im.save("cubicasa5k/semantic_pred.png")
 
 
 def main():
