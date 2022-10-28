@@ -83,12 +83,12 @@ def _create_labels_array(img_array, svg_file_path):
         svg_id = e.getAttribute("id")
 
         if svg_id in ("Wall", "Railing", "Window", "Door"):
-            label = ccl.get_label(svg_id)
+            label = ccl.svg_label_to_label[svg_id]
             if svg_id == "Door":
                 instance_ids[label] += 1
         elif "Space " in e.getAttribute("class"):
             label = e.getAttribute("class").split(" ")[1]
-            label = ccl.get_label(label)
+            label = ccl.svg_label_to_label[label]
             instance_ids[label] += 1
         else:
             continue

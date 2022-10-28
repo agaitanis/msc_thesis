@@ -4,10 +4,9 @@ import sys
 import tensorflow as tf
 from contextlib import contextmanager
 from PIL import Image
-from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QPixmap, QImage, QCursor
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, QFileDialog, 
-    QVBoxLayout, QHBoxLayout, QLabel, QWidget, QTreeView, QPushButton)
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 
 @contextmanager
@@ -22,10 +21,18 @@ def wait_cursor():
 class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
+
         self._img_label = None
-        self._tree_view = None
+        self._std_item_model = None
         self._img_fname = None
+        self._model = None
+
         self._create_win()
+
+
+    def clear_list(self):
+        self._std_item_model.clear()
+        self._std_item_model.setHorizontalHeaderLabels(("Elements",))
 
 
     def _create_win(self):
@@ -52,15 +59,21 @@ class MainWin(QMainWindow):
 
         self._img_label = QLabel()
         h_layout.addWidget(self._img_label)
-        self._img_label.setMinimumSize(QSize(600, 500))
+        self._img_label.setMinimumSize(QSize(500, 400))
 
-        self._tree_view = QTreeView()
-        h_layout.addWidget(self._tree_view)
-        self._tree_view.setMinimumWidth(200)
+        tree_view = QTreeView()
+        h_layout.addWidget(tree_view)
+        tree_view.setMinimumWidth(250)
+        tree_view.setAlternatingRowColors(True)
+        tree_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-        self._predict_button = QPushButton("Predict")
+        self._std_item_model = QStandardItemModel()
+        tree_view.setModel(self._std_item_model)
+        self.clear_list()
+
+        self._predict_button = QPushButton("Detect elements")
         v_layout.addWidget(self._predict_button)
-        self._predict_button.clicked.connect(self._predict)
+        self._predict_button.clicked.connect(self._detect_elements)
         self._predict_button.setEnabled(False)
 
 
@@ -75,33 +88,40 @@ class MainWin(QMainWindow):
             self._predict_button.setEnabled(True)
     
 
-    def _predict(self):
+    def _detect_elements(self):
         with wait_cursor():
+            self.clear_list()
+
+            if self._model is None:
+                self._model = tf.saved_model.load("cubicasa5k/model")
+
             img_array = np.array(Image.open(self._img_fname))
 
-            model = tf.saved_model.load("cubicasa5k/model")
-
-            output = model(tf.cast(img_array, tf.uint8))
+            output = self._model(tf.cast(img_array, tf.uint8))
             # output is a dict with keys: 
             # center_heatmap, instance_center_pred, instance_pred, 
             # panoptic_pred, offset_map, semantic_pred, 
             # semantic_logits, instance_scores, semantic_probs
 
-            panoptic_pred = output['panoptic_pred']
-            semantic_pred = output['semantic_pred']
-            instance_pred = output['instance_pred']
-            print(semantic_pred)
-            panoptic_pred = panoptic_pred.numpy()
-            semantic_pred = semantic_pred.numpy()
-            instance_pred = instance_pred.numpy()
-            print(semantic_pred)
+            semantic_pred = output['semantic_pred'].numpy()
 
-            print("panoptic_pred =", np.unique(panoptic_pred))
-            print("semantic_pred =", np.unique(semantic_pred))
-            print("instance_pred =", np.unique(instance_pred))
+            labels = np.unique(semantic_pred)
+            labels.sort()
+            labels = np.vectorize(ccl.label_to_str.get)(labels)
 
-            im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
-            im.save("cubicasa5k/semantic_pred.png")
+            bold_font = QFont()
+            bold_font.setBold(True)
+
+            for label in labels:
+                if label == "Background":
+                    continue
+                parent = QStandardItem(label + "s")
+                parent.setFont(bold_font)
+                parent.setEditable(False)
+                self._std_item_model.appendRow(parent)
+
+            # im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
+            # im.save("cubicasa5k/semantic_pred.png")
 
 
 def main():

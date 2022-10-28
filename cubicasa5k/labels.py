@@ -7,7 +7,7 @@ class Label(IntEnum):
     ROOM = 2
     DOOR = 3
 
-_SVG_LABEL_TO_LABEL = {
+svg_label_to_label = {
     "Alcove": Label.ROOM,
     "Attic": Label.ROOM,
     "Ballroom": Label.ROOM,
@@ -78,8 +78,12 @@ _SVG_LABEL_TO_LABEL = {
 }
 
 
-def get_label(s):
-    return _SVG_LABEL_TO_LABEL[s]
+label_to_str = {
+    Label.BACKGROUND : "Background",
+    Label.WALL : "Wall",
+    Label.DOOR : "Door",
+    Label.ROOM : "Room",
+}
 
 
 def get_colormap():
