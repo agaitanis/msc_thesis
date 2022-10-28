@@ -11,8 +11,8 @@ from PyQt5.QtWidgets import *
 
 @contextmanager
 def wait_cursor():
+    QApplication.setOverrideCursor(Qt.WaitCursor)
     try:
-        QApplication.setOverrideCursor(Qt.WaitCursor)
         yield
     finally:
         QApplication.restoreOverrideCursor()
@@ -86,42 +86,46 @@ class MainWin(QMainWindow):
             self._img_fname = file_dialog.selectedFiles()[0]
             self._img_label.setPixmap(QPixmap.fromImage(QImage(self._img_fname)))
             self._predict_button.setEnabled(True)
+
     
+    def _detect_elements_core(self):
+        self.clear_list()
+
+        if self._model is None:
+            self._model = tf.saved_model.load("cubicasa5k/model")
+
+        img_array = np.array(Image.open(self._img_fname))
+
+        output = self._model(tf.cast(img_array, tf.uint8))
+        # output is a dict with keys: 
+        # center_heatmap, instance_center_pred, instance_pred, 
+        # panoptic_pred, offset_map, semantic_pred, 
+        # semantic_logits, instance_scores, semantic_probs
+
+        semantic_pred = output['semantic_pred'].numpy()
+
+        labels = np.unique(semantic_pred)
+        labels.sort()
+        labels = np.vectorize(ccl.label_to_str.get)(labels)
+
+        bold_font = QFont()
+        bold_font.setBold(True)
+
+        for label in labels:
+            if label == "Background":
+                continue
+            parent = QStandardItem(label + "s")
+            parent.setFont(bold_font)
+            parent.setEditable(False)
+            self._std_item_model.appendRow(parent)
+
+        # im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
+        # im.save("cubicasa5k/semantic_pred.png")
+
 
     def _detect_elements(self):
         with wait_cursor():
-            self.clear_list()
-
-            if self._model is None:
-                self._model = tf.saved_model.load("cubicasa5k/model")
-
-            img_array = np.array(Image.open(self._img_fname))
-
-            output = self._model(tf.cast(img_array, tf.uint8))
-            # output is a dict with keys: 
-            # center_heatmap, instance_center_pred, instance_pred, 
-            # panoptic_pred, offset_map, semantic_pred, 
-            # semantic_logits, instance_scores, semantic_probs
-
-            semantic_pred = output['semantic_pred'].numpy()
-
-            labels = np.unique(semantic_pred)
-            labels.sort()
-            labels = np.vectorize(ccl.label_to_str.get)(labels)
-
-            bold_font = QFont()
-            bold_font.setBold(True)
-
-            for label in labels:
-                if label == "Background":
-                    continue
-                parent = QStandardItem(label + "s")
-                parent.setFont(bold_font)
-                parent.setEditable(False)
-                self._std_item_model.appendRow(parent)
-
-            # im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
-            # im.save("cubicasa5k/semantic_pred.png")
+            self._detect_elements_core()
 
 
 def main():
