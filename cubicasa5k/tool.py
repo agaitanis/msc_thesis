@@ -9,13 +9,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
-@contextmanager
-def wait_cursor():
-    QApplication.setOverrideCursor(Qt.WaitCursor)
-    try:
-        yield
-    finally:
-        QApplication.restoreOverrideCursor()
+_LABEL_DIVISOR = 256
 
 
 class MainWin(QMainWindow):
@@ -83,6 +77,7 @@ class MainWin(QMainWindow):
         file_dialog.setNameFilter("Images (*.png)")
 
         if file_dialog.exec() == QFileDialog.Accepted:
+            self.clear_list()
             self._img_fname = file_dialog.selectedFiles()[0]
             self._img_label.setPixmap(QPixmap.fromImage(QImage(self._img_fname)))
             self._predict_button.setEnabled(True)
@@ -102,29 +97,56 @@ class MainWin(QMainWindow):
         # panoptic_pred, offset_map, semantic_pred, 
         # semantic_logits, instance_scores, semantic_probs
 
-        semantic_pred = output['semantic_pred'].numpy()
+        panoptic_pred = output["panoptic_pred"].numpy()
 
-        labels = np.unique(semantic_pred)
+        panoptic = np.unique(panoptic_pred)
+        panoptic.sort()
+
+        labels = np.unique(panoptic // _LABEL_DIVISOR)
         labels.sort()
-        labels = np.vectorize(ccl.label_to_str.get)(labels)
 
         bold_font = QFont()
         bold_font.setBold(True)
 
         for label in labels:
-            if label == "Background":
-                continue
-            parent = QStandardItem(label + "s")
+            label_str = ccl.label_to_str[label]
+
+            parent_str = label_str
+            if parent_str != "Background":
+                parent_str += "s"
+            parent = QStandardItem(parent_str)
             parent.setFont(bold_font)
             parent.setEditable(False)
             self._std_item_model.appendRow(parent)
+
+            instances = np.where(panoptic // _LABEL_DIVISOR == label, panoptic % _LABEL_DIVISOR, 0)
+            instances = np.unique(instances)
+            instances.sort()
+
+            for i, instance in enumerate(instances):
+                if instance == 0:
+                    continue
+                child_str = f"{label_str} {i}"
+                child = QStandardItem(child_str)
+                parent.appendRow(child)
 
         # im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
         # im.save("cubicasa5k/semantic_pred.png")
 
 
+    @contextmanager
+    def _detect_elements_context(self):
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self._predict_button.setEnabled(False)
+        try:
+            yield
+        finally:
+            QApplication.restoreOverrideCursor()
+            self._predict_button.setEnabled(True)
+
+
     def _detect_elements(self):
-        with wait_cursor():
+        with self._detect_elements_context():
             self._detect_elements_core()
 
 
