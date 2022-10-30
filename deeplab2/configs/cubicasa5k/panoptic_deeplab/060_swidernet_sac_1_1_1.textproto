@@ -31,12 +31,12 @@
 #   Baseline for Bottom-Up Panoptic Segmentation." In CVPR, 2020.
 
 # Use a unique experiment_name for each experiment.
-experiment_name: "031"
+experiment_name: "060"
 model_options {
   initial_checkpoint: "deeplab2/initial_checkpoints/swidernet_sac_1_1_1_imagenet1k_strong_training_strategy/ckpt-350.index"
   backbone {
     name: "swidernet"
-    output_stride: 32 # Change
+    output_stride: 16 # Change
     stem_width_multiplier: 1
     backbone_width_multiplier: 1
     backbone_layer_multiplier: 1
@@ -48,9 +48,9 @@ model_options {
     feature_key: "res5"
     decoder_channels: 256
     aspp_channels: 256
-    atrous_rates: 3 # Change
     atrous_rates: 6 # Change
-    atrous_rates: 9 # Change
+    atrous_rates: 12 # Change
+    atrous_rates: 18 # Change
   }
   panoptic_deeplab {
     low_level {
@@ -73,9 +73,9 @@ model_options {
       instance_decoder_override {
         feature_key: "res5"
         decoder_channels: 128
-        atrous_rates: 3 # Change
         atrous_rates: 6 # Change
-        atrous_rates: 9 # Change
+        atrous_rates: 12 # Change
+        atrous_rates: 18 # Change
       }
       center_head {
         output_channels: 1
@@ -112,7 +112,7 @@ trainer_options {
     }
   }
   solver_options {
-    base_learning_rate: 0.001
+    base_learning_rate: 0.0002
     training_number_of_steps: 10000
   }
 }
@@ -162,7 +162,7 @@ evaluator_options {
   # instance maps. For faster speed, compile TensorFlow with provided kernel
   # implementation under the folder `tensorflow_ops`, and set
   # merge_semantic_and_instance_with_tf_op to true.
-  merge_semantic_and_instance_with_tf_op: true
+  merge_semantic_and_instance_with_tf_op: false
   eval_interval: 1000
   num_vis_samples: 20
 }

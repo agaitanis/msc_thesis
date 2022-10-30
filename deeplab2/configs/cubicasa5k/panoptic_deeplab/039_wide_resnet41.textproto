@@ -31,7 +31,7 @@
 #   Baseline for Bottom-Up Panoptic Segmentation." In CVPR, 2020.
 
 # Use a unique experiment_name for each experiment.
-experiment_name: "029"
+experiment_name: "039"
 model_options {
   initial_checkpoint: "deeplab2/initial_checkpoints/wide_resnet41_imagenet1k_strong_training_strategy/ckpt-350.index"
   backbone {
@@ -108,7 +108,7 @@ trainer_options {
     }
   }
   solver_options {
-    base_learning_rate: 0.002
+    base_learning_rate: 0.0002
     training_number_of_steps: 10000
   }
 }
@@ -158,7 +158,7 @@ evaluator_options {
   # instance maps. For faster speed, compile TensorFlow with provided kernel
   # implementation under the folder `tensorflow_ops`, and set
   # merge_semantic_and_instance_with_tf_op to true.
-  merge_semantic_and_instance_with_tf_op: true
+  merge_semantic_and_instance_with_tf_op: false
   eval_interval: 1000
   num_vis_samples: 20
 }

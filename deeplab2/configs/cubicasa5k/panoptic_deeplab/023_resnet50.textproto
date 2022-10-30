@@ -108,7 +108,7 @@ trainer_options {
     }
   }
   solver_options {
-    base_learning_rate: 0.02 # Change
+    base_learning_rate: 0.01 # Change
     training_number_of_steps: 10000 # Change
   }
 }
@@ -156,7 +156,7 @@ evaluator_options {
   # instance maps. For faster speed, compile TensorFlow with provided kernel
   # implementation under the folder `tensorflow_ops`, and set
   # merge_semantic_and_instance_with_tf_op to true.
-  merge_semantic_and_instance_with_tf_op: true
+  merge_semantic_and_instance_with_tf_op: false
   eval_interval: 1000
   num_vis_samples: 20
 }
