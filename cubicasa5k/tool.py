@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import tensorflow as tf
 from contextlib import contextmanager
+from distinctipy import distinctipy
 from PIL import Image
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -17,16 +18,18 @@ class MainWin(QMainWindow):
         super().__init__()
 
         self._img_label = None
-        self._std_item_model = None
+        self._tree_view = None
+        self._item_model = None
         self._img_fname = None
         self._model = None
+        self._output = None
 
         self._create_win()
 
 
     def clear_list(self):
-        self._std_item_model.clear()
-        self._std_item_model.setHorizontalHeaderLabels(("Elements",))
+        self._item_model.clear()
+        self._item_model.setHorizontalHeaderLabels(("Elements",))
 
 
     def _create_win(self):
@@ -55,15 +58,18 @@ class MainWin(QMainWindow):
         h_layout.addWidget(self._img_label)
         self._img_label.setMinimumSize(QSize(500, 400))
 
-        tree_view = QTreeView()
-        h_layout.addWidget(tree_view)
-        tree_view.setMinimumWidth(250)
-        tree_view.setAlternatingRowColors(True)
-        tree_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self._tree_view = QTreeView()
+        h_layout.addWidget(self._tree_view)
+        self._tree_view.setMinimumWidth(250)
+        self._tree_view.setAlternatingRowColors(True)
+        self._tree_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
-        self._std_item_model = QStandardItemModel()
-        tree_view.setModel(self._std_item_model)
+        self._item_model = QStandardItemModel()
+        self._tree_view.setModel(self._item_model)
         self.clear_list()
+
+        selection_model = self._tree_view.selectionModel()
+        selection_model.selectionChanged.connect(self._selection_changed)
 
         self._predict_button = QPushButton("Detect elements")
         v_layout.addWidget(self._predict_button)
@@ -82,6 +88,15 @@ class MainWin(QMainWindow):
             self._img_label.setPixmap(QPixmap.fromImage(QImage(self._img_fname)))
             self._predict_button.setEnabled(True)
 
+
+    def _selection_changed(self):
+        indices = self._tree_view.selectedIndexes()
+        for index in indices:
+            item = self._item_model.itemFromIndex(index)
+            # instance = item.data())
+            # instance_mask = np.where(instance_pred == instance, 1, 0)
+            # FIXME
+
     
     def _detect_elements_core(self):
         self.clear_list()
@@ -91,13 +106,13 @@ class MainWin(QMainWindow):
 
         img_array = np.array(Image.open(self._img_fname))
 
-        output = self._model(tf.cast(img_array, tf.uint8))
-        # output is a dict with keys: 
+        self._output = self._model(tf.cast(img_array, tf.uint8))
+        # self._output is a dict with keys: 
         # center_heatmap, instance_center_pred, instance_pred, 
         # panoptic_pred, offset_map, semantic_pred, 
         # semantic_logits, instance_scores, semantic_probs
 
-        panoptic_pred = output["panoptic_pred"].numpy()
+        panoptic_pred = self._output["panoptic_pred"].numpy()
 
         panoptic = np.unique(panoptic_pred)
         panoptic.sort()
@@ -117,21 +132,24 @@ class MainWin(QMainWindow):
             parent = QStandardItem(parent_str)
             parent.setFont(bold_font)
             parent.setEditable(False)
-            self._std_item_model.appendRow(parent)
+            self._item_model.appendRow(parent)
 
-            instances = np.where(panoptic // _LABEL_DIVISOR == label, panoptic % _LABEL_DIVISOR, 0)
-            instances = np.unique(instances)
+            instance_pred = np.where(panoptic_pred // _LABEL_DIVISOR == label, 
+                panoptic_pred % _LABEL_DIVISOR, -1)
+            instances = np.unique(instance_pred)
             instances.sort()
 
             for i, instance in enumerate(instances):
-                if instance == 0:
+                if instance == -1:
                     continue
+                if instance == 0:
+                    parent.setData(instance)
+                    continue
+
                 child_str = f"{label_str} {i}"
                 child = QStandardItem(child_str)
+                child.setData(instance)
                 parent.appendRow(child)
-
-        # im = Image.fromarray(ccl.get_colormap()[semantic_pred[0]])
-        # im.save("cubicasa5k/semantic_pred.png")
 
 
     @contextmanager
