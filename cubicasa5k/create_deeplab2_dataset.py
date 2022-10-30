@@ -29,9 +29,9 @@ FLAGS = flags.FLAGS
 
 
 _DATASET_SPLIT_SIZES = {
-    "train" : 4200, # FIXME Change to 4200
-    "val" : 400, # FIXME Change to 400
-    "test" : 400, # FIXME Change to 400
+    "train" : 4200,
+    "val" : 400,
+    "test" : 400,
 }
 
 _MAX_IMG_SIZE = 1024
