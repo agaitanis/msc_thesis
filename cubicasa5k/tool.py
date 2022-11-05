@@ -4,13 +4,34 @@ import sys
 import tensorflow as tf
 from contextlib import contextmanager
 from distinctipy import distinctipy
-from PIL import Image
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PIL import Image, ImageQt
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
+from PyQt6.QtWidgets import *
 
 
 _LABEL_DIVISOR = 256
+
+
+class MyItemModel(QStandardItemModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.panoptic_id_to_color = None
+
+
+    def data(self, index, role):
+        if role == Qt.ItemDataRole.DecorationRole and self.panoptic_id_to_color is not None:
+            item = self.itemFromIndex(index)
+            panoptic_id = item.data()
+            if panoptic_id is not None:
+                color = self.panoptic_id_to_color[panoptic_id]
+                return QColor(color[0], color[1], color[2])
+        return super().data(index, role)
+    
+
+    def clear(self):
+        super().clear()
+        self.panoptic_id_to_color = None
 
 
 class MainWin(QMainWindow):
@@ -23,6 +44,7 @@ class MainWin(QMainWindow):
         self._img_fname = None
         self._model = None
         self._output = None
+        self._panoptic_id_to_color = None
 
         self._create_win()
 
@@ -52,7 +74,6 @@ class MainWin(QMainWindow):
 
         h_layout = QHBoxLayout()
         v_layout.addLayout(h_layout)
-        h_layout.setAlignment(Qt.AlignCenter)
 
         self._img_label = QLabel()
         h_layout.addWidget(self._img_label)
@@ -62,9 +83,9 @@ class MainWin(QMainWindow):
         h_layout.addWidget(self._tree_view)
         self._tree_view.setMinimumWidth(250)
         self._tree_view.setAlternatingRowColors(True)
-        self._tree_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
 
-        self._item_model = QStandardItemModel()
+        self._item_model = MyItemModel()
         self._tree_view.setModel(self._item_model)
         self.clear_list()
 
@@ -78,24 +99,35 @@ class MainWin(QMainWindow):
 
 
     def _open_image(self):
-        file_dialog = QFileDialog(self)
-        file_dialog.setWindowTitle("Open Image")
-        file_dialog.setNameFilter("Images (*.png)")
+        filename = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png)", None)
 
-        if file_dialog.exec() == QFileDialog.Accepted:
+        if len(filename[0]) > 0:
             self.clear_list()
-            self._img_fname = file_dialog.selectedFiles()[0]
+            self._img_fname = filename[0]
             self._img_label.setPixmap(QPixmap.fromImage(QImage(self._img_fname)))
             self._predict_button.setEnabled(True)
 
 
     def _selection_changed(self):
         indices = self._tree_view.selectedIndexes()
+        if len(indices) == 0:
+            return
+
+        panoptic_pred = self._output["panoptic_pred"].numpy()[0]
+
         for index in indices:
             item = self._item_model.itemFromIndex(index)
-            # instance = item.data())
-            # instance_mask = np.where(instance_pred == instance, 1, 0)
-            # FIXME
+            panoptic_id = item.data()
+
+            if panoptic_id is not None:
+                color = self._panoptic_id_to_color[panoptic_id]
+                img = np.where(panoptic_pred[:, :, np.newaxis] == panoptic_id, 
+                    (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
+                im1 = Image.fromarray(img)
+                im2 = Image.open(self._img_fname)
+                im2.paste(im1, (0, 0), im1)
+                qim = ImageQt.ImageQt(im2)
+                self._img_label.setPixmap(QPixmap.fromImage(qim))
 
     
     def _detect_elements_core(self):
@@ -114,10 +146,10 @@ class MainWin(QMainWindow):
 
         panoptic_pred = self._output["panoptic_pred"].numpy()
 
-        panoptic = np.unique(panoptic_pred)
-        panoptic.sort()
+        panoptic_ids = np.unique(panoptic_pred)
+        panoptic_ids.sort()
 
-        labels = np.unique(panoptic // _LABEL_DIVISOR)
+        labels = np.unique(panoptic_ids // _LABEL_DIVISOR)
         labels.sort()
 
         bold_font = QFont()
@@ -142,19 +174,28 @@ class MainWin(QMainWindow):
             for i, instance in enumerate(instances):
                 if instance == -1:
                     continue
+
+                panoptic_id = label*_LABEL_DIVISOR + instance
+
                 if instance == 0:
-                    parent.setData(instance)
+                    parent.setData(panoptic_id)
                     continue
 
                 child_str = f"{label_str} {i}"
                 child = QStandardItem(child_str)
-                child.setData(instance)
+                child.setData(panoptic_id)
                 parent.appendRow(child)
+        
+        self._tree_view.expandAll()
+        
+        colors = (np.array(distinctipy.get_colors(len(panoptic_ids)))*255).astype(np.uint8)
+        self._panoptic_id_to_color = dict(zip(panoptic_ids, colors))
+        self._item_model.panoptic_id_to_color = self._panoptic_id_to_color
 
 
     @contextmanager
     def _detect_elements_context(self):
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         self._predict_button.setEnabled(False)
         try:
             yield
