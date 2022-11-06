@@ -1,19 +1,22 @@
 import cubicasa5k.labels as ccl
 import numpy as np
+import random
+import os
 import sys
 import tensorflow as tf
 from contextlib import contextmanager
 from distinctipy import distinctipy
-from PIL import Image, ImageQt
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
+from PyQt6.QtPrintSupport import *
 from PyQt6.QtWidgets import *
+from PIL import Image, ImageQt
 
 
 _LABEL_DIVISOR = 256
 
 
-class MyItemModel(QStandardItemModel):
+class ItemModel(QStandardItemModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.panoptic_id_to_color = None
@@ -34,109 +37,204 @@ class MyItemModel(QStandardItemModel):
         self.panoptic_id_to_color = None
 
 
+class Icon(QIcon):
+    def __init__(self, filename):
+        filename = os.path.join(os.path.dirname(__file__), "icons", filename)
+        super().__init__(filename)
+
+
 class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self._scale_factor = 0.0
         self._img_label = None
+        self._scroll_area = None
+        self._img_file_name = None
         self._tree_view = None
-        self._item_model = None
-        self._img_fname = None
         self._model = None
-        self._output = None
-        self._panoptic_id_to_color = None
 
         self._create_win()
 
 
-    def clear_list(self):
-        self._item_model.clear()
-        self._item_model.setHorizontalHeaderLabels(("Elements",))
-
-
     def _create_win(self):
         self.setWindowTitle("Floor Plan Recognition")
-        # self.setMinimumSize(QSize(800, 600))
-
-        open_action = QAction("Open", self)
-        open_action.setShortcut("Ctrl+O")
-        open_action.setStatusTip("Open image")
-        open_action.triggered.connect(self._open_image)
+        self.resize(800, 500)
 
         menu_bar = self.menuBar()
+
+        open_action = QAction(Icon("open_file.svg"), "&Open...", self, shortcut="Ctrl+O", 
+            triggered=self._open_image)
+        exit_action = QAction("&Exit", self, shortcut="Ctrl+Q", triggered=self.close)
+
         file_menu = menu_bar.addMenu("&File")
         file_menu.addAction(open_action)
+        file_menu.addSeparator()
+        file_menu.addAction(exit_action)
+
+        zoom_in_action = QAction(Icon("zoom_in.svg"), "Zoom &In (25%)", self, 
+            shortcut="Ctrl++", triggered=self._zoom_in)
+        zoom_out_action = QAction(Icon("zoom_out.svg"), "Zoom &Out (25%)", self, 
+            shortcut="Ctrl+-", triggered=self._zoom_out)
+        initial_size_action = QAction(Icon("original_size.svg"), "Original &Size", self, 
+            shortcut="Ctrl+1", triggered=self._original_size)
+
+        view_menu = menu_bar.addMenu("&View")
+        view_menu.addAction(zoom_in_action)
+        view_menu.addAction(zoom_out_action)
+        view_menu.addAction(initial_size_action)
 
         v_layout = QVBoxLayout()
+        v_layout.setContentsMargins(0, 0, 0, 0)
+
         widget = QWidget()
         widget.setLayout(v_layout)
         self.setCentralWidget(widget)
 
-        h_layout = QHBoxLayout()
-        v_layout.addLayout(h_layout)
-
-        self._img_label = QLabel()
-        h_layout.addWidget(self._img_label)
-        self._img_label.setMinimumSize(QSize(500, 400))
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        v_layout.addWidget(splitter)
 
         self._tree_view = QTreeView()
-        h_layout.addWidget(self._tree_view)
-        self._tree_view.setMinimumWidth(250)
+        splitter.addWidget(self._tree_view)
         self._tree_view.setAlternatingRowColors(True)
         self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
 
-        self._item_model = MyItemModel()
+        self._item_model = ItemModel()
         self._tree_view.setModel(self._item_model)
-        self.clear_list()
+        self._clear_list()
 
         selection_model = self._tree_view.selectionModel()
         selection_model.selectionChanged.connect(self._selection_changed)
+
+        self._img_label = QLabel()
+        self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self._img_label.setScaledContents(True)
+        self._img_label.resize(300, 300)
+
+        self._scroll_area = QScrollArea()
+        splitter.addWidget(self._scroll_area)
+        self._scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
+        self._scroll_area.setWidget(self._img_label)
+        self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self._predict_button = QPushButton("Detect elements")
         v_layout.addWidget(self._predict_button)
         self._predict_button.clicked.connect(self._detect_elements)
         self._predict_button.setEnabled(False)
 
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 3)
+
+
+    def _load_img(self, img_qt):
+        self._img_qt = img_qt
+        self._img_label.setPixmap(QPixmap.fromImage(img_qt))
+
+
+    def _adjust_scroll_bar(self, scroll_bar, factor):
+        scroll_bar.setValue(int(factor * scroll_bar.value() + ((factor - 1) * scroll_bar.pageStep() / 2)))
+
+
+    def _scale_img(self, factor):
+        self._scale_factor *= factor
+        self._load_img(self._img_qt)
+        self._img_label.resize(self._scale_factor * self._img_label.pixmap().size())
+
+        self._adjust_scroll_bar(self._scroll_area.horizontalScrollBar(), factor)
+        self._adjust_scroll_bar(self._scroll_area.verticalScrollBar(), factor)
+
+
+    def _zoom_in(self):
+        self._scale_img(1.25)
+
+
+    def _zoom_out(self):
+        self._scale_img(0.8)
+
+
+    def _original_size(self):
+        self._img_label.adjustSize()
+        self._scale_factor = 1.0
+
 
     def _open_image(self):
-        filename = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png)", None)
+        filename, _ = QFileDialog.getOpenFileName(self, "Open Image", "", 
+            "Images (*.png *.jpeg *.jpg *.bmp *.gif)")
+        if not filename:
+            return
 
-        if len(filename[0]) > 0:
-            self.clear_list()
-            self._img_fname = filename[0]
-            self._img_label.setPixmap(QPixmap.fromImage(QImage(self._img_fname)))
-            self._predict_button.setEnabled(True)
+        image = QImage(filename)
+        if image.isNull():
+            QMessageBox.information(self, "Image Viewer", "Cannot load %s." % filename)
+            return
+        
+        self._load_img(image)
+
+        self._img_file_name = filename
+        self._scale_factor = 1.0
+        self._scroll_area.setVisible(True)
+        self._img_label.adjustSize()
+        self._predict_button.setEnabled(True)
+        self._clear_list()
+    
+
+    def _clear_list(self):
+        self._item_model.clear()
+        self._item_model.setHorizontalHeaderLabels(("Elements",))
+
+    
+    def _get_selected_childless_items(self):
+        indexes = set()
+        selected_indexes = self._tree_view.selectedIndexes()
+
+        for index in selected_indexes:
+            item = self._item_model.itemFromIndex(index)
+            child_items_num = item.rowCount()
+            
+            if child_items_num > 0:
+                for i in range(child_items_num):
+                    indexes.add(item.child(i).index())
+            else:
+                indexes.add(index)
+        
+        items = [self._item_model.itemFromIndex(x) for x in indexes]
+        
+        return items
 
 
     def _selection_changed(self):
-        indices = self._tree_view.selectedIndexes()
-        if len(indices) == 0:
+        background = Image.open(self._img_file_name)
+
+        items = self._get_selected_childless_items()
+
+        if len(items) == 0:
+            self._load_img(ImageQt.ImageQt(background))
             return
 
-        panoptic_pred = self._output["panoptic_pred"].numpy()[0]
+        panoptic_pred = self._output["panoptic_pred"].numpy()[0][:, :, np.newaxis]
+        foreground_array = np.zeros((panoptic_pred.shape[0], panoptic_pred.shape[1], 4)).astype(np.uint8)
 
-        for index in indices:
-            item = self._item_model.itemFromIndex(index)
+        for item in items:
             panoptic_id = item.data()
+            if panoptic_id is None:
+                continue
 
-            if panoptic_id is not None:
-                color = self._panoptic_id_to_color[panoptic_id]
-                img = np.where(panoptic_pred[:, :, np.newaxis] == panoptic_id, 
-                    (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
-                im1 = Image.fromarray(img)
-                im2 = Image.open(self._img_fname)
-                im2.paste(im1, (0, 0), im1)
-                qim = ImageQt.ImageQt(im2)
-                self._img_label.setPixmap(QPixmap.fromImage(qim))
+            color = self._panoptic_id_to_color[panoptic_id]
+            foreground_array += np.where(panoptic_pred == panoptic_id,
+                (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
 
+        foreground = Image.fromarray(foreground_array)
+        background.paste(foreground, (0, 0), foreground)
+        self._load_img(ImageQt.ImageQt(background))
     
+
     def _detect_elements_core(self):
-        self.clear_list()
+        self._clear_list()
 
         if self._model is None:
             self._model = tf.saved_model.load("cubicasa5k/model")
 
-        img_array = np.array(Image.open(self._img_fname))
+        img_array = np.array(Image.open(self._img_file_name))
 
         self._output = self._model(tf.cast(img_array, tf.uint8))
         # self._output is a dict with keys: 
@@ -152,9 +250,6 @@ class MainWin(QMainWindow):
         labels = np.unique(panoptic_ids // _LABEL_DIVISOR)
         labels.sort()
 
-        bold_font = QFont()
-        bold_font.setBold(True)
-
         for label in labels:
             label_str = ccl.label_to_str[label]
 
@@ -162,7 +257,6 @@ class MainWin(QMainWindow):
             if parent_str != "Background":
                 parent_str += "s"
             parent = QStandardItem(parent_str)
-            parent.setFont(bold_font)
             parent.setEditable(False)
             self._item_model.appendRow(parent)
 
@@ -188,6 +282,7 @@ class MainWin(QMainWindow):
         
         self._tree_view.expandAll()
         
+        random.seed(0)
         colors = (np.array(distinctipy.get_colors(len(panoptic_ids)))*255).astype(np.uint8)
         self._panoptic_id_to_color = dict(zip(panoptic_ids, colors))
         self._item_model.panoptic_id_to_color = self._panoptic_id_to_color
@@ -209,15 +304,10 @@ class MainWin(QMainWindow):
             self._detect_elements_core()
 
 
-def main():
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    app.setStyleSheet("QWidget{font-size: 11pt;}")
 
     win = MainWin()
     win.show()
 
-    app.exec()
-
-
-if __name__ == '__main__':
-    main()
+    sys.exit(app.exec())
