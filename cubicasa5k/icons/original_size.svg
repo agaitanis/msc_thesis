@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-  <ellipse style="fill: rgb(211, 232, 234); stroke: rgb(0, 110, 153); stroke-width: 40px;" cx="213.654" cy="229.599" rx="164.635" ry="159.876" transform="matrix(1, -0.000175, 0.000181, 1, -1.36831, -40.36248)"/>
+  <ellipse style="stroke: rgb(0, 110, 153); stroke-width: 40px; fill: none;" cx="213.654" cy="229.599" rx="164.635" ry="159.876" transform="matrix(1, -0.000175, 0.000181, 1, -1.36831, -40.36248)"/>
   <path style="fill: rgb(216, 216, 216); stroke: rgb(0, 110, 153); stroke-width: 40px;" d="M 311.697 319.555 L 447.592 466.336" transform="matrix(0.997772, 0.066712, -0.066712, 0.997772, 27.059923, -24.451467)"/>
   <text style="fill: rgb(0, 110, 153); font-family: Arial, sans-serif; font-size: 250px; font-weight: 700; stroke: rgb(0, 110, 153); white-space: pre;" x="138.891" y="271.365">1</text>
 </svg>
