@@ -43,6 +43,13 @@ class Icon(QIcon):
         super().__init__(filename)
 
 
+class Separator(QFrame):
+    def __init__(self):
+        super().__init__()
+        self.setFrameShape(QFrame.Shape.VLine)
+        self.setFrameShadow(QFrame.Shadow.Sunken)
+
+
 class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -63,26 +70,29 @@ class MainWin(QMainWindow):
 
         menu_bar = self.menuBar()
 
-        open_action = QAction(Icon("open_file.svg"), "&Open...", self, shortcut="Ctrl+O", 
+        open_action = QAction(Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
             triggered=self._open_image)
-        exit_action = QAction("&Exit", self, shortcut="Ctrl+Q", triggered=self.close)
+        exit_action = QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close)
 
-        file_menu = menu_bar.addMenu("&File")
+        file_menu = menu_bar.addMenu("File")
         file_menu.addAction(open_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
-        zoom_in_action = QAction(Icon("zoom_in.svg"), "Zoom &In (25%)", self, 
+        fit_to_window_action = QAction(Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
+            shortcut="Ctrl+0", triggered=self._zoom_to_fit)
+        initial_size_action = QAction(Icon("zoom_100.svg"), "Show 100%", self, 
+            shortcut="Ctrl+1", triggered=self._zoom_100)
+        zoom_in_action = QAction(Icon("zoom_in.svg"), "Zoom in", self, 
             shortcut="Ctrl++", triggered=self._zoom_in)
-        zoom_out_action = QAction(Icon("zoom_out.svg"), "Zoom &Out (25%)", self, 
+        zoom_out_action = QAction(Icon("zoom_out.svg"), "Zoom out", self, 
             shortcut="Ctrl+-", triggered=self._zoom_out)
-        initial_size_action = QAction(Icon("original_size.svg"), "Original &Size", self, 
-            shortcut="Ctrl+1", triggered=self._original_size)
 
-        view_menu = menu_bar.addMenu("&View")
+        view_menu = menu_bar.addMenu("View")
+        view_menu.addAction(fit_to_window_action)
+        view_menu.addAction(initial_size_action)
         view_menu.addAction(zoom_in_action)
         view_menu.addAction(zoom_out_action)
-        view_menu.addAction(initial_size_action)
 
         v_layout = QVBoxLayout()
         v_layout.setContentsMargins(0, 0, 0, 0)
@@ -91,13 +101,51 @@ class MainWin(QMainWindow):
         widget.setLayout(v_layout)
         self.setCentralWidget(widget)
 
+        h_layout = QHBoxLayout()
+        h_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        v_layout.addLayout(h_layout)
+
+        button = QPushButton()
+        button.setIcon(Icon("open_file.svg"))
+        button.clicked.connect(self._open_image)
+        button.setToolTip("Open")
+        h_layout.addWidget(button)
+
+        h_layout.addWidget(Separator())
+        
+        button = QPushButton()
+        button.setIcon(Icon("zoom_to_fit.svg"))
+        button.clicked.connect(self._zoom_to_fit)
+        button.setToolTip("Zoom to fit")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(Icon("zoom_100.svg"))
+        button.clicked.connect(self._zoom_100)
+        button.setToolTip("Zoom 100%")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(Icon("zoom_in.svg"))
+        button.clicked.connect(self._zoom_in)
+        button.setToolTip("Zoom in")
+        h_layout.addWidget(button)
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(Icon("zoom_out.svg"))
+        button.clicked.connect(self._zoom_out)
+        button.setToolTip("Zoom out")
+        h_layout.addWidget(button)
+
         splitter = QSplitter(Qt.Orientation.Horizontal)
         v_layout.addWidget(splitter)
 
         self._tree_view = QTreeView()
-        splitter.addWidget(self._tree_view)
         self._tree_view.setAlternatingRowColors(True)
         self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        splitter.addWidget(self._tree_view)
 
         self._item_model = ItemModel()
         self._tree_view.setModel(self._item_model)
@@ -106,21 +154,22 @@ class MainWin(QMainWindow):
         selection_model = self._tree_view.selectionModel()
         selection_model.selectionChanged.connect(self._selection_changed)
 
+        self._scroll_area = QScrollArea()
+        self._scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
+        self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._scroll_area.setVisible(True)
+
         self._img_label = QLabel()
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 300)
-
-        self._scroll_area = QScrollArea()
-        splitter.addWidget(self._scroll_area)
-        self._scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
         self._scroll_area.setWidget(self._img_label)
-        self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        splitter.addWidget(self._scroll_area)
         self._predict_button = QPushButton("Detect elements")
-        v_layout.addWidget(self._predict_button)
         self._predict_button.clicked.connect(self._detect_elements)
         self._predict_button.setEnabled(False)
+        v_layout.addWidget(self._predict_button)
 
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
@@ -152,9 +201,24 @@ class MainWin(QMainWindow):
         self._scale_img(0.8)
 
 
-    def _original_size(self):
+    def _zoom_100(self):
         self._img_label.adjustSize()
         self._scale_factor = 1.0
+
+    
+    def _zoom_to_fit(self):
+        src_size = self._img_label.size()
+        trg_size = self._scroll_area.size()
+
+        src_w = src_size.width()
+        src_h = src_size.height()
+        trg_w = trg_size.width() - self._scroll_area.verticalScrollBar().size().width()
+        trg_h = trg_size.height() - self._scroll_area.horizontalScrollBar().size().height()
+
+        if trg_w/trg_h < src_w/src_h:
+            self._scale_img(trg_w/src_w)
+        else:
+            self._scale_img(trg_h/src_h)
 
 
     def _open_image(self):
@@ -172,8 +236,8 @@ class MainWin(QMainWindow):
 
         self._img_file_name = filename
         self._scale_factor = 1.0
-        self._scroll_area.setVisible(True)
         self._img_label.adjustSize()
+        self._zoom_to_fit()
         self._predict_button.setEnabled(True)
         self._clear_list()
     
@@ -252,10 +316,10 @@ class MainWin(QMainWindow):
 
         for label in labels:
             label_str = ccl.label_to_str[label]
+            if label_str == "Background":
+                continue
 
-            parent_str = label_str
-            if parent_str != "Background":
-                parent_str += "s"
+            parent_str = label_str + "s"
             parent = QStandardItem(parent_str)
             parent.setEditable(False)
             self._item_model.appendRow(parent)
@@ -277,6 +341,7 @@ class MainWin(QMainWindow):
 
                 child_str = f"{label_str} {i}"
                 child = QStandardItem(child_str)
+                child.setEditable(False)
                 child.setData(panoptic_id)
                 parent.appendRow(child)
         
