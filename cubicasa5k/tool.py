@@ -60,6 +60,7 @@ class MainWin(QMainWindow):
         self._img_file_name = None
         self._tree_view = None
         self._model = None
+        self._panoptic_id_to_color = None
 
         self._create_win()
 
@@ -70,19 +71,22 @@ class MainWin(QMainWindow):
 
         menu_bar = self.menuBar()
 
+        new_action = QAction(Icon("new_file.svg"), "New", self, shortcut="Ctrl+N", 
+            triggered=self._new_file)
         open_action = QAction(Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
-            triggered=self._open_image)
+            triggered=self._open_file)
         exit_action = QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close)
 
         file_menu = menu_bar.addMenu("File")
+        file_menu.addAction(new_action)
         file_menu.addAction(open_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
-        fit_to_window_action = QAction(Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
-            shortcut="Ctrl+0", triggered=self._zoom_to_fit)
-        initial_size_action = QAction(Icon("zoom_100.svg"), "Show 100%", self, 
-            shortcut="Ctrl+1", triggered=self._zoom_100)
+        fit_to_window_action = QAction(Icon("fit_to_window.svg"), "Fit to window", self, 
+            shortcut="Ctrl+0", triggered=self._fit_to_window)
+        initial_size_action = QAction(Icon("original_size.svg"), "Original size", self, 
+            shortcut="Ctrl+1", triggered=self._original_size)
         zoom_in_action = QAction(Icon("zoom_in.svg"), "Zoom in", self, 
             shortcut="Ctrl++", triggered=self._zoom_in)
         zoom_out_action = QAction(Icon("zoom_out.svg"), "Zoom out", self, 
@@ -106,22 +110,28 @@ class MainWin(QMainWindow):
         v_layout.addLayout(h_layout)
 
         button = QPushButton()
+        button.setIcon(Icon("new_file.svg"))
+        button.clicked.connect(self._new_file)
+        button.setToolTip("New")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
         button.setIcon(Icon("open_file.svg"))
-        button.clicked.connect(self._open_image)
+        button.clicked.connect(self._open_file)
         button.setToolTip("Open")
         h_layout.addWidget(button)
 
         h_layout.addWidget(Separator())
         
         button = QPushButton()
-        button.setIcon(Icon("zoom_to_fit.svg"))
-        button.clicked.connect(self._zoom_to_fit)
+        button.setIcon(Icon("fit_to_window.svg"))
+        button.clicked.connect(self._fit_to_window)
         button.setToolTip("Zoom to fit")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(Icon("zoom_100.svg"))
-        button.clicked.connect(self._zoom_100)
+        button.setIcon(Icon("original_size.svg"))
+        button.clicked.connect(self._original_size)
         button.setToolTip("Zoom 100%")
         h_layout.addWidget(button)
 
@@ -201,12 +211,12 @@ class MainWin(QMainWindow):
         self._scale_img(0.8)
 
 
-    def _zoom_100(self):
+    def _original_size(self):
         self._img_label.adjustSize()
         self._scale_factor = 1.0
 
     
-    def _zoom_to_fit(self):
+    def _fit_to_window(self):
         src_size = self._img_label.size()
         trg_size = self._scroll_area.size()
 
@@ -221,7 +231,12 @@ class MainWin(QMainWindow):
             self._scale_img(trg_h/src_h)
 
 
-    def _open_image(self):
+    def _new_file(self):
+        self._clear_list()
+        self._img_label.clear()
+
+
+    def _open_file(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Open Image", "", 
             "Images (*.png *.jpeg *.jpg *.bmp *.gif)")
         if not filename:
@@ -237,7 +252,7 @@ class MainWin(QMainWindow):
         self._img_file_name = filename
         self._scale_factor = 1.0
         self._img_label.adjustSize()
-        self._zoom_to_fit()
+        self._fit_to_window()
         self._predict_button.setEnabled(True)
         self._clear_list()
     
