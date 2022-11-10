@@ -59,6 +59,7 @@ class MainWin(QMainWindow):
         self._scroll_area = None
         self._img_file_name = None
         self._tree_view = None
+        self._predict_button = None
         self._model = None
         self._panoptic_id_to_color = None
 
@@ -234,6 +235,8 @@ class MainWin(QMainWindow):
     def _new_file(self):
         self._clear_list()
         self._img_label.clear()
+        self._img_file_name = None
+        self._predict_button.setEnabled(False)
 
 
     def _open_file(self):
