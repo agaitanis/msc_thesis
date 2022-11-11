@@ -15,6 +15,32 @@ from PIL import Image, ImageQt
 
 _LABEL_DIVISOR = 256
 
+    
+class ImgLabel(QLabel):
+    def __init__(self):
+        super().__init__()
+        self._scale_factor = 1.0
+
+
+    def get_scale_factor(self):
+        return self._scale_factor
+
+
+    def set_scale_factor(self, val):
+        if val == 1.0:
+            self.adjustSize()
+        else:
+            self._scale_factor = val
+            self.resize(val * self.pixmap().size())
+
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+
+        # painter = QPainter(self)
+        # painter.setPen(QPen(Qt.GlobalColor.darkBlue, 5))
+        # painter.drawEllipse(100*self._scale_factor, 200*self._scale_factor, 20, 20)
+
 
 class ItemModel(QStandardItemModel):
     def __init__(self, parent=None):
@@ -54,8 +80,8 @@ class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self._scale_factor = 0.0
         self._img_label = None
+        self._img_qt = None
         self._scroll_area = None
         self._img_file_name = None
         self._tree_view = None
@@ -127,13 +153,13 @@ class MainWin(QMainWindow):
         button = QPushButton()
         button.setIcon(Icon("fit_to_window.svg"))
         button.clicked.connect(self._fit_to_window)
-        button.setToolTip("Zoom to fit")
+        button.setToolTip("Fit to window")
         h_layout.addWidget(button)
 
         button = QPushButton()
         button.setIcon(Icon("original_size.svg"))
         button.clicked.connect(self._original_size)
-        button.setToolTip("Zoom 100%")
+        button.setToolTip("Original size")
         h_layout.addWidget(button)
 
         button = QPushButton()
@@ -170,7 +196,7 @@ class MainWin(QMainWindow):
         self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._scroll_area.setVisible(True)
 
-        self._img_label = QLabel()
+        self._img_label = ImgLabel()
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 300)
@@ -190,15 +216,17 @@ class MainWin(QMainWindow):
         self._img_qt = img_qt
         self._img_label.setPixmap(QPixmap.fromImage(img_qt))
 
-
+    
     def _adjust_scroll_bar(self, scroll_bar, factor):
         scroll_bar.setValue(int(factor * scroll_bar.value() + ((factor - 1) * scroll_bar.pageStep() / 2)))
 
 
     def _scale_img(self, factor):
-        self._scale_factor *= factor
+        if self._img_qt is None:
+            return
+
         self._load_img(self._img_qt)
-        self._img_label.resize(self._scale_factor * self._img_label.pixmap().size())
+        self._img_label.set_scale_factor(factor*self._img_label.get_scale_factor())
 
         self._adjust_scroll_bar(self._scroll_area.horizontalScrollBar(), factor)
         self._adjust_scroll_bar(self._scroll_area.verticalScrollBar(), factor)
@@ -213,8 +241,7 @@ class MainWin(QMainWindow):
 
 
     def _original_size(self):
-        self._img_label.adjustSize()
-        self._scale_factor = 1.0
+        self._img_label.set_scale_factor(1.0)
 
     
     def _fit_to_window(self):
@@ -253,8 +280,7 @@ class MainWin(QMainWindow):
         self._load_img(image)
 
         self._img_file_name = filename
-        self._scale_factor = 1.0
-        self._img_label.adjustSize()
+        self._img_label.set_scale_factor(1.0)
         self._fit_to_window()
         self._predict_button.setEnabled(True)
         self._clear_list()
