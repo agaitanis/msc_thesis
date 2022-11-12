@@ -6,6 +6,7 @@ import sys
 import tensorflow as tf
 from contextlib import contextmanager
 from distinctipy import distinctipy
+from math import sqrt
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtPrintSupport import *
@@ -15,10 +16,18 @@ from PIL import Image, ImageQt
 
 _LABEL_DIVISOR = 256
 
+
+class PanopticIdData():
+    def __init__(self, color=None, center=None, is_selected=False):
+        self.color = color
+        self.center = center
+        self.is_selected = is_selected
+
     
 class ImgLabel(QLabel):
-    def __init__(self):
+    def __init__(self, panoptic_id_to_data):
         super().__init__()
+        self._panoptic_id_to_data = panoptic_id_to_data
         self._scale_factor = 1.0
 
 
@@ -27,41 +36,60 @@ class ImgLabel(QLabel):
 
 
     def set_scale_factor(self, val):
+        self._scale_factor = val
         if val == 1.0:
             self.adjustSize()
         else:
-            self._scale_factor = val
             self.resize(val * self.pixmap().size())
 
 
     def paintEvent(self, event):
         super().paintEvent(event)
 
-        # painter = QPainter(self)
-        # painter.setPen(QPen(Qt.GlobalColor.darkBlue, 5))
-        # painter.drawEllipse(100*self._scale_factor, 200*self._scale_factor, 20, 20)
+        painter = QPainter(self)
+
+        for id, data in self._panoptic_id_to_data.items():
+            color = data.color
+            center = data.center
+
+            if center is None:
+                continue
+
+            is_selected = data.is_selected
+
+            x = center[1]*self._scale_factor
+            y = center[0]*self._scale_factor
+            point = QPointF(x, y)
+            width = 1
+            r = 10.0
+            alpha = 150
+
+            if is_selected:
+                width = 4
+                r = 10.0
+                alpha = 255
+
+            painter.setPen(QPen(QColor(0, 0, 0, alpha), width))
+            painter.setBrush(QBrush(QColor(color[0], color[1], color[2], alpha)))
+            painter.drawEllipse(point, r, r)
 
 
 class ItemModel(QStandardItemModel):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.panoptic_id_to_color = None
-
+    def __init__(self, panoptic_id_to_data):
+        super().__init__()
+        self._panoptic_id_to_data = panoptic_id_to_data
+    
 
     def data(self, index, role):
-        if role == Qt.ItemDataRole.DecorationRole and self.panoptic_id_to_color is not None:
+        if role == Qt.ItemDataRole.DecorationRole and len(self._panoptic_id_to_data) > 0:
             item = self.itemFromIndex(index)
             panoptic_id = item.data()
             if panoptic_id is not None:
-                color = self.panoptic_id_to_color[panoptic_id]
+                color = self._panoptic_id_to_data[panoptic_id].color
                 return QColor(color[0], color[1], color[2])
+
         return super().data(index, role)
     
-
-    def clear(self):
-        super().clear()
-        self.panoptic_id_to_color = None
-
 
 class Icon(QIcon):
     def __init__(self, filename):
@@ -76,6 +104,28 @@ class Separator(QFrame):
         self.setFrameShadow(QFrame.Shadow.Sunken)
 
 
+def _get_pixel_neibs(img_array, i, j):
+    neibs = []
+
+    if i-1 >= 0:
+        neibs.append(img_array[i-1, j])
+    if i+1 < img_array.shape[0]:
+        neibs.append(img_array[i+1, j])
+
+    if j-1 >= 0:
+        neibs.append(img_array[i, j-1])
+    if j+1 < img_array.shape[1]:
+        neibs.append(img_array[i, j+1])
+
+    return neibs
+
+
+def _euclidean_dist(p1, p2):
+    x = p1[0] - p2[0]
+    y = p1[1] - p2[1]
+    return sqrt(x*x + y*y)
+
+
 class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -85,16 +135,18 @@ class MainWin(QMainWindow):
         self._scroll_area = None
         self._img_file_name = None
         self._tree_view = None
-        self._predict_button = None
+        self._detect_elements_button = None
+        self._create_graph_button = None
         self._model = None
-        self._panoptic_id_to_color = None
+        self._panoptic_id_to_data = {}
+        self._graph = {}
 
         self._create_win()
 
 
     def _create_win(self):
         self.setWindowTitle("Floor Plan Recognition")
-        self.resize(800, 500)
+        self.showMaximized()
 
         menu_bar = self.menuBar()
 
@@ -126,7 +178,6 @@ class MainWin(QMainWindow):
         view_menu.addAction(zoom_out_action)
 
         v_layout = QVBoxLayout()
-        v_layout.setContentsMargins(0, 0, 0, 0)
 
         widget = QWidget()
         widget.setLayout(v_layout)
@@ -184,7 +235,7 @@ class MainWin(QMainWindow):
         self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         splitter.addWidget(self._tree_view)
 
-        self._item_model = ItemModel()
+        self._item_model = ItemModel(self._panoptic_id_to_data)
         self._tree_view.setModel(self._item_model)
         self._clear_list()
 
@@ -196,20 +247,28 @@ class MainWin(QMainWindow):
         self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._scroll_area.setVisible(True)
 
-        self._img_label = ImgLabel()
+        self._img_label = ImgLabel(self._panoptic_id_to_data)
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 300)
         self._scroll_area.setWidget(self._img_label)
-
         splitter.addWidget(self._scroll_area)
-        self._predict_button = QPushButton("Detect elements")
-        self._predict_button.clicked.connect(self._detect_elements)
-        self._predict_button.setEnabled(False)
-        v_layout.addWidget(self._predict_button)
 
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
+
+        h_layout = QHBoxLayout()
+        v_layout.addLayout(h_layout)
+
+        self._detect_elements_button = QPushButton("Detect elements")
+        self._detect_elements_button.clicked.connect(self._detect_elements)
+        self._detect_elements_button.setEnabled(False)
+        h_layout.addWidget(self._detect_elements_button)
+
+        self._create_graph_button = QPushButton("Create graph")
+        self._create_graph_button.clicked.connect(self._create_graph)
+        self._create_graph_button.setEnabled(False)
+        h_layout.addWidget(self._create_graph_button)
 
 
     def _load_img(self, img_qt):
@@ -262,8 +321,12 @@ class MainWin(QMainWindow):
     def _new_file(self):
         self._clear_list()
         self._img_label.clear()
+        self._img_qt = None
         self._img_file_name = None
-        self._predict_button.setEnabled(False)
+        self._detect_elements_button.setEnabled(False)
+        self._create_graph_button.setEnabled(False)
+        self._panoptic_id_to_data.clear()
+        self._graph.clear()
 
 
     def _open_file(self):
@@ -276,13 +339,15 @@ class MainWin(QMainWindow):
         if image.isNull():
             QMessageBox.information(self, "Image Viewer", "Cannot load %s." % filename)
             return
+
+        self._new_file()
         
         self._load_img(image)
 
         self._img_file_name = filename
         self._img_label.set_scale_factor(1.0)
         self._fit_to_window()
-        self._predict_button.setEnabled(True)
+        self._detect_elements_button.setEnabled(True)
         self._clear_list()
     
 
@@ -315,6 +380,9 @@ class MainWin(QMainWindow):
 
         items = self._get_selected_childless_items()
 
+        for panoptic_id in self._panoptic_id_to_data.keys():
+            self._panoptic_id_to_data[panoptic_id].is_selected = False
+            
         if len(items) == 0:
             self._load_img(ImageQt.ImageQt(background))
             return
@@ -327,7 +395,9 @@ class MainWin(QMainWindow):
             if panoptic_id is None:
                 continue
 
-            color = self._panoptic_id_to_color[panoptic_id]
+            self._panoptic_id_to_data[panoptic_id].is_selected = True
+
+            color = self._panoptic_id_to_data[panoptic_id].color
             foreground_array += np.where(panoptic_pred == panoptic_id,
                 (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
 
@@ -342,7 +412,7 @@ class MainWin(QMainWindow):
         if self._model is None:
             self._model = tf.saved_model.load("cubicasa5k/model")
 
-        img_array = np.array(Image.open(self._img_file_name))
+        img_array = np.array(Image.open(self._img_file_name).convert("RGB"))
 
         self._output = self._model(tf.cast(img_array, tf.uint8))
         # self._output is a dict with keys: 
@@ -350,7 +420,7 @@ class MainWin(QMainWindow):
         # panoptic_pred, offset_map, semantic_pred, 
         # semantic_logits, instance_scores, semantic_probs
 
-        panoptic_pred = self._output["panoptic_pred"].numpy()
+        panoptic_pred = self._output["panoptic_pred"].numpy()[0]
 
         panoptic_ids = np.unique(panoptic_pred)
         panoptic_ids.sort()
@@ -359,10 +429,10 @@ class MainWin(QMainWindow):
         labels.sort()
 
         for label in labels:
-            label_str = ccl.label_to_str[label]
-            if label_str == "Background":
+            if label == ccl.Label.BACKGROUND:
                 continue
 
+            label_str = ccl.label_to_str[label]
             parent_str = label_str + "s"
             parent = QStandardItem(parent_str)
             parent.setEditable(False)
@@ -393,24 +463,72 @@ class MainWin(QMainWindow):
         
         random.seed(0)
         colors = (np.array(distinctipy.get_colors(len(panoptic_ids)))*255).astype(np.uint8)
-        self._panoptic_id_to_color = dict(zip(panoptic_ids, colors))
-        self._item_model.panoptic_id_to_color = self._panoptic_id_to_color
+
+        for panoptic_id, color in zip(panoptic_ids, colors):
+            self._panoptic_id_to_data[panoptic_id] = PanopticIdData(color)
+
+        self._create_graph_button.setEnabled(True)
 
 
     @contextmanager
-    def _detect_elements_context(self):
+    def _wait_cursor(self):
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-        self._predict_button.setEnabled(False)
         try:
             yield
         finally:
             QApplication.restoreOverrideCursor()
-            self._predict_button.setEnabled(True)
 
 
     def _detect_elements(self):
-        with self._detect_elements_context():
+        with self._wait_cursor():
             self._detect_elements_core()
+
+
+    def _calc_edge_weight(self, id1, id2):
+        center1 = self._panoptic_id_to_data[id1].center
+        center2 = self._panoptic_id_to_data[id2].center
+
+        return _euclidean_dist(center1, center2)
+    
+
+    def _create_graph_core(self):
+        panoptic_pred = self._output["panoptic_pred"].numpy()[0]
+        instance_center_pred = self._output["instance_center_pred"].numpy()[0]
+
+        panoptic_id_to_center_pred_max = {}
+        graph = {}
+
+        for i in range(panoptic_pred.shape[0]):
+            for j in range(panoptic_pred.shape[1]):
+                id = panoptic_pred[i][j]
+                label = id // _LABEL_DIVISOR
+                if label in (ccl.Label.BACKGROUND, ccl.Label.WALL):
+                    continue
+
+                if instance_center_pred[i][j] > panoptic_id_to_center_pred_max.get(id, -1.0):
+                    panoptic_id_to_center_pred_max[id] = instance_center_pred[i][j]
+                    self._panoptic_id_to_data[id].center = (i, j)
+
+                neibs = _get_pixel_neibs(panoptic_pred, i, j)
+
+                for neib in neibs:
+                    if neib == id:
+                        continue
+                    neib_label = neib // _LABEL_DIVISOR
+                    if neib_label in (ccl.Label.BACKGROUND, ccl.Label.WALL):
+                        continue
+                    if (id, neib) not in graph:
+                        graph[(id, neib)] = 1.0
+        
+        for (id, neib), _ in graph.items():
+            self._graph[(id, neib)] = self._calc_edge_weight(id, neib)
+        
+        self._img_label.update()
+
+    
+    def _create_graph(self):
+        with self._wait_cursor():
+            self._create_graph_core()
 
 
 if __name__ == '__main__':
