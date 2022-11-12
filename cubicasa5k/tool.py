@@ -25,9 +25,10 @@ class PanopticIdData():
 
     
 class ImgLabel(QLabel):
-    def __init__(self, panoptic_id_to_data):
+    def __init__(self, panoptic_id_to_data, edges):
         super().__init__()
         self._panoptic_id_to_data = panoptic_id_to_data
+        self._edges = edges
         self._scale_factor = 1.0
 
 
@@ -46,9 +47,11 @@ class ImgLabel(QLabel):
     def paintEvent(self, event):
         super().paintEvent(event)
 
+        r = 10.0
+
         painter = QPainter(self)
 
-        for id, data in self._panoptic_id_to_data.items():
+        for _, data in self._panoptic_id_to_data.items():
             color = data.color
             center = data.center
 
@@ -60,18 +63,36 @@ class ImgLabel(QLabel):
             x = center[1]*self._scale_factor
             y = center[0]*self._scale_factor
             point = QPointF(x, y)
-            width = 1
-            r = 10.0
+            width = 2
             alpha = 150
 
             if is_selected:
-                width = 4
-                r = 10.0
+                width = 5
                 alpha = 255
 
             painter.setPen(QPen(QColor(0, 0, 0, alpha), width))
             painter.setBrush(QBrush(QColor(color[0], color[1], color[2], alpha)))
             painter.drawEllipse(point, r, r)
+        
+        alpha = 150
+        width = 2
+        
+        for id1, id2 in self._edges:
+            center1 = self._panoptic_id_to_data[id1].center
+            center2 = self._panoptic_id_to_data[id2].center
+            x1 = center1[1]*self._scale_factor
+            y1 = center1[0]*self._scale_factor
+            point1 = QPointF(x1, y1)
+            x2 = center2[1]*self._scale_factor
+            y2 = center2[0]*self._scale_factor
+            point2 = QPointF(x2, y2)
+            vec = (point2 - point1)/QLineF(point1, point2).length()
+            point1 += r*vec
+            point2 -= r*vec
+
+            painter.setPen(QPen(QColor(0, 0, 0, alpha), width))
+            painter.drawLine(point1, point2)
+
 
 
 class ItemModel(QStandardItemModel):
@@ -140,6 +161,7 @@ class MainWin(QMainWindow):
         self._model = None
         self._panoptic_id_to_data = {}
         self._graph = {}
+        self._edges = {}
 
         self._create_win()
 
@@ -247,7 +269,7 @@ class MainWin(QMainWindow):
         self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._scroll_area.setVisible(True)
 
-        self._img_label = ImgLabel(self._panoptic_id_to_data)
+        self._img_label = ImgLabel(self._panoptic_id_to_data, self._edges)
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 300)
@@ -521,7 +543,9 @@ class MainWin(QMainWindow):
                         graph[(id, neib)] = 1.0
         
         for (id, neib), _ in graph.items():
-            self._graph[(id, neib)] = self._calc_edge_weight(id, neib)
+            w = self._calc_edge_weight(id, neib)
+            self._graph[(id, neib)] = w
+            self._edges[(min(id, neib), max(id, neib))] = w
         
         self._img_label.update()
 
