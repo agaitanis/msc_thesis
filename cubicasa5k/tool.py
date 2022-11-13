@@ -1,3 +1,4 @@
+from __future__ import annotations
 import cubicasa5k.labels as ccl
 import numpy as np
 import random
@@ -23,25 +24,26 @@ class PanopticIdData():
         self.center = center
         self.is_selected = is_selected
 
+
+class ScrollArea(QScrollArea):
+    def __init__(self, win: MainWin):
+        super().__init__()
+        self._win = win
+
+
+    def wheelEvent(self, event: QWheelEvent):
+        speed = event.angleDelta().y()
+
+        if speed > 0:
+            self._win.scale_img(1.1, event.position())
+        elif speed < 0:
+            self._win.scale_img(0.9, event.position())
+
     
 class ImgLabel(QLabel):
-    def __init__(self, panoptic_id_to_data, edges):
+    def __init__(self, win: MainWin):
         super().__init__()
-        self._panoptic_id_to_data = panoptic_id_to_data
-        self._edges = edges
-        self._scale_factor = 1.0
-
-
-    def get_scale_factor(self):
-        return self._scale_factor
-
-
-    def set_scale_factor(self, val):
-        self._scale_factor = val
-        if val == 1.0:
-            self.adjustSize()
-        else:
-            self.resize(val * self.pixmap().size())
+        self._win = win
 
 
     def paintEvent(self, event):
@@ -51,7 +53,7 @@ class ImgLabel(QLabel):
 
         painter = QPainter(self)
 
-        for _, data in self._panoptic_id_to_data.items():
+        for _, data in self._win.panoptic_id_to_data.items():
             color = data.color
             center = data.center
 
@@ -60,8 +62,8 @@ class ImgLabel(QLabel):
 
             is_selected = data.is_selected
 
-            x = center[1]*self._scale_factor
-            y = center[0]*self._scale_factor
+            x = center[1]*self.win.scale_factor
+            y = center[0]*self.win.scale_factor
             point = QPointF(x, y)
             width = 2
             alpha = 150
@@ -77,14 +79,14 @@ class ImgLabel(QLabel):
         alpha = 150
         width = 2
         
-        for id1, id2 in self._edges:
-            center1 = self._panoptic_id_to_data[id1].center
-            center2 = self._panoptic_id_to_data[id2].center
-            x1 = center1[1]*self._scale_factor
-            y1 = center1[0]*self._scale_factor
+        for id1, id2 in self._win._edges:
+            center1 = self._win.panoptic_id_to_data[id1].center
+            center2 = self._win.panoptic_id_to_data[id2].center
+            x1 = center1[1]*self.win.scale_factor
+            y1 = center1[0]*self.win.scale_factor
             point1 = QPointF(x1, y1)
-            x2 = center2[1]*self._scale_factor
-            y2 = center2[0]*self._scale_factor
+            x2 = center2[1]*self.win.scale_factor
+            y2 = center2[0]*self.win.scale_factor
             point2 = QPointF(x2, y2)
             vec = (point2 - point1)/QLineF(point1, point2).length()
             point1 += r*vec
@@ -94,19 +96,18 @@ class ImgLabel(QLabel):
             painter.drawLine(point1, point2)
 
 
-
 class ItemModel(QStandardItemModel):
-    def __init__(self, panoptic_id_to_data):
+    def __init__(self, win: MainWin):
         super().__init__()
-        self._panoptic_id_to_data = panoptic_id_to_data
+        self._win = win
     
 
     def data(self, index, role):
-        if role == Qt.ItemDataRole.DecorationRole and len(self._panoptic_id_to_data) > 0:
+        if role == Qt.ItemDataRole.DecorationRole and len(self._win.panoptic_id_to_data) > 0:
             item = self.itemFromIndex(index)
             panoptic_id = item.data()
             if panoptic_id is not None:
-                color = self._panoptic_id_to_data[panoptic_id].color
+                color = self._win.panoptic_id_to_data[panoptic_id].color
                 return QColor(color[0], color[1], color[2])
 
         return super().data(index, role)
@@ -152,6 +153,7 @@ class MainWin(QMainWindow):
         super().__init__()
 
         self._img_label = None
+        self._scale_factor = 1.0
         self._img_qt = None
         self._scroll_area = None
         self._img_file_name = None
@@ -164,6 +166,21 @@ class MainWin(QMainWindow):
         self._edges = {}
 
         self._create_win()
+    
+
+    @property
+    def scale_factor(self):
+        return self._scale_factor
+
+
+    @property
+    def panoptic_id_to_data(self):
+        return self._panoptic_id_to_data
+
+
+    @property
+    def edges(self):
+        return self._edges
 
 
     def _create_win(self):
@@ -184,10 +201,10 @@ class MainWin(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
-        fit_to_window_action = QAction(Icon("fit_to_window.svg"), "Fit to window", self, 
-            shortcut="Ctrl+0", triggered=self._fit_to_window)
-        initial_size_action = QAction(Icon("original_size.svg"), "Original size", self, 
-            shortcut="Ctrl+1", triggered=self._original_size)
+        fit_to_window_action = QAction(Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
+            shortcut="Ctrl+0", triggered=self._zoom_to_fit)
+        initial_size_action = QAction(Icon("show_100.svg"), "Show 100%", self, 
+            shortcut="Ctrl+1", triggered=self._show_100)
         zoom_in_action = QAction(Icon("zoom_in.svg"), "Zoom in", self, 
             shortcut="Ctrl++", triggered=self._zoom_in)
         zoom_out_action = QAction(Icon("zoom_out.svg"), "Zoom out", self, 
@@ -224,15 +241,15 @@ class MainWin(QMainWindow):
         h_layout.addWidget(Separator())
         
         button = QPushButton()
-        button.setIcon(Icon("fit_to_window.svg"))
-        button.clicked.connect(self._fit_to_window)
-        button.setToolTip("Fit to window")
+        button.setIcon(Icon("zoom_to_fit.svg"))
+        button.clicked.connect(self._zoom_to_fit)
+        button.setToolTip("Zoom to fit")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(Icon("original_size.svg"))
-        button.clicked.connect(self._original_size)
-        button.setToolTip("Original size")
+        button.setIcon(Icon("show_100.svg"))
+        button.clicked.connect(self._show_100)
+        button.setToolTip("Show 100%")
         h_layout.addWidget(button)
 
         button = QPushButton()
@@ -257,19 +274,19 @@ class MainWin(QMainWindow):
         self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         splitter.addWidget(self._tree_view)
 
-        self._item_model = ItemModel(self._panoptic_id_to_data)
+        self._item_model = ItemModel(self)
         self._tree_view.setModel(self._item_model)
         self._clear_list()
 
         selection_model = self._tree_view.selectionModel()
         selection_model.selectionChanged.connect(self._selection_changed)
 
-        self._scroll_area = QScrollArea()
+        self._scroll_area = ScrollArea(self)
         self._scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
         self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._scroll_area.setVisible(True)
 
-        self._img_label = ImgLabel(self._panoptic_id_to_data, self._edges)
+        self._img_label = ImgLabel(self)
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 300)
@@ -298,34 +315,54 @@ class MainWin(QMainWindow):
         self._img_label.setPixmap(QPixmap.fromImage(img_qt))
 
     
-    def _adjust_scroll_bar(self, scroll_bar, factor):
-        scroll_bar.setValue(int(factor * scroll_bar.value() + ((factor - 1) * scroll_bar.pageStep() / 2)))
+    def _adjust_scroll_bar(self, scroll_bar: QScrollBar, pos, prev_pos):
+        min_val = scroll_bar.minimum()
+        max_val = scroll_bar.maximum()
+        range = max_val - min_val
+        range /= self.scale_factor
+        val = prev_pos + pos*range
+        scroll_bar.setValue(int(val))
 
 
-    def _scale_img(self, factor):
+    def scale_img(self, factor, point: QPointF=None):
         if self._img_qt is None:
             return
+        
+        if point is None:
+            scroll_area_size = self._scroll_area.size()
+            point = QPointF(scroll_area_size.width()/2, scroll_area_size.height()/2)
+
+        old_scale = self._scale_factor
+        new_scale = old_scale*factor
+
+        scroll_bar_pos = QPointF(self._scroll_area.horizontalScrollBar().value(),
+            self._scroll_area.verticalScrollBar().value())
+        img_label_pos = QPointF(self._img_label.pos().x(), self._img_label.pos().y())
+        delta_to_pos = (point - img_label_pos)/old_scale
+        delta = delta_to_pos*(new_scale - old_scale)
 
         self._load_img(self._img_qt)
-        self._img_label.set_scale_factor(factor*self._img_label.get_scale_factor())
+        self._scale_factor = new_scale
+        self._img_label.resize(self._scale_factor * self._img_label.pixmap().size())
 
-        self._adjust_scroll_bar(self._scroll_area.horizontalScrollBar(), factor)
-        self._adjust_scroll_bar(self._scroll_area.verticalScrollBar(), factor)
+        self._scroll_area.horizontalScrollBar().setValue(int(scroll_bar_pos.x() + delta.x()))
+        self._scroll_area.verticalScrollBar().setValue(int(scroll_bar_pos.y() + delta.y()))
 
 
     def _zoom_in(self):
-        self._scale_img(1.25)
+        self.scale_img(1.25)
 
 
     def _zoom_out(self):
-        self._scale_img(0.8)
+        self.scale_img(0.8)
 
 
-    def _original_size(self):
-        self._img_label.set_scale_factor(1.0)
+    def _show_100(self):
+        self._scale_factor = 1.0
+        self._img_label.adjustSize()
 
     
-    def _fit_to_window(self):
+    def _zoom_to_fit(self):
         src_size = self._img_label.size()
         trg_size = self._scroll_area.size()
 
@@ -335,9 +372,9 @@ class MainWin(QMainWindow):
         trg_h = trg_size.height() - self._scroll_area.horizontalScrollBar().size().height()
 
         if trg_w/trg_h < src_w/src_h:
-            self._scale_img(trg_w/src_w)
+            self.scale_img(trg_w/src_w)
         else:
-            self._scale_img(trg_h/src_h)
+            self.scale_img(trg_h/src_h)
 
 
     def _new_file(self):
@@ -367,8 +404,9 @@ class MainWin(QMainWindow):
         self._load_img(image)
 
         self._img_file_name = filename
-        self._img_label.set_scale_factor(1.0)
-        self._fit_to_window()
+        self._scale_factor = 1.0
+        self._img_label.adjustSize()
+        self._zoom_to_fit()
         self._detect_elements_button.setEnabled(True)
         self._clear_list()
     
