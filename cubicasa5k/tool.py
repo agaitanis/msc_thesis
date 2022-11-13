@@ -18,6 +18,15 @@ from PIL import Image, ImageQt
 _LABEL_DIVISOR = 256
 
 
+@contextmanager
+def _wait_cursor():
+    QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+    try:
+        yield
+    finally:
+        QApplication.restoreOverrideCursor()
+
+
 class PanopticIdData():
     def __init__(self, color=None, center=None, is_selected=False):
         self.color = color
@@ -44,6 +53,47 @@ class ImgLabel(QLabel):
     def __init__(self, win: MainWin):
         super().__init__()
         self._win = win
+        self._move_is_allowed = False
+        self._start_pos = None
+
+    
+    def mousePressEvent(self, event: QMouseEvent):
+        self._move_is_allowed = self._win.scroll_area.horizontalScrollBar().isVisible() or\
+            self._win.scroll_area.verticalScrollBar().isVisible()
+        
+        if self._move_is_allowed:
+            QApplication.setOverrideCursor(Qt.CursorShape.ClosedHandCursor)
+            self._start_pos = event.pos()
+    
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        if self._move_is_allowed:
+            QApplication.restoreOverrideCursor()
+    
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if not self._move_is_allowed:
+            return
+
+        scroll_bar_pos = QPoint(self._win.scroll_area.horizontalScrollBar().value(),
+            self._win.scroll_area.verticalScrollBar().value())
+
+        delta = event.pos() - self._start_pos
+
+        new_scroll_bar_pos = scroll_bar_pos - delta
+
+        if new_scroll_bar_pos.x() < self._win.scroll_area.horizontalScrollBar().minimum() or\
+            new_scroll_bar_pos.x() > self._win.scroll_area.horizontalScrollBar().maximum():
+            delta.setX(0)
+
+        if new_scroll_bar_pos.y() < self._win.scroll_area.verticalScrollBar().minimum() or\
+            new_scroll_bar_pos.y() > self._win.scroll_area.verticalScrollBar().maximum():
+            delta.setY(0)
+
+        self.move(self.pos() + delta)
+
+        self._win.scroll_area.horizontalScrollBar().setValue(scroll_bar_pos.x() - delta.x())
+        self._win.scroll_area.verticalScrollBar().setValue(scroll_bar_pos.y() - delta.y())
 
 
     def paintEvent(self, event):
@@ -62,8 +112,8 @@ class ImgLabel(QLabel):
 
             is_selected = data.is_selected
 
-            x = center[1]*self.win.scale_factor
-            y = center[0]*self.win.scale_factor
+            x = center[1]*self._win.scale_factor
+            y = center[0]*self._win.scale_factor
             point = QPointF(x, y)
             width = 2
             alpha = 150
@@ -82,11 +132,11 @@ class ImgLabel(QLabel):
         for id1, id2 in self._win._edges:
             center1 = self._win.panoptic_id_to_data[id1].center
             center2 = self._win.panoptic_id_to_data[id2].center
-            x1 = center1[1]*self.win.scale_factor
-            y1 = center1[0]*self.win.scale_factor
+            x1 = center1[1]*self._win.scale_factor
+            y1 = center1[0]*self._win.scale_factor
             point1 = QPointF(x1, y1)
-            x2 = center2[1]*self.win.scale_factor
-            y2 = center2[0]*self.win.scale_factor
+            x2 = center2[1]*self._win.scale_factor
+            y2 = center2[0]*self._win.scale_factor
             point2 = QPointF(x2, y2)
             vec = (point2 - point1)/QLineF(point1, point2).length()
             point1 += r*vec
@@ -183,8 +233,14 @@ class MainWin(QMainWindow):
         return self._edges
 
 
+    @property
+    def scroll_area(self):
+        return self._scroll_area
+
+
     def _create_win(self):
         self.setWindowTitle("Floor Plan Recognition")
+        self.setMinimumSize(500, 360)
         self.showMaximized()
 
         menu_bar = self.menuBar()
@@ -289,7 +345,7 @@ class MainWin(QMainWindow):
         self._img_label = ImgLabel(self)
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
-        self._img_label.resize(300, 300)
+        self._img_label.resize(300, 200)
         self._scroll_area.setWidget(self._img_label)
         splitter.addWidget(self._scroll_area)
 
@@ -530,17 +586,8 @@ class MainWin(QMainWindow):
         self._create_graph_button.setEnabled(True)
 
 
-    @contextmanager
-    def _wait_cursor(self):
-        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-        try:
-            yield
-        finally:
-            QApplication.restoreOverrideCursor()
-
-
     def _detect_elements(self):
-        with self._wait_cursor():
+        with _wait_cursor():
             self._detect_elements_core()
 
 
@@ -589,7 +636,7 @@ class MainWin(QMainWindow):
 
     
     def _create_graph(self):
-        with self._wait_cursor():
+        with _wait_cursor():
             self._create_graph_core()
 
 
