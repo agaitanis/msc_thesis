@@ -7,6 +7,7 @@ import sys
 import tensorflow as tf
 from contextlib import contextmanager
 from distinctipy import distinctipy
+from enum import IntEnum
 from math import sqrt
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
@@ -18,6 +19,11 @@ from PIL import Image, ImageQt
 _LABEL_DIVISOR = 256
 
 
+class _Mark(IntEnum):
+    NONE = 0
+    EXIT = 1
+
+
 @contextmanager
 def _wait_cursor():
     QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -27,15 +33,16 @@ def _wait_cursor():
         QApplication.restoreOverrideCursor()
 
 
-class PanopticIdData():
+class _PanopticIdData():
     def __init__(self, color=None, center=None, is_selected=False):
         self.color = color
         self.center = center
         self.is_selected = is_selected
+        self.mark = _Mark.NONE
 
 
-class ScrollArea(QScrollArea):
-    def __init__(self, win: MainWin):
+class _ScrollArea(QScrollArea):
+    def __init__(self, win: _MainWin):
         super().__init__()
         self._win = win
 
@@ -49,8 +56,8 @@ class ScrollArea(QScrollArea):
             self._win.scale_img(0.9, event.position())
 
     
-class ImgLabel(QLabel):
-    def __init__(self, win: MainWin):
+class _ImgLabel(QLabel):
+    def __init__(self, win: _MainWin):
         super().__init__()
         self._win = win
         self._move_is_allowed = False
@@ -146,8 +153,8 @@ class ImgLabel(QLabel):
             painter.drawLine(point1, point2)
 
 
-class ItemModel(QStandardItemModel):
-    def __init__(self, win: MainWin):
+class _ItemModel(QStandardItemModel):
+    def __init__(self, win: _MainWin):
         super().__init__()
         self._win = win
     
@@ -155,21 +162,22 @@ class ItemModel(QStandardItemModel):
     def data(self, index, role):
         if role == Qt.ItemDataRole.DecorationRole and len(self._win.panoptic_id_to_data) > 0:
             item = self.itemFromIndex(index)
-            panoptic_id = item.data()
-            if panoptic_id is not None:
-                color = self._win.panoptic_id_to_data[panoptic_id].color
-                return QColor(color[0], color[1], color[2])
+            if item.column() == 0:
+                panoptic_id = item.data()
+                if panoptic_id is not None:
+                    color = self._win.panoptic_id_to_data[panoptic_id].color
+                    return QColor(color[0], color[1], color[2])
 
         return super().data(index, role)
     
 
-class Icon(QIcon):
+class _Icon(QIcon):
     def __init__(self, filename):
         filename = os.path.join(os.path.dirname(__file__), "icons", filename)
         super().__init__(filename)
 
 
-class Separator(QFrame):
+class _Separator(QFrame):
     def __init__(self):
         super().__init__()
         self.setFrameShape(QFrame.Shape.VLine)
@@ -198,7 +206,7 @@ def _euclidean_dist(p1, p2):
     return sqrt(x*x + y*y)
 
 
-class MainWin(QMainWindow):
+class _MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -210,8 +218,9 @@ class MainWin(QMainWindow):
         self._tree_view = None
         self._detect_elements_button = None
         self._create_graph_button = None
+        self._find_path_button = None
         self._model = None
-        self._panoptic_id_to_data = {}
+        self._panoptic_id_to_data: dict[int, _PanopticIdData] = {}
         self._graph = {}
         self._edges = {}
 
@@ -245,9 +254,9 @@ class MainWin(QMainWindow):
 
         menu_bar = self.menuBar()
 
-        new_action = QAction(Icon("new_file.svg"), "New", self, shortcut="Ctrl+N", 
+        new_action = QAction(_Icon("new_file.svg"), "New", self, shortcut="Ctrl+N", 
             triggered=self._new_file)
-        open_action = QAction(Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
+        open_action = QAction(_Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
             triggered=self._open_file)
         exit_action = QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close)
 
@@ -257,13 +266,13 @@ class MainWin(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
-        fit_to_window_action = QAction(Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
+        fit_to_window_action = QAction(_Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
             shortcut="Ctrl+0", triggered=self._zoom_to_fit)
-        initial_size_action = QAction(Icon("show_100.svg"), "Show 100%", self, 
+        initial_size_action = QAction(_Icon("show_100.svg"), "Show 100%", self, 
             shortcut="Ctrl+1", triggered=self._show_100)
-        zoom_in_action = QAction(Icon("zoom_in.svg"), "Zoom in", self, 
+        zoom_in_action = QAction(_Icon("zoom_in.svg"), "Zoom in", self, 
             shortcut="Ctrl++", triggered=self._zoom_in)
-        zoom_out_action = QAction(Icon("zoom_out.svg"), "Zoom out", self, 
+        zoom_out_action = QAction(_Icon("zoom_out.svg"), "Zoom out", self, 
             shortcut="Ctrl+-", triggered=self._zoom_out)
 
         view_menu = menu_bar.addMenu("View")
@@ -283,40 +292,40 @@ class MainWin(QMainWindow):
         v_layout.addLayout(h_layout)
 
         button = QPushButton()
-        button.setIcon(Icon("new_file.svg"))
+        button.setIcon(_Icon("new_file.svg"))
         button.clicked.connect(self._new_file)
         button.setToolTip("New")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(Icon("open_file.svg"))
+        button.setIcon(_Icon("open_file.svg"))
         button.clicked.connect(self._open_file)
         button.setToolTip("Open")
         h_layout.addWidget(button)
 
-        h_layout.addWidget(Separator())
+        h_layout.addWidget(_Separator())
         
         button = QPushButton()
-        button.setIcon(Icon("zoom_to_fit.svg"))
+        button.setIcon(_Icon("zoom_to_fit.svg"))
         button.clicked.connect(self._zoom_to_fit)
         button.setToolTip("Zoom to fit")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(Icon("show_100.svg"))
+        button.setIcon(_Icon("show_100.svg"))
         button.clicked.connect(self._show_100)
         button.setToolTip("Show 100%")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(Icon("zoom_in.svg"))
+        button.setIcon(_Icon("zoom_in.svg"))
         button.clicked.connect(self._zoom_in)
         button.setToolTip("Zoom in")
         h_layout.addWidget(button)
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(Icon("zoom_out.svg"))
+        button.setIcon(_Icon("zoom_out.svg"))
         button.clicked.connect(self._zoom_out)
         button.setToolTip("Zoom out")
         h_layout.addWidget(button)
@@ -328,21 +337,24 @@ class MainWin(QMainWindow):
         self._tree_view.setAlternatingRowColors(True)
         self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self._tree_view.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self._tree_view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._tree_view.customContextMenuRequested.connect(self._context_menu)
         splitter.addWidget(self._tree_view)
 
-        self._item_model = ItemModel(self)
+        self._item_model = _ItemModel(self)
         self._tree_view.setModel(self._item_model)
         self._clear_list()
 
         selection_model = self._tree_view.selectionModel()
         selection_model.selectionChanged.connect(self._selection_changed)
 
-        self._scroll_area = ScrollArea(self)
+        self._scroll_area = _ScrollArea(self)
         self._scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
         self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._scroll_area.setVisible(True)
 
-        self._img_label = ImgLabel(self)
+        self._img_label = _ImgLabel(self)
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 200)
@@ -364,6 +376,11 @@ class MainWin(QMainWindow):
         self._create_graph_button.clicked.connect(self._create_graph)
         self._create_graph_button.setEnabled(False)
         h_layout.addWidget(self._create_graph_button)
+
+        self._find_path_button = QPushButton("Find path")
+        self._find_path_button.clicked.connect(self._find_path)
+        self._find_path_button.setEnabled(False)
+        h_layout.addWidget(self._find_path_button)
 
 
     def _load_img(self, img_qt):
@@ -440,6 +457,7 @@ class MainWin(QMainWindow):
         self._img_file_name = None
         self._detect_elements_button.setEnabled(False)
         self._create_graph_button.setEnabled(False)
+        self._find_path_button.setEnabled(False)
         self._panoptic_id_to_data.clear()
         self._graph.clear()
 
@@ -469,15 +487,19 @@ class MainWin(QMainWindow):
 
     def _clear_list(self):
         self._item_model.clear()
-        self._item_model.setHorizontalHeaderLabels(("Elements",))
+        self._item_model.setHorizontalHeaderLabels(("Elements", "Mark"))
 
     
-    def _get_selected_childless_items(self):
-        indexes = set()
+    def _get_selected_childless_items(self, col):
         selected_indexes = self._tree_view.selectedIndexes()
+        indexes = set()
 
         for index in selected_indexes:
             item = self._item_model.itemFromIndex(index)
+
+            if item.column() != col:
+                continue
+
             child_items_num = item.rowCount()
             
             if child_items_num > 0:
@@ -494,7 +516,7 @@ class MainWin(QMainWindow):
     def _selection_changed(self):
         background = Image.open(self._img_file_name)
 
-        items = self._get_selected_childless_items()
+        items = self._get_selected_childless_items(0)
 
         for panoptic_id in self._panoptic_id_to_data.keys():
             self._panoptic_id_to_data[panoptic_id].is_selected = False
@@ -520,8 +542,56 @@ class MainWin(QMainWindow):
         foreground = Image.fromarray(foreground_array)
         background.paste(foreground, (0, 0), foreground)
         self._load_img(ImageQt.ImageQt(background))
-    
 
+
+    def _context_menu(self, position):
+        found_valid_item = False
+
+        for index in self._tree_view.selectedIndexes():
+            item = self._item_model.itemFromIndex(index)
+            panoptic_id = item.data()
+
+            if panoptic_id is not None:
+                label = panoptic_id // _LABEL_DIVISOR
+                if label != ccl.Label.WALL:
+                    found_valid_item = True
+                    break
+        
+        if not found_valid_item:
+            return
+
+        mark_as_exit_action = QAction("Mark as exit", self, triggered=self._mark_as_exit)
+        clear_mark_action = QAction("Clear mark", self, triggered=self._clear_mark)
+        
+        menu = QMenu()
+        menu.addAction(mark_as_exit_action)
+        menu.addAction(clear_mark_action)
+
+        menu.exec(self._tree_view.viewport().mapToGlobal(position))
+     
+
+    def _mark_as_exit(self):
+        for index in self._tree_view.selectedIndexes():
+            item = self._item_model.itemFromIndex(index)
+
+            if item.column() == 1:
+                item.setText("Exit")
+
+                panoptic_id = item.data()
+                self._panoptic_id_to_data[panoptic_id].mark = _Mark.EXIT
+    
+    
+    def _clear_mark(self):
+        for index in self._tree_view.selectedIndexes():
+            item = self._item_model.itemFromIndex(index)
+
+            if item.column() == 1:
+                item.setText("")
+
+                panoptic_id = item.data()
+                self._panoptic_id_to_data[panoptic_id].mark = _Mark.NONE
+
+    
     def _detect_elements_core(self):
         self._clear_list()
 
@@ -569,11 +639,15 @@ class MainWin(QMainWindow):
                     parent.setData(panoptic_id)
                     continue
 
-                child_str = f"{label_str} {i}"
-                child = QStandardItem(child_str)
-                child.setEditable(False)
-                child.setData(panoptic_id)
-                parent.appendRow(child)
+                item1 = QStandardItem(f"{label_str} {i}")
+                item1.setEditable(True)
+                item1.setData(panoptic_id)
+
+                item2 = QStandardItem("")
+                item2.setEditable(False)
+                item2.setData(panoptic_id)
+
+                parent.appendRow((item1, item2))
         
         self._tree_view.expandAll()
         
@@ -581,7 +655,7 @@ class MainWin(QMainWindow):
         colors = (np.array(distinctipy.get_colors(len(panoptic_ids)))*255).astype(np.uint8)
 
         for panoptic_id, color in zip(panoptic_ids, colors):
-            self._panoptic_id_to_data[panoptic_id] = PanopticIdData(color)
+            self._panoptic_id_to_data[panoptic_id] = _PanopticIdData(color)
 
         self._create_graph_button.setEnabled(True)
 
@@ -634,16 +708,41 @@ class MainWin(QMainWindow):
         
         self._img_label.update()
 
+        self._find_path_button.setEnabled(True)
+
     
     def _create_graph(self):
         with _wait_cursor():
             self._create_graph_core()
 
 
+    def _dijkstra(self, exit_id):
+        pass # FIXME
+
+
+    def _find_path_core(self):
+        exit_ids = []
+
+        for panoptic_id, data in self._panoptic_id_to_data.items():
+            if data.mark == _Mark.EXIT:
+                exit_ids.append(panoptic_id)
+
+        if len(exit_ids) == 0:
+            QMessageBox.critical(self, "Error", "No exit was set")
+            return
+        
+        self._dijkstra(exit_ids[0]) # FIXME Make it work for multiple exits
+
+
+    def _find_path(self):
+        with _wait_cursor():
+            self._find_path_core()
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    win = MainWin()
+    win = _MainWin()
     win.show()
 
     sys.exit(app.exec())
