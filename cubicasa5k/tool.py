@@ -152,7 +152,7 @@ class _ImgLabel(QLabel):
 
             if data.highlight:
                 width = 6
-                alpha = 200
+                alpha = 255
             else:
                 width = 2
                 alpha = 150
@@ -184,7 +184,7 @@ class _ImgLabel(QLabel):
 
             if data.highlight:
                 width = 6
-                alpha = 200
+                alpha = 255
             else:
                 width = 2
                 alpha = 150
