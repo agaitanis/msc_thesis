@@ -3,6 +3,7 @@ import cubicasa5k.labels as ccl
 import numpy as np
 import random
 import os
+import queue
 import sys
 import tensorflow as tf
 from contextlib import contextmanager
@@ -33,12 +34,14 @@ def _wait_cursor():
         QApplication.restoreOverrideCursor()
 
 
-class _PanopticIdData():
+class _ElemData():
     def __init__(self, color=None, center=None, is_selected=False):
         self.color = color
         self.center = center
         self.is_selected = is_selected
         self.mark = _Mark.NONE
+        self.neibs = []
+        self.path = []
 
 
 class _ScrollArea(QScrollArea):
@@ -110,7 +113,7 @@ class _ImgLabel(QLabel):
 
         painter = QPainter(self)
 
-        for _, data in self._win.panoptic_id_to_data.items():
+        for _, data in self._win.id_to_data.items():
             color = data.color
             center = data.center
 
@@ -137,8 +140,8 @@ class _ImgLabel(QLabel):
         width = 2
         
         for id1, id2 in self._win._edges:
-            center1 = self._win.panoptic_id_to_data[id1].center
-            center2 = self._win.panoptic_id_to_data[id2].center
+            center1 = self._win.id_to_data[id1].center
+            center2 = self._win.id_to_data[id2].center
             x1 = center1[1]*self._win.scale_factor
             y1 = center1[0]*self._win.scale_factor
             point1 = QPointF(x1, y1)
@@ -160,12 +163,12 @@ class _ItemModel(QStandardItemModel):
     
 
     def data(self, index, role):
-        if role == Qt.ItemDataRole.DecorationRole and len(self._win.panoptic_id_to_data) > 0:
+        if role == Qt.ItemDataRole.DecorationRole and len(self._win.id_to_data) > 0:
             item = self.itemFromIndex(index)
             if item.column() == 0:
-                panoptic_id = item.data()
-                if panoptic_id is not None:
-                    color = self._win.panoptic_id_to_data[panoptic_id].color
+                id = item.data()
+                if id is not None:
+                    color = self._win.id_to_data[id].color
                     return QColor(color[0], color[1], color[2])
 
         return super().data(index, role)
@@ -220,7 +223,7 @@ class _MainWin(QMainWindow):
         self._create_graph_button = None
         self._find_path_button = None
         self._model = None
-        self._panoptic_id_to_data: dict[int, _PanopticIdData] = {}
+        self._id_to_data: dict[int, _ElemData] = {}
         self._graph = {}
         self._edges = {}
 
@@ -233,8 +236,8 @@ class _MainWin(QMainWindow):
 
 
     @property
-    def panoptic_id_to_data(self):
-        return self._panoptic_id_to_data
+    def id_to_data(self):
+        return self._id_to_data
 
 
     @property
@@ -458,7 +461,7 @@ class _MainWin(QMainWindow):
         self._detect_elements_button.setEnabled(False)
         self._create_graph_button.setEnabled(False)
         self._find_path_button.setEnabled(False)
-        self._panoptic_id_to_data.clear()
+        self._id_to_data.clear()
         self._graph.clear()
 
 
@@ -518,8 +521,8 @@ class _MainWin(QMainWindow):
 
         items = self._get_selected_childless_items(0)
 
-        for panoptic_id in self._panoptic_id_to_data.keys():
-            self._panoptic_id_to_data[panoptic_id].is_selected = False
+        for id in self._id_to_data.keys():
+            self._id_to_data[id].is_selected = False
             
         if len(items) == 0:
             self._load_img(ImageQt.ImageQt(background))
@@ -529,14 +532,14 @@ class _MainWin(QMainWindow):
         foreground_array = np.zeros((panoptic_pred.shape[0], panoptic_pred.shape[1], 4)).astype(np.uint8)
 
         for item in items:
-            panoptic_id = item.data()
-            if panoptic_id is None:
+            id = item.data()
+            if id is None:
                 continue
 
-            self._panoptic_id_to_data[panoptic_id].is_selected = True
+            self._id_to_data[id].is_selected = True
 
-            color = self._panoptic_id_to_data[panoptic_id].color
-            foreground_array += np.where(panoptic_pred == panoptic_id,
+            color = self._id_to_data[id].color
+            foreground_array += np.where(panoptic_pred == id,
                 (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
 
         foreground = Image.fromarray(foreground_array)
@@ -549,11 +552,11 @@ class _MainWin(QMainWindow):
 
         for index in self._tree_view.selectedIndexes():
             item = self._item_model.itemFromIndex(index)
-            panoptic_id = item.data()
+            id = item.data()
 
-            if panoptic_id is not None:
-                label = panoptic_id // _LABEL_DIVISOR
-                if label != ccl.Label.WALL:
+            if id is not None:
+                label = id // _LABEL_DIVISOR
+                if label == ccl.Label.DOOR:
                     found_valid_item = True
                     break
         
@@ -577,8 +580,8 @@ class _MainWin(QMainWindow):
             if item.column() == 1:
                 item.setText("Exit")
 
-                panoptic_id = item.data()
-                self._panoptic_id_to_data[panoptic_id].mark = _Mark.EXIT
+                id = item.data()
+                self._id_to_data[id].mark = _Mark.EXIT
     
     
     def _clear_mark(self):
@@ -588,8 +591,8 @@ class _MainWin(QMainWindow):
             if item.column() == 1:
                 item.setText("")
 
-                panoptic_id = item.data()
-                self._panoptic_id_to_data[panoptic_id].mark = _Mark.NONE
+                id = item.data()
+                self._id_to_data[id].mark = _Mark.NONE
 
     
     def _detect_elements_core(self):
@@ -608,10 +611,10 @@ class _MainWin(QMainWindow):
 
         panoptic_pred = self._output["panoptic_pred"].numpy()[0]
 
-        panoptic_ids = np.unique(panoptic_pred)
-        panoptic_ids.sort()
+        ids = np.unique(panoptic_pred)
+        ids.sort()
 
-        labels = np.unique(panoptic_ids // _LABEL_DIVISOR)
+        labels = np.unique(ids // _LABEL_DIVISOR)
         labels.sort()
 
         for label in labels:
@@ -633,29 +636,29 @@ class _MainWin(QMainWindow):
                 if instance == -1:
                     continue
 
-                panoptic_id = label*_LABEL_DIVISOR + instance
+                id = label*_LABEL_DIVISOR + instance
 
                 if instance == 0:
-                    parent.setData(panoptic_id)
+                    parent.setData(id)
                     continue
 
                 item1 = QStandardItem(f"{label_str} {i}")
                 item1.setEditable(True)
-                item1.setData(panoptic_id)
+                item1.setData(id)
 
                 item2 = QStandardItem("")
                 item2.setEditable(False)
-                item2.setData(panoptic_id)
+                item2.setData(id)
 
                 parent.appendRow((item1, item2))
         
         self._tree_view.expandAll()
         
         random.seed(0)
-        colors = (np.array(distinctipy.get_colors(len(panoptic_ids)))*255).astype(np.uint8)
+        colors = (np.array(distinctipy.get_colors(len(ids)))*255).astype(np.uint8)
 
-        for panoptic_id, color in zip(panoptic_ids, colors):
-            self._panoptic_id_to_data[panoptic_id] = _PanopticIdData(color)
+        for id, color in zip(ids, colors):
+            self._id_to_data[id] = _ElemData(color)
 
         self._create_graph_button.setEnabled(True)
 
@@ -666,8 +669,8 @@ class _MainWin(QMainWindow):
 
 
     def _calc_edge_weight(self, id1, id2):
-        center1 = self._panoptic_id_to_data[id1].center
-        center2 = self._panoptic_id_to_data[id2].center
+        center1 = self._id_to_data[id1].center
+        center2 = self._id_to_data[id2].center
 
         return _euclidean_dist(center1, center2)
     
@@ -676,7 +679,7 @@ class _MainWin(QMainWindow):
         panoptic_pred = self._output["panoptic_pred"].numpy()[0]
         instance_center_pred = self._output["instance_center_pred"].numpy()[0]
 
-        panoptic_id_to_center_pred_max = {}
+        id_to_center_pred_max = {}
         graph = {}
 
         for i in range(panoptic_pred.shape[0]):
@@ -686,9 +689,9 @@ class _MainWin(QMainWindow):
                 if label in (ccl.Label.BACKGROUND, ccl.Label.WALL):
                     continue
 
-                if instance_center_pred[i][j] > panoptic_id_to_center_pred_max.get(id, -1.0):
-                    panoptic_id_to_center_pred_max[id] = instance_center_pred[i][j]
-                    self._panoptic_id_to_data[id].center = (i, j)
+                if instance_center_pred[i][j] > id_to_center_pred_max.get(id, -1.0):
+                    id_to_center_pred_max[id] = instance_center_pred[i][j]
+                    self._id_to_data[id].center = (i, j)
 
                 neibs = _get_pixel_neibs(panoptic_pred, i, j)
 
@@ -705,6 +708,7 @@ class _MainWin(QMainWindow):
             w = self._calc_edge_weight(id, neib)
             self._graph[(id, neib)] = w
             self._edges[(min(id, neib), max(id, neib))] = w
+            self._id_to_data[id].neibs.append(neib)
         
         self._img_label.update()
 
@@ -717,26 +721,86 @@ class _MainWin(QMainWindow):
 
 
     def _dijkstra(self, exit_id):
-        pass # FIXME
+        id_to_dist = {id: sys.float_info.max for id in self._id_to_data.keys()}
+
+        q = queue.PriorityQueue()
+
+        id_to_dist[exit_id] = 0.0
+        q.put((0.0, exit_id))
+
+        while not q.empty():
+            _, id = q.get()
+            dist = id_to_dist[id]
+
+            for neib in self._id_to_data[id].neibs:
+                cost = self._graph[(id, neib)]
+                new_dist = dist + cost
+
+                if new_dist < id_to_dist[neib]:
+                    id_to_dist[neib] = new_dist
+                    q.put((new_dist, neib))
+        
+        return id_to_dist
 
 
-    def _find_path_core(self):
+    def _calc_path(self, id: int, id_to_dist_dicts: list[dict], exit_ids: list[int]):
+        best_exit_index = None
+        min_dist = sys.float_info.max
+
+        self._id_to_data[id].path = []
+
+        for i, id_to_dist in enumerate(id_to_dist_dicts):
+            dist = id_to_dist[id]
+            if dist < min_dist:
+                min_dist = dist
+                best_exit_index = i
+        
+        if best_exit_index is None:
+            return
+        
+        best_id_to_dist = id_to_dist_dicts[best_exit_index]
+        path = [id]
+        cur_id = id
+        exit_id = exit_ids[best_exit_index]
+
+        while cur_id != exit_id:
+            min_dist = sys.float_info.max
+            best_neib = None
+
+            for neib in self._id_to_data[cur_id].neibs:
+                neib_dist = best_id_to_dist[neib]
+                if neib_dist < min_dist:
+                    min_dist = neib_dist
+                    best_neib = neib
+            
+            if best_neib is None:
+                return
+            
+            path.append(best_neib)
+            cur_id = best_neib
+
+        self._id_to_data[id].path = path
+
+
+    def _find_path(self):
         exit_ids = []
 
-        for panoptic_id, data in self._panoptic_id_to_data.items():
+        for id, data in self._id_to_data.items():
             if data.mark == _Mark.EXIT:
-                exit_ids.append(panoptic_id)
+                exit_ids.append(id)
 
         if len(exit_ids) == 0:
             QMessageBox.critical(self, "Error", "No exit was set")
             return
         
-        self._dijkstra(exit_ids[0]) # FIXME Make it work for multiple exits
-
-
-    def _find_path(self):
         with _wait_cursor():
-            self._find_path_core()
+            id_to_dist_dicts = []
+            for exit_id in exit_ids:
+                id_to_dist = self._dijkstra(exit_id)
+                id_to_dist_dicts.append(id_to_dist)
+            
+            for id in self._id_to_data.keys():
+                self._calc_path(id, id_to_dist_dicts, exit_ids)
 
 
 if __name__ == '__main__':
