@@ -1,7 +1,6 @@
 from __future__ import annotations
 import cubicasa5k.labels as ccl
 import numpy as np
-import random
 import os
 import queue
 import sys
@@ -15,6 +14,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtPrintSupport import *
 from PyQt6.QtWidgets import *
 from PIL import Image, ImageQt
+from xml.dom import minidom
 
 
 _LABEL_DIVISOR = 256
@@ -35,13 +35,20 @@ def _wait_cursor():
 
 
 class _ElemData():
-    def __init__(self, color=None, center=None, is_selected=False):
+    def __init__(self, color=None):
         self.color = color
-        self.center = center
-        self.is_selected = is_selected
+        self.center = None
+        self.is_selected = False
+        self.highlight = False
         self.mark = _Mark.NONE
         self.neibs = []
         self.path = []
+
+
+class _EdgeData():
+    def __init__(self, dist, highlight=False):
+        self.dist = dist
+        self.highlight = highlight
 
 
 class _ScrollArea(QScrollArea):
@@ -109,37 +116,60 @@ class _ImgLabel(QLabel):
     def paintEvent(self, event):
         super().paintEvent(event)
 
-        r = 10.0
+        for id, data in self._win.id_to_data.items():
+            self._win.id_to_data[id].highlight = data.is_selected
+        
+        for (id1, id2) in self._win.edges.keys():
+            self._win.edges[(id1, id2)].highlight = False
+
+        selected_id = None
+        for id, data in self._win.id_to_data.items():
+            if data.is_selected:
+                if selected_id is None:
+                    selected_id = id
+                else:
+                    selected_id = None
+                    break
+        
+        if selected_id is not None:
+            prev_path_id = None
+            for path_id in self._win.id_to_data[selected_id].path:
+                self._win.id_to_data[path_id].highlight = True
+                if prev_path_id is not None:
+                    self._win.edges[(min(path_id, prev_path_id), max(path_id, prev_path_id))].highlight = True
+                prev_path_id = path_id
 
         painter = QPainter(self)
+        r = 12.0
 
         for _, data in self._win.id_to_data.items():
-            color = data.color
-            center = data.center
-
-            if center is None:
+            if data.center is None:
                 continue
 
-            is_selected = data.is_selected
-
-            x = center[1]*self._win.scale_factor
-            y = center[0]*self._win.scale_factor
+            x = data.center[1]*self._win.scale_factor
+            y = data.center[0]*self._win.scale_factor
             point = QPointF(x, y)
-            width = 2
-            alpha = 150
 
-            if is_selected:
-                width = 5
-                alpha = 255
+            if data.highlight:
+                width = 6
+                alpha = 200
+            else:
+                width = 2
+                alpha = 150
 
             painter.setPen(QPen(QColor(0, 0, 0, alpha), width))
-            painter.setBrush(QBrush(QColor(color[0], color[1], color[2], alpha)))
+            painter.setBrush(QBrush(QColor(data.color[0], data.color[1], data.color[2], alpha)))
             painter.drawEllipse(point, r, r)
+
+            if data.mark == _Mark.EXIT:
+                color = (np.array(distinctipy.get_text_color(data.color/255))*255).astype(np.uint8)
+                painter.setPen(QPen(QColor(color[0], color[1], color[2], alpha), 1))
+                painter.setBrush(QBrush(QColor(color[0], color[1], color[2], alpha)))
+
+                painter.drawPolygon(point + QPointF(r*0.5, 0), point + QPointF(-r*0.45, -r*0.45),
+                    point + QPointF(-r*0.45, r*0.45))
         
-        alpha = 150
-        width = 2
-        
-        for id1, id2 in self._win._edges:
+        for (id1, id2), data in self._win._edges.items():
             center1 = self._win.id_to_data[id1].center
             center2 = self._win.id_to_data[id2].center
             x1 = center1[1]*self._win.scale_factor
@@ -151,6 +181,13 @@ class _ImgLabel(QLabel):
             vec = (point2 - point1)/QLineF(point1, point2).length()
             point1 += r*vec
             point2 -= r*vec
+
+            if data.highlight:
+                width = 6
+                alpha = 200
+            else:
+                width = 2
+                alpha = 150
 
             painter.setPen(QPen(QColor(0, 0, 0, alpha), width))
             painter.drawLine(point1, point2)
@@ -225,7 +262,7 @@ class _MainWin(QMainWindow):
         self._model = None
         self._id_to_data: dict[int, _ElemData] = {}
         self._graph = {}
-        self._edges = {}
+        self._edges: dict[(int, int), _EdgeData] = {}
 
         self._create_win()
     
@@ -261,11 +298,14 @@ class _MainWin(QMainWindow):
             triggered=self._new_file)
         open_action = QAction(_Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
             triggered=self._open_file)
+        save_graph_action = QAction(_Icon("save_graph.svg"), "Save graph...", self, shortcut="Ctrl+S", 
+            triggered=self._save_graph)
         exit_action = QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close)
 
         file_menu = menu_bar.addMenu("File")
         file_menu.addAction(new_action)
         file_menu.addAction(open_action)
+        file_menu.addAction(save_graph_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
@@ -304,6 +344,12 @@ class _MainWin(QMainWindow):
         button.setIcon(_Icon("open_file.svg"))
         button.clicked.connect(self._open_file)
         button.setToolTip("Open")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(_Icon("save_graph.svg"))
+        button.clicked.connect(self._save_graph)
+        button.setToolTip("Save graph")
         h_layout.addWidget(button)
 
         h_layout.addWidget(_Separator())
@@ -486,6 +532,14 @@ class _MainWin(QMainWindow):
         self._zoom_to_fit()
         self._detect_elements_button.setEnabled(True)
         self._clear_list()
+
+
+    def _redraw(self):
+        self._img_label.update()
+    
+
+    def _save_graph(self):
+        pass # FIXME
     
 
     def _clear_list(self):
@@ -556,7 +610,7 @@ class _MainWin(QMainWindow):
 
             if id is not None:
                 label = id // _LABEL_DIVISOR
-                if label == ccl.Label.DOOR:
+                if label in (ccl.Label.DOOR, ccl.Label.ROOM):
                     found_valid_item = True
                     break
         
@@ -574,25 +628,41 @@ class _MainWin(QMainWindow):
      
 
     def _mark_as_exit(self):
+        clear_paths = False
+
         for index in self._tree_view.selectedIndexes():
             item = self._item_model.itemFromIndex(index)
 
-            if item.column() == 1:
+            if item.column() == 1 and item.text() != "Exit":
                 item.setText("Exit")
-
                 id = item.data()
                 self._id_to_data[id].mark = _Mark.EXIT
+                clear_paths = True
+        
+        if clear_paths:
+            for id in self._id_to_data.keys():
+                self._id_to_data[id].path.clear()
+
+        self._redraw()
     
     
     def _clear_mark(self):
+        clear_paths = False
+
         for index in self._tree_view.selectedIndexes():
             item = self._item_model.itemFromIndex(index)
 
-            if item.column() == 1:
+            if item.column() == 1 and item.text != "":
                 item.setText("")
-
                 id = item.data()
                 self._id_to_data[id].mark = _Mark.NONE
+                clear_paths = True
+
+        if clear_paths:
+            for id in self._id_to_data.keys():
+                self._id_to_data[id].path.clear()
+
+        self._redraw()
 
     
     def _detect_elements_core(self):
@@ -654,8 +724,7 @@ class _MainWin(QMainWindow):
         
         self._tree_view.expandAll()
         
-        random.seed(0)
-        colors = (np.array(distinctipy.get_colors(len(ids)))*255).astype(np.uint8)
+        colors = (np.array(distinctipy.get_colors(len(ids), rng=0))*255).astype(np.uint8)
 
         for id, color in zip(ids, colors):
             self._id_to_data[id] = _ElemData(color)
@@ -707,12 +776,11 @@ class _MainWin(QMainWindow):
         for (id, neib), _ in graph.items():
             w = self._calc_edge_weight(id, neib)
             self._graph[(id, neib)] = w
-            self._edges[(min(id, neib), max(id, neib))] = w
+            self._edges[(min(id, neib), max(id, neib))] = _EdgeData(w)
             self._id_to_data[id].neibs.append(neib)
         
-        self._img_label.update()
-
         self._find_path_button.setEnabled(True)
+        self._redraw()
 
     
     def _create_graph(self):
@@ -801,6 +869,8 @@ class _MainWin(QMainWindow):
             
             for id in self._id_to_data.keys():
                 self._calc_path(id, id_to_dist_dicts, exit_ids)
+        
+        self._redraw()
 
 
 if __name__ == '__main__':
