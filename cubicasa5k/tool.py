@@ -157,7 +157,7 @@ class _ImgLabel(QLabel):
                 width = 2
                 alpha = 150
 
-            painter.setPen(QPen(QColor(0, 0, 0, alpha), width))
+            painter.setPen(QPen(QColor(0, 0, 100, alpha), width))
             painter.setBrush(QBrush(QColor(data.color[0], data.color[1], data.color[2], alpha)))
             painter.drawEllipse(point, r, r)
 
@@ -189,7 +189,7 @@ class _ImgLabel(QLabel):
                 width = 2
                 alpha = 150
 
-            painter.setPen(QPen(QColor(0, 0, 0, alpha), width))
+            painter.setPen(QPen(QColor(0, 0, 100, alpha), width))
             painter.drawLine(point1, point2)
 
 
@@ -508,6 +508,7 @@ class _MainWin(QMainWindow):
         self._create_graph_button.setEnabled(False)
         self._find_path_button.setEnabled(False)
         self._id_to_data.clear()
+        self._edges.clear()
         self._graph.clear()
 
 
@@ -723,8 +724,10 @@ class _MainWin(QMainWindow):
                 parent.appendRow((item1, item2))
         
         self._tree_view.expandAll()
-        
-        colors = (np.array(distinctipy.get_colors(len(ids), rng=0))*255).astype(np.uint8)
+
+        exclude_colors = [(0, 0, 100/255)]
+        colors = distinctipy.get_colors(len(ids), exclude_colors=exclude_colors, rng=0)
+        colors = (np.array(colors)*255).astype(np.uint8)
 
         for id, color in zip(ids, colors):
             self._id_to_data[id] = _ElemData(color)
