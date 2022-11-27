@@ -8,6 +8,7 @@ import tensorflow as tf
 from contextlib import contextmanager
 from distinctipy import distinctipy
 from enum import IntEnum
+from collections import defaultdict
 from math import sqrt
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
@@ -67,7 +68,6 @@ class _Node():
         self.is_selected = False
         self.highlight = False
         self.mark = _Mark.NONE
-        self.neibs = []
         self.path = []
 
 
@@ -439,6 +439,46 @@ class _MainWin(QMainWindow):
         button.setToolTip("Zoom out")
         h_layout.addWidget(button)
 
+        h_layout.addWidget(_Separator())
+
+        button = QPushButton()
+        button.setIcon(_Icon("new_node.svg"))
+        button.clicked.connect(self._new_node)
+        button.setToolTip("New node")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(_Icon("delete_node.svg"))
+        button.clicked.connect(self._delete_node)
+        button.setToolTip("Delete node")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(_Icon("new_edge.svg"))
+        button.clicked.connect(self._new_edge)
+        button.setToolTip("New edge")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(_Icon("delete_edge.svg"))
+        button.clicked.connect(self._delete_edge)
+        button.setToolTip("Delete edge")
+        h_layout.addWidget(button)
+
+        h_layout.addWidget(_Separator())
+
+        button = QPushButton()
+        button.setIcon(_Icon("mark_as_exit.svg"))
+        button.clicked.connect(self._mark_as_exit)
+        button.setToolTip("Mark as exit")
+        h_layout.addWidget(button)
+
+        button = QPushButton()
+        button.setIcon(_Icon("clear_mark.svg"))
+        button.clicked.connect(self._clear_mark)
+        button.setToolTip("Clear mark")
+        h_layout.addWidget(button)
+
         splitter = QSplitter(Qt.Orientation.Horizontal)
         v_layout.addWidget(splitter)
 
@@ -691,48 +731,107 @@ class _MainWin(QMainWindow):
             if item_type == _ItemType.NODE:
                 found_valid_item = True
                 break
-        
-        if not found_valid_item:
-            return
 
-        mark_as_exit_action = QAction("Mark as exit", self, triggered=self._mark_as_exit)
-        clear_mark_action = QAction("Clear mark", self, triggered=self._clear_mark)
+        new_node_action = QAction("New node", self, triggered=self._new_node)
+        
+        if found_valid_item:
+            delete_node_action = QAction("Delete node", self, triggered=self._delete_node)
+            mark_as_exit_action = QAction("Mark as exit", self, triggered=self._mark_as_exit)
+            clear_mark_action = QAction("Clear mark", self, triggered=self._clear_mark)
         
         menu = QMenu()
-        menu.addAction(mark_as_exit_action)
-        menu.addAction(clear_mark_action)
+        menu.addAction(new_node_action)
+
+        if found_valid_item:
+            menu.addAction(delete_node_action)
+            menu.addSeparator()
+            menu.addAction(mark_as_exit_action)
+            menu.addAction(clear_mark_action)
 
         menu.exec(self._tree_view.viewport().mapToGlobal(position))
+
+    
+    def _new_node(self):
+        pass # FIXME
+    
+
+    def _delete_node(self):
+        items = self._get_selected_childless_items(0, _ItemType.NODE)
+        if len(items) == 0:
+            return
+
+        nodes_str = "nodes" if len(items) > 1 else "node" 
+        ret = QMessageBox.question(self, "Question", f"Are you sure you want to delete the selected {nodes_str}?", 
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if ret == QMessageBox.StandardButton.No:
+            return
+
+        for item in items:
+            _, id = item.data()
+            item.parent().removeRow(item.row())
+            self._id_to_node.pop(id)
+
+            edges_to_remove = []
+            for edge in self._graph.keys():
+                if edge[0] == id or edge[1] == id:
+                    edges_to_remove.append(edge)
+            
+            for edge in edges_to_remove:
+                self._graph.pop(edge)
+                if edge in self._edges:
+                    self._edges.pop(edge)
+        
+        self._clear_paths()
+        self._redraw()
+
+    
+    def _new_edge(self):
+        pass # FIXME
+
+
+    def _delete_edge(self):
+        pass # FIXME
+    
+    
+    def _clear_paths(self):
+        for id in self._id_to_node.keys():
+            self._id_to_node[id].path.clear()
      
     
     def _mark_as_exit(self):
+        items = self._get_selected_childless_items(1, _ItemType.NODE)
+        if len(items) == 0:
+            return
+
         clear_paths = False
 
-        for item in self._get_selected_childless_items(1, _ItemType.NODE):
+        for item in items:
             item.setText("Exit")
             _, id = item.data()
             self._id_to_node[id].mark = _Mark.EXIT
             clear_paths = True
         
         if clear_paths:
-            for id in self._id_to_node.keys():
-                self._id_to_node[id].path.clear()
+            self._clear_paths()
 
         self._redraw()
     
     
     def _clear_mark(self):
+        items = self._get_selected_childless_items(1, _ItemType.NODE)
+        if len(items) == 0:
+            return
+
         clear_paths = False
 
-        for item in self._get_selected_childless_items(1, _ItemType.NODE):
+        for item in items:
             item.setText("")
             _, id = item.data()
             self._id_to_node[id].mark = _Mark.NONE
             clear_paths = True
 
         if clear_paths:
-            for id in self._id_to_node.keys():
-                self._id_to_node[id].path.clear()
+            self._clear_paths()
 
         self._redraw()
 
@@ -820,7 +919,7 @@ class _MainWin(QMainWindow):
             self._detect_elements_core()
 
 
-    def _calc_edge_weight(self, id1, id2):
+    def _calc_edge_dist(self, id1, id2):
         center1 = self._id_to_node[id1].center
         center2 = self._id_to_node[id2].center
 
@@ -910,10 +1009,9 @@ class _MainWin(QMainWindow):
             self._id_to_node[elem_id_to_node_id[elem_id]].center = center
         
         for (node_id, neib), _ in graph.items():
-            w = self._calc_edge_weight(node_id, neib)
-            self._graph[(node_id, neib)] = w
-            self._edges[(min(node_id, neib), max(node_id, neib))] = _Edge(w)
-            self._id_to_node[node_id].neibs.append(neib)
+            dist = self._calc_edge_dist(node_id, neib)
+            self._graph[(node_id, neib)] = dist
+            self._edges[(min(node_id, neib), max(node_id, neib))] = _Edge(dist)
         
         self._find_path_button.setEnabled(True)
         self._redraw()
@@ -924,7 +1022,7 @@ class _MainWin(QMainWindow):
             self._create_graph_core()
 
 
-    def _dijkstra(self, exit_id):
+    def _dijkstra(self, exit_id, id_to_neibs):
         id_to_dist = {id: sys.float_info.max for id in self._id_to_node.keys()}
 
         q = queue.PriorityQueue()
@@ -936,7 +1034,7 @@ class _MainWin(QMainWindow):
             _, id = q.get()
             dist = id_to_dist[id]
 
-            for neib in self._id_to_node[id].neibs:
+            for neib in id_to_neibs[id]:
                 cost = self._graph[(id, neib)]
                 new_dist = dist + cost
 
@@ -947,7 +1045,7 @@ class _MainWin(QMainWindow):
         return id_to_dist
 
 
-    def _calc_path(self, id: int, id_to_dist_dicts: list[dict], exit_ids: list[int]):
+    def _calc_path(self, id: int, id_to_dist_dicts, exit_ids, id_to_neibs):
         best_exit_index = None
         min_dist = sys.float_info.max
 
@@ -971,7 +1069,7 @@ class _MainWin(QMainWindow):
             min_dist = sys.float_info.max
             best_neib = None
 
-            for neib in self._id_to_node[cur_id].neibs:
+            for neib in id_to_neibs[cur_id]:
                 neib_dist = best_id_to_dist[neib]
                 if neib_dist < min_dist:
                     min_dist = neib_dist
@@ -986,6 +1084,21 @@ class _MainWin(QMainWindow):
         self._id_to_node[id].path = path
 
 
+    def _find_path_core(self, exit_ids):
+        id_to_dist_dicts = []
+        id_to_neibs = defaultdict(list)
+
+        for (node_id, neib), _ in self._graph.items():
+            id_to_neibs[node_id].append(neib)
+        
+        for exit_id in exit_ids:
+            id_to_dist = self._dijkstra(exit_id, id_to_neibs)
+            id_to_dist_dicts.append(id_to_dist)
+        
+        for id in self._id_to_node.keys():
+            self._calc_path(id, id_to_dist_dicts, exit_ids, id_to_neibs)
+    
+
     def _find_path(self):
         exit_ids = []
 
@@ -998,13 +1111,7 @@ class _MainWin(QMainWindow):
             return
         
         with _wait_cursor():
-            id_to_dist_dicts = []
-            for exit_id in exit_ids:
-                id_to_dist = self._dijkstra(exit_id)
-                id_to_dist_dicts.append(id_to_dist)
-            
-            for id in self._id_to_node.keys():
-                self._calc_path(id, id_to_dist_dicts, exit_ids)
+            self._find_path_core(exit_ids)
         
         self._redraw()
 
