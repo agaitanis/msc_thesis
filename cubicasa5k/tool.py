@@ -18,11 +18,30 @@ from xml.dom import minidom
 
 
 _LABEL_DIVISOR = 256
+_NODE_RADIUS = 12
+
+
+class _ItemType(IntEnum):
+    WALL = 0
+    ROOM = 1
+    DOOR = 2
+    NODE = 3
 
 
 class _Mark(IntEnum):
     NONE = 0
     EXIT = 1
+
+
+def _label_to_item_type(label):
+    if label == ccl.Label.WALL:
+        return _ItemType.WALL
+    elif label == ccl.Label.ROOM:
+        return _ItemType.ROOM
+    elif label == ccl.Label.DOOR:
+        return _ItemType.DOOR
+    else:
+        raise ValueError(f"Unknown label: {label}")
 
 
 @contextmanager
@@ -34,8 +53,15 @@ def _wait_cursor():
         QApplication.restoreOverrideCursor()
 
 
-class _ElemData():
-    def __init__(self, color=None):
+class _Elem():
+    def __init__(self, color, item:QStandardItem):
+        self.color = color
+        self.item = item
+        self.is_selected = False
+
+        
+class _Node():
+    def __init__(self, color):
         self.color = color
         self.center = None
         self.is_selected = False
@@ -45,7 +71,7 @@ class _ElemData():
         self.path = []
 
 
-class _EdgeData():
+class _Edge():
     def __init__(self, dist, highlight=False):
         self.dist = dist
         self.highlight = highlight
@@ -59,7 +85,6 @@ class _ScrollArea(QScrollArea):
 
     def wheelEvent(self, event: QWheelEvent):
         speed = event.angleDelta().y()
-
         if speed > 0:
             self._win.scale_img(1.1, event.position())
         elif speed < 0:
@@ -111,38 +136,44 @@ class _ImgLabel(QLabel):
 
         self._win.scroll_area.horizontalScrollBar().setValue(scroll_bar_pos.x() - delta.x())
         self._win.scroll_area.verticalScrollBar().setValue(scroll_bar_pos.y() - delta.y())
-
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-
-        for id, data in self._win.id_to_data.items():
-            self._win.id_to_data[id].highlight = data.is_selected
+    
+    
+    def _recalc_flags_for_draw(self):
+        for id, node in self._win.id_to_node.items():
+            self._win.id_to_node[id].highlight = node.is_selected
         
         for (id1, id2) in self._win.edges.keys():
             self._win.edges[(id1, id2)].highlight = False
 
         selected_id = None
-        for id, data in self._win.id_to_data.items():
+        for id, data in self._win.id_to_node.items():
             if data.is_selected:
                 if selected_id is None:
                     selected_id = id
                 else:
                     selected_id = None
                     break
-        
+
         if selected_id is not None:
             prev_path_id = None
-            for path_id in self._win.id_to_data[selected_id].path:
-                self._win.id_to_data[path_id].highlight = True
+            for path_id in self._win.id_to_node[selected_id].path:
+                self._win.id_to_node[path_id].highlight = True
                 if prev_path_id is not None:
                     self._win.edges[(min(path_id, prev_path_id), max(path_id, prev_path_id))].highlight = True
                 prev_path_id = path_id
 
-        painter = QPainter(self)
-        r = 12.0
+    
+    def _get_width_alpha(self, highlight):
+        if highlight:
+            return 6, 255
+        else:
+            return 2, 150
+    
+    
+    def _draw_nodes(self, painter: QPainter):
+        r = _NODE_RADIUS
 
-        for _, data in self._win.id_to_data.items():
+        for _, data in self._win.id_to_node.items():
             if data.center is None:
                 continue
 
@@ -150,12 +181,7 @@ class _ImgLabel(QLabel):
             y = data.center[0]*self._win.scale_factor
             point = QPointF(x, y)
 
-            if data.highlight:
-                width = 6
-                alpha = 255
-            else:
-                width = 2
-                alpha = 150
+            width, alpha = self._get_width_alpha(data.highlight)
 
             painter.setPen(QPen(QColor(0, 0, 100, alpha), width))
             painter.setBrush(QBrush(QColor(data.color[0], data.color[1], data.color[2], alpha)))
@@ -168,10 +194,14 @@ class _ImgLabel(QLabel):
 
                 painter.drawPolygon(point + QPointF(r*0.5, 0), point + QPointF(-r*0.45, -r*0.45),
                     point + QPointF(-r*0.45, r*0.45))
-        
+
+
+    def _draw_edges(self, painter: QPainter):
+        r = _NODE_RADIUS
+
         for (id1, id2), data in self._win._edges.items():
-            center1 = self._win.id_to_data[id1].center
-            center2 = self._win.id_to_data[id2].center
+            center1 = self._win.id_to_node[id1].center
+            center2 = self._win.id_to_node[id2].center
             x1 = center1[1]*self._win.scale_factor
             y1 = center1[0]*self._win.scale_factor
             point1 = QPointF(x1, y1)
@@ -182,17 +212,22 @@ class _ImgLabel(QLabel):
             point1 += r*vec
             point2 -= r*vec
 
-            if data.highlight:
-                width = 6
-                alpha = 255
-            else:
-                width = 2
-                alpha = 150
+            width, alpha = self._get_width_alpha(data.highlight)
 
             painter.setPen(QPen(QColor(0, 0, 100, alpha), width))
             painter.drawLine(point1, point2)
 
 
+    def paintEvent(self, event):
+        super().paintEvent(event)
+
+        painter = QPainter(self)
+
+        self._recalc_flags_for_draw()
+        self._draw_nodes(painter)
+        self._draw_edges(painter)
+
+        
 class _ItemModel(QStandardItemModel):
     def __init__(self, win: _MainWin):
         super().__init__()
@@ -200,15 +235,24 @@ class _ItemModel(QStandardItemModel):
     
 
     def data(self, index, role):
-        if role == Qt.ItemDataRole.DecorationRole and len(self._win.id_to_data) > 0:
-            item = self.itemFromIndex(index)
-            if item.column() == 0:
-                id = item.data()
-                if id is not None:
-                    color = self._win.id_to_data[id].color
-                    return QColor(color[0], color[1], color[2])
+        if role != Qt.ItemDataRole.DecorationRole:
+            return super().data(index, role)
 
-        return super().data(index, role)
+        item = self.itemFromIndex(index)
+        if item.column() != 0:
+            return super().data(index, role)
+
+        item_data = item.data()
+        if item_data is None:
+            return super().data(index, role)
+
+        item_type, id = item_data
+        map = self._win.item_type_to_map(item_type)
+        if len(map) == 0:
+            return super().data(index, role)
+
+        color = map[id].color
+        return QColor(color[0], color[1], color[2])
     
 
 class _Icon(QIcon):
@@ -256,13 +300,17 @@ class _MainWin(QMainWindow):
         self._scroll_area = None
         self._img_file_name = None
         self._tree_view = None
+        self._item_model = None
+        self._nodes_item = None
         self._detect_elements_button = None
         self._create_graph_button = None
         self._find_path_button = None
         self._model = None
-        self._id_to_data: dict[int, _ElemData] = {}
+        self._id_to_elem: dict[int, _Elem] = {}
+        self._id_to_node: dict[int, _Node] = {}
         self._graph = {}
-        self._edges: dict[(int, int), _EdgeData] = {}
+        self._edges: dict[(int, int), _Edge] = {}
+        self._colors = []
 
         self._create_win()
     
@@ -273,8 +321,20 @@ class _MainWin(QMainWindow):
 
 
     @property
-    def id_to_data(self):
-        return self._id_to_data
+    def id_to_elem(self):
+        return self._id_to_elem
+
+
+    @property
+    def id_to_node(self):
+        return self._id_to_node
+
+
+    def item_type_to_map(self, item_type: _ItemType):
+        if item_type == _ItemType.NODE:
+            return self._id_to_node
+        else:
+            return self._id_to_elem
 
 
     @property
@@ -507,7 +567,8 @@ class _MainWin(QMainWindow):
         self._detect_elements_button.setEnabled(False)
         self._create_graph_button.setEnabled(False)
         self._find_path_button.setEnabled(False)
-        self._id_to_data.clear()
+        self._id_to_elem.clear()
+        self._id_to_node.clear()
         self._edges.clear()
         self._graph.clear()
 
@@ -546,9 +607,10 @@ class _MainWin(QMainWindow):
     def _clear_list(self):
         self._item_model.clear()
         self._item_model.setHorizontalHeaderLabels(("Elements", "Mark"))
+        self._nodes_item = None
 
     
-    def _get_selected_childless_items(self, col):
+    def _get_selected_childless_items(self, col, filter_item_type=None):
         selected_indexes = self._tree_view.selectedIndexes()
         indexes = set()
 
@@ -557,6 +619,14 @@ class _MainWin(QMainWindow):
 
             if item.column() != col:
                 continue
+
+            if filter_item_type is not None:
+                item_data = item.data()
+                if item_data is None:
+                    continue
+                item_type, _ = item_data
+                if item_type != filter_item_type:
+                    continue
 
             child_items_num = item.rowCount()
             
@@ -576,8 +646,11 @@ class _MainWin(QMainWindow):
 
         items = self._get_selected_childless_items(0)
 
-        for id in self._id_to_data.keys():
-            self._id_to_data[id].is_selected = False
+        for id in self._id_to_elem.keys():
+            self._id_to_elem[id].is_selected = False
+
+        for id in self._id_to_node.keys():
+            self._id_to_node[id].is_selected = False
             
         if len(items) == 0:
             self._load_img(ImageQt.ImageQt(background))
@@ -587,15 +660,19 @@ class _MainWin(QMainWindow):
         foreground_array = np.zeros((panoptic_pred.shape[0], panoptic_pred.shape[1], 4)).astype(np.uint8)
 
         for item in items:
-            id = item.data()
-            if id is None:
+            item_data = item.data()
+            if item_data is None:
                 continue
+            item_type, id = item_data
 
-            self._id_to_data[id].is_selected = True
+            if item_type == _ItemType.NODE:
+                self._id_to_node[id].is_selected = True
+            else:
+                self._id_to_elem[id].is_selected = True
 
-            color = self._id_to_data[id].color
-            foreground_array += np.where(panoptic_pred == id,
-                (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
+                color = self._id_to_elem[id].color
+                foreground_array += np.where(panoptic_pred == id,
+                    (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
 
         foreground = Image.fromarray(foreground_array)
         background.paste(foreground, (0, 0), foreground)
@@ -607,13 +684,13 @@ class _MainWin(QMainWindow):
 
         for index in self._tree_view.selectedIndexes():
             item = self._item_model.itemFromIndex(index)
-            id = item.data()
-
-            if id is not None:
-                label = id // _LABEL_DIVISOR
-                if label in (ccl.Label.DOOR, ccl.Label.ROOM):
-                    found_valid_item = True
-                    break
+            item_data = item.data()
+            if item_data is None:
+                continue
+            item_type, _ = item_data
+            if item_type == _ItemType.NODE:
+                found_valid_item = True
+                break
         
         if not found_valid_item:
             return
@@ -627,22 +704,19 @@ class _MainWin(QMainWindow):
 
         menu.exec(self._tree_view.viewport().mapToGlobal(position))
      
-
+    
     def _mark_as_exit(self):
         clear_paths = False
 
-        for index in self._tree_view.selectedIndexes():
-            item = self._item_model.itemFromIndex(index)
-
-            if item.column() == 1 and item.text() != "Exit":
-                item.setText("Exit")
-                id = item.data()
-                self._id_to_data[id].mark = _Mark.EXIT
-                clear_paths = True
+        for item in self._get_selected_childless_items(1, _ItemType.NODE):
+            item.setText("Exit")
+            _, id = item.data()
+            self._id_to_node[id].mark = _Mark.EXIT
+            clear_paths = True
         
         if clear_paths:
-            for id in self._id_to_data.keys():
-                self._id_to_data[id].path.clear()
+            for id in self._id_to_node.keys():
+                self._id_to_node[id].path.clear()
 
         self._redraw()
     
@@ -650,24 +724,23 @@ class _MainWin(QMainWindow):
     def _clear_mark(self):
         clear_paths = False
 
-        for index in self._tree_view.selectedIndexes():
-            item = self._item_model.itemFromIndex(index)
-
-            if item.column() == 1 and item.text != "":
-                item.setText("")
-                id = item.data()
-                self._id_to_data[id].mark = _Mark.NONE
-                clear_paths = True
+        for item in self._get_selected_childless_items(1, _ItemType.NODE):
+            item.setText("")
+            _, id = item.data()
+            self._id_to_node[id].mark = _Mark.NONE
+            clear_paths = True
 
         if clear_paths:
-            for id in self._id_to_data.keys():
-                self._id_to_data[id].path.clear()
+            for id in self._id_to_node.keys():
+                self._id_to_node[id].path.clear()
 
         self._redraw()
 
     
     def _detect_elements_core(self):
         self._clear_list()
+        self._clear_graph()
+        self._id_to_elem.clear()
 
         if self._model is None:
             self._model = tf.saved_model.load("cubicasa5k/model")
@@ -688,10 +761,13 @@ class _MainWin(QMainWindow):
         labels = np.unique(ids // _LABEL_DIVISOR)
         labels.sort()
 
+        id_to_item = {}
+
         for label in labels:
             if label == ccl.Label.BACKGROUND:
                 continue
 
+            item_type = _label_to_item_type(label)
             label_str = ccl.label_to_str[label]
             parent_str = label_str + "s"
             parent = QStandardItem(parent_str)
@@ -710,29 +786,33 @@ class _MainWin(QMainWindow):
                 id = label*_LABEL_DIVISOR + instance
 
                 if instance == 0:
-                    parent.setData(id)
+                    parent.setData((item_type, id))
+                    id_to_item[id] = parent
                     continue
 
                 item1 = QStandardItem(f"{label_str} {i}")
                 item1.setEditable(True)
-                item1.setData(id)
+                item1.setData((item_type, id))
+                id_to_item[id] = item1
 
                 item2 = QStandardItem("")
                 item2.setEditable(False)
-                item2.setData(id)
+                item2.setData((item_type, id))
 
                 parent.appendRow((item1, item2))
         
         self._tree_view.expandAll()
 
         exclude_colors = [(0, 0, 100/255)]
-        colors = distinctipy.get_colors(len(ids), exclude_colors=exclude_colors, rng=0)
-        colors = (np.array(colors)*255).astype(np.uint8)
+        self._colors = distinctipy.get_colors(len(ids), exclude_colors=exclude_colors, rng=0)
+        colors = (np.array(self._colors)*255).astype(np.uint8)
 
         for id, color in zip(ids, colors):
-            self._id_to_data[id] = _ElemData(color)
+            self._id_to_elem[id] = _Elem(color, id_to_item.get(id, None))
 
         self._create_graph_button.setEnabled(True)
+        self._find_path_button.setEnabled(False)
+        self._redraw()
 
 
     def _detect_elements(self):
@@ -741,46 +821,99 @@ class _MainWin(QMainWindow):
 
 
     def _calc_edge_weight(self, id1, id2):
-        center1 = self._id_to_data[id1].center
-        center2 = self._id_to_data[id2].center
+        center1 = self._id_to_node[id1].center
+        center2 = self._id_to_node[id2].center
 
         return _euclidean_dist(center1, center2)
     
 
+    def _clear_graph(self):
+        if self._nodes_item is not None:
+            self._nodes_item.removeRow(0)
+            self._item_model.removeRow(self._nodes_item.row())
+        self._nodes_item = None
+
+        self._id_to_node.clear()
+        self._graph.clear()
+        self._edges.clear()
+    
+
     def _create_graph_core(self):
+        self._clear_graph()
+
+        elem_id_to_node_id = {}
+        node_id = 0
+
+        parent = QStandardItem("Nodes")
+        parent.setEditable(False)
+        self._nodes_item = parent
+        self._item_model.appendRow(parent)
+
+        for elem_id, elem in self._id_to_elem.items():
+            label = elem_id // _LABEL_DIVISOR
+            if label not in (ccl.Label.ROOM, ccl.Label.DOOR):
+                continue
+
+            node_id += 1
+            elem_id_to_node_id[elem_id] = node_id
+            self._id_to_node[node_id] = _Node(elem.color)
+
+            label_str = self._id_to_elem[elem_id].item.text()
+
+            item1 = QStandardItem(label_str)
+            item1.setEditable(True)
+            item1.setData((_ItemType.NODE, node_id))
+
+            item2 = QStandardItem("")
+            item2.setEditable(False)
+            item2.setData((_ItemType.NODE, node_id))
+
+            parent.appendRow((item1, item2))
+
+        self._tree_view.expand(parent.index())
+
         panoptic_pred = self._output["panoptic_pred"].numpy()[0]
         instance_center_pred = self._output["instance_center_pred"].numpy()[0]
 
-        id_to_center_pred_max = {}
-        graph = {}
+        elem_id_to_center_pred_max = {}
+        elem_id_to_center = {}
+        elem_id_graph = {}
 
         for i in range(panoptic_pred.shape[0]):
             for j in range(panoptic_pred.shape[1]):
-                id = panoptic_pred[i][j]
-                label = id // _LABEL_DIVISOR
-                if label in (ccl.Label.BACKGROUND, ccl.Label.WALL):
+                elem_id = panoptic_pred[i][j]
+                label = elem_id // _LABEL_DIVISOR
+                if label not in (ccl.Label.ROOM, ccl.Label.DOOR):
                     continue
 
-                if instance_center_pred[i][j] > id_to_center_pred_max.get(id, -1.0):
-                    id_to_center_pred_max[id] = instance_center_pred[i][j]
-                    self._id_to_data[id].center = (i, j)
+                if instance_center_pred[i][j] > elem_id_to_center_pred_max.get(elem_id, -1.0):
+                    elem_id_to_center_pred_max[elem_id] = instance_center_pred[i][j]
+                    elem_id_to_center[elem_id] = (i, j)
 
                 neibs = _get_pixel_neibs(panoptic_pred, i, j)
 
                 for neib in neibs:
-                    if neib == id:
+                    if neib == elem_id:
                         continue
                     neib_label = neib // _LABEL_DIVISOR
-                    if neib_label in (ccl.Label.BACKGROUND, ccl.Label.WALL):
+                    if neib_label not in (ccl.Label.ROOM, ccl.Label.DOOR):
                         continue
-                    if (id, neib) not in graph:
-                        graph[(id, neib)] = 1.0
+                    if (elem_id, neib) not in elem_id_graph:
+                        elem_id_graph[(elem_id, neib)] = 1.0
         
-        for (id, neib), _ in graph.items():
-            w = self._calc_edge_weight(id, neib)
-            self._graph[(id, neib)] = w
-            self._edges[(min(id, neib), max(id, neib))] = _EdgeData(w)
-            self._id_to_data[id].neibs.append(neib)
+        graph = {}
+
+        for (elem_id, neib), dist in elem_id_graph.items():
+            graph[(elem_id_to_node_id[elem_id], elem_id_to_node_id[neib])] = dist
+
+        for elem_id, center in elem_id_to_center.items():
+            self._id_to_node[elem_id_to_node_id[elem_id]].center = center
+        
+        for (node_id, neib), _ in graph.items():
+            w = self._calc_edge_weight(node_id, neib)
+            self._graph[(node_id, neib)] = w
+            self._edges[(min(node_id, neib), max(node_id, neib))] = _Edge(w)
+            self._id_to_node[node_id].neibs.append(neib)
         
         self._find_path_button.setEnabled(True)
         self._redraw()
@@ -792,7 +925,7 @@ class _MainWin(QMainWindow):
 
 
     def _dijkstra(self, exit_id):
-        id_to_dist = {id: sys.float_info.max for id in self._id_to_data.keys()}
+        id_to_dist = {id: sys.float_info.max for id in self._id_to_node.keys()}
 
         q = queue.PriorityQueue()
 
@@ -803,7 +936,7 @@ class _MainWin(QMainWindow):
             _, id = q.get()
             dist = id_to_dist[id]
 
-            for neib in self._id_to_data[id].neibs:
+            for neib in self._id_to_node[id].neibs:
                 cost = self._graph[(id, neib)]
                 new_dist = dist + cost
 
@@ -818,7 +951,7 @@ class _MainWin(QMainWindow):
         best_exit_index = None
         min_dist = sys.float_info.max
 
-        self._id_to_data[id].path = []
+        self._id_to_node[id].path = []
 
         for i, id_to_dist in enumerate(id_to_dist_dicts):
             dist = id_to_dist[id]
@@ -838,7 +971,7 @@ class _MainWin(QMainWindow):
             min_dist = sys.float_info.max
             best_neib = None
 
-            for neib in self._id_to_data[cur_id].neibs:
+            for neib in self._id_to_node[cur_id].neibs:
                 neib_dist = best_id_to_dist[neib]
                 if neib_dist < min_dist:
                     min_dist = neib_dist
@@ -850,13 +983,13 @@ class _MainWin(QMainWindow):
             path.append(best_neib)
             cur_id = best_neib
 
-        self._id_to_data[id].path = path
+        self._id_to_node[id].path = path
 
 
     def _find_path(self):
         exit_ids = []
 
-        for id, data in self._id_to_data.items():
+        for id, data in self._id_to_node.items():
             if data.mark == _Mark.EXIT:
                 exit_ids.append(id)
 
@@ -870,7 +1003,7 @@ class _MainWin(QMainWindow):
                 id_to_dist = self._dijkstra(exit_id)
                 id_to_dist_dicts.append(id_to_dist)
             
-            for id in self._id_to_data.keys():
+            for id in self._id_to_node.keys():
                 self._calc_path(id, id_to_dist_dicts, exit_ids)
         
         self._redraw()
