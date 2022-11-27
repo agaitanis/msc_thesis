@@ -298,6 +298,8 @@ class _MainWin(QMainWindow):
         self._scale_factor = 1.0
         self._img_qt = None
         self._scroll_area = None
+        self._status_bar = None
+        self._progress_bar = None
         self._img_file_name = None
         self._tree_view = None
         self._item_model = None
@@ -498,6 +500,12 @@ class _MainWin(QMainWindow):
         selection_model = self._tree_view.selectionModel()
         selection_model.selectionChanged.connect(self._selection_changed)
 
+        frame = QFrame()
+        splitter.addWidget(frame)
+
+        v_layout_2 = QVBoxLayout(frame)
+        v_layout_2.setContentsMargins(0, 0, 0, 0)
+
         self._scroll_area = _ScrollArea(self)
         self._scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
         self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -508,7 +516,15 @@ class _MainWin(QMainWindow):
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 200)
         self._scroll_area.setWidget(self._img_label)
-        splitter.addWidget(self._scroll_area)
+        v_layout_2.addWidget(self._scroll_area)
+
+        self._status_bar = QStatusBar()
+        v_layout_2.addWidget(self._status_bar)
+        self._status_bar.setSizeGripEnabled(False)
+        self._status_bar.hide()
+
+        self._progress_bar = QProgressBar()
+        self._status_bar.addPermanentWidget(self._progress_bar)
 
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
@@ -648,6 +664,7 @@ class _MainWin(QMainWindow):
         self._item_model.clear()
         self._item_model.setHorizontalHeaderLabels(("Elements", "Mark"))
         self._nodes_item = None
+        self._tree_view.repaint()
 
     
     def _get_selected_childless_items(self, col, filter_item_type=None):
@@ -931,14 +948,70 @@ class _MainWin(QMainWindow):
             self._nodes_item.removeRow(0)
             self._item_model.removeRow(self._nodes_item.row())
         self._nodes_item = None
+        self._tree_view.repaint()
 
         self._id_to_node.clear()
         self._graph.clear()
         self._edges.clear()
     
+        
+    def _show_progress_bar(self, msg):
+        self._status_bar.show()
+        self._status_bar.showMessage(msg)
+        self._status_bar.repaint()
+
+
+    def _hide_progress_bar(self):
+        self._progress_bar.reset()
+        self._status_bar.hide()
+        self._status_bar.clearMessage()
+        self._status_bar.repaint()
+    
+
+    def _set_progress_bar_value(self, value):
+        value = int(value)
+        if value > self._progress_bar.value():
+            self._progress_bar.setValue(value)
+            self._progress_bar.repaint()
+    
 
     def _create_graph_core(self):
+        self._show_progress_bar("Creating graph...")
         self._clear_graph()
+
+        panoptic_pred = self._output["panoptic_pred"].numpy()[0]
+        instance_center_pred = self._output["instance_center_pred"].numpy()[0]
+
+        elem_id_to_center_pred_max = {}
+        elem_id_to_center = {}
+        elem_id_graph = {}
+
+        step = 1
+        total_steps = panoptic_pred.shape[0]*panoptic_pred.shape[1]
+
+        for i in range(panoptic_pred.shape[0]):
+            for j in range(panoptic_pred.shape[1]):
+                self._set_progress_bar_value(100*step/total_steps); step += 1
+
+                elem_id = panoptic_pred[i][j]
+                label = elem_id // _LABEL_DIVISOR
+                if label not in (ccl.Label.ROOM, ccl.Label.DOOR):
+                    continue
+
+                if instance_center_pred[i][j] > elem_id_to_center_pred_max.get(elem_id, -1.0):
+                    elem_id_to_center_pred_max[elem_id] = instance_center_pred[i][j]
+                    elem_id_to_center[elem_id] = (i, j)
+
+                neibs = _get_pixel_neibs(panoptic_pred, i, j)
+
+                for neib in neibs:
+                    if neib == elem_id:
+                        continue
+                    neib_label = neib // _LABEL_DIVISOR
+                    if neib_label not in (ccl.Label.ROOM, ccl.Label.DOOR):
+                        continue
+                    if (elem_id, neib) not in elem_id_graph:
+                        elem_id_graph[(elem_id, neib)] = 1.0
 
         elem_id_to_node_id = {}
         node_id = 0
@@ -970,35 +1043,6 @@ class _MainWin(QMainWindow):
             parent.appendRow((item1, item2))
 
         self._tree_view.expand(parent.index())
-
-        panoptic_pred = self._output["panoptic_pred"].numpy()[0]
-        instance_center_pred = self._output["instance_center_pred"].numpy()[0]
-
-        elem_id_to_center_pred_max = {}
-        elem_id_to_center = {}
-        elem_id_graph = {}
-
-        for i in range(panoptic_pred.shape[0]):
-            for j in range(panoptic_pred.shape[1]):
-                elem_id = panoptic_pred[i][j]
-                label = elem_id // _LABEL_DIVISOR
-                if label not in (ccl.Label.ROOM, ccl.Label.DOOR):
-                    continue
-
-                if instance_center_pred[i][j] > elem_id_to_center_pred_max.get(elem_id, -1.0):
-                    elem_id_to_center_pred_max[elem_id] = instance_center_pred[i][j]
-                    elem_id_to_center[elem_id] = (i, j)
-
-                neibs = _get_pixel_neibs(panoptic_pred, i, j)
-
-                for neib in neibs:
-                    if neib == elem_id:
-                        continue
-                    neib_label = neib // _LABEL_DIVISOR
-                    if neib_label not in (ccl.Label.ROOM, ccl.Label.DOOR):
-                        continue
-                    if (elem_id, neib) not in elem_id_graph:
-                        elem_id_graph[(elem_id, neib)] = 1.0
         
         graph = {}
 
@@ -1012,6 +1056,8 @@ class _MainWin(QMainWindow):
             dist = self._calc_edge_dist(node_id, neib)
             self._graph[(node_id, neib)] = dist
             self._edges[(min(node_id, neib), max(node_id, neib))] = _Edge(dist)
+
+        self._hide_progress_bar()
         
         self._find_path_button.setEnabled(True)
         self._redraw()
