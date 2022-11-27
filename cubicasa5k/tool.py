@@ -542,8 +542,8 @@ class _MainWin(QMainWindow):
         self._create_graph_button.setEnabled(False)
         h_layout.addWidget(self._create_graph_button)
 
-        self._find_path_button = QPushButton("Find path")
-        self._find_path_button.clicked.connect(self._find_path)
+        self._find_path_button = QPushButton("Find paths")
+        self._find_path_button.clicked.connect(self._find_paths)
         self._find_path_button.setEnabled(False)
         h_layout.addWidget(self._find_path_button)
 
@@ -1130,7 +1130,7 @@ class _MainWin(QMainWindow):
         self._id_to_node[id].path = path
 
 
-    def _find_path_core(self, exit_ids):
+    def _find_paths_core(self, exit_ids):
         id_to_dist_dicts = []
         id_to_neibs = defaultdict(list)
 
@@ -1145,7 +1145,7 @@ class _MainWin(QMainWindow):
             self._calc_path(id, id_to_dist_dicts, exit_ids, id_to_neibs)
     
 
-    def _find_path(self):
+    def _find_paths(self):
         exit_ids = []
 
         for id, data in self._id_to_node.items():
@@ -1157,7 +1157,7 @@ class _MainWin(QMainWindow):
             return
         
         with _wait_cursor():
-            self._find_path_core(exit_ids)
+            self._find_paths_core(exit_ids)
         
         self._redraw()
 
