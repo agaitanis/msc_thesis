@@ -142,8 +142,8 @@ class _ImgLabel(QLabel):
         for id, node in self._win.id_to_node.items():
             self._win.id_to_node[id].highlight = node.is_selected
         
-        for (id1, id2) in self._win.edges.keys():
-            self._win.edges[(id1, id2)].highlight = False
+        for edge in self._win.edges.keys():
+            self._win.edges[edge].highlight = False
 
         selected_id = None
         for id, data in self._win.id_to_node.items():
@@ -199,9 +199,9 @@ class _ImgLabel(QLabel):
     def _draw_edges(self, painter: QPainter):
         r = _NODE_RADIUS
 
-        for (id1, id2), data in self._win._edges.items():
-            center1 = self._win.id_to_node[id1].center
-            center2 = self._win.id_to_node[id2].center
+        for edge, data in self._win._edges.items():
+            center1 = self._win.id_to_node[edge[0]].center
+            center2 = self._win.id_to_node[edge[1]].center
             x1 = center1[1]*self._win.scale_factor
             y1 = center1[0]*self._win.scale_factor
             point1 = QPointF(x1, y1)
@@ -356,35 +356,25 @@ class _MainWin(QMainWindow):
 
         menu_bar = self.menuBar()
 
-        new_action = QAction(_Icon("new_file.svg"), "New", self, shortcut="Ctrl+N", 
-            triggered=self._new_file)
-        open_action = QAction(_Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
-            triggered=self._open_file)
-        save_graph_action = QAction(_Icon("save_graph.svg"), "Save graph...", self, shortcut="Ctrl+S", 
-            triggered=self._save_graph)
-        exit_action = QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close)
-
         file_menu = menu_bar.addMenu("File")
-        file_menu.addAction(new_action)
-        file_menu.addAction(open_action)
-        file_menu.addAction(save_graph_action)
+        file_menu.addAction(QAction(_Icon("new_file.svg"), "New", self, shortcut="Ctrl+N", 
+            triggered=self._new_file))
+        file_menu.addAction(QAction(_Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
+            triggered=self._open_file))
+        file_menu.addAction(QAction(_Icon("save_graph.svg"), "Save graph...", self, shortcut="Ctrl+S", 
+            triggered=self._save_graph))
         file_menu.addSeparator()
-        file_menu.addAction(exit_action)
-
-        fit_to_window_action = QAction(_Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
-            shortcut="Ctrl+0", triggered=self._zoom_to_fit)
-        initial_size_action = QAction(_Icon("show_100.svg"), "Show 100%", self, 
-            shortcut="Ctrl+1", triggered=self._show_100)
-        zoom_in_action = QAction(_Icon("zoom_in.svg"), "Zoom in", self, 
-            shortcut="Ctrl++", triggered=self._zoom_in)
-        zoom_out_action = QAction(_Icon("zoom_out.svg"), "Zoom out", self, 
-            shortcut="Ctrl+-", triggered=self._zoom_out)
+        file_menu.addAction(QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close))
 
         view_menu = menu_bar.addMenu("View")
-        view_menu.addAction(fit_to_window_action)
-        view_menu.addAction(initial_size_action)
-        view_menu.addAction(zoom_in_action)
-        view_menu.addAction(zoom_out_action)
+        view_menu.addAction(QAction(_Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
+            shortcut="Ctrl+0", triggered=self._zoom_to_fit))
+        view_menu.addAction(QAction(_Icon("show_100.svg"), "Show 100%", self, 
+            shortcut="Ctrl+1", triggered=self._show_100))
+        view_menu.addAction(QAction(_Icon("zoom_in.svg"), "Zoom in", self, 
+            shortcut="Ctrl++", triggered=self._zoom_in))
+        view_menu.addAction(QAction(_Icon("zoom_out.svg"), "Zoom out", self, 
+            shortcut="Ctrl+-", triggered=self._zoom_out))
 
         v_layout = QVBoxLayout()
 
@@ -735,35 +725,57 @@ class _MainWin(QMainWindow):
         background.paste(foreground, (0, 0), foreground)
         self._load_img(ImageQt.ImageQt(background))
 
+    
+    def _get_common_edges(self, node_ids):
+        edges = []
+
+        for edge in self._edges:
+            if edge[0] in node_ids and edge[1] in node_ids:
+                edges.append(edge)
+        
+        return edges
+    
+
+    def _get_possible_new_edges(self, node_ids):
+        possible_new_edges = []
+
+        node_ids = sorted(node_ids)
+        common_edges = set(self._get_common_edges(node_ids))
+
+        for i in range(len(node_ids)):
+            for j in range(i + 1, len(node_ids)):
+                edge = (node_ids[i], node_ids[j])
+                if edge not in common_edges:
+                    possible_new_edges.append(edge)
+
+        return possible_new_edges
+
 
     def _context_menu(self, position):
-        found_valid_item = False
+        node_items = self._get_selected_childless_items(0, _ItemType.NODE) 
+        nodes_num = len(node_items)
 
-        for index in self._tree_view.selectedIndexes():
-            item = self._item_model.itemFromIndex(index)
-            item_data = item.data()
-            if item_data is None:
-                continue
-            item_type, _ = item_data
-            if item_type == _ItemType.NODE:
-                found_valid_item = True
-                break
+        node_ids = [x.data()[1] for x in node_items]
+        common_edges_num = len(self._get_common_edges(node_ids))
+        possible_new_edges_num = len(self._get_possible_new_edges(node_ids))
 
-        new_node_action = QAction("New node", self, triggered=self._new_node)
-        
-        if found_valid_item:
-            delete_node_action = QAction("Delete node", self, triggered=self._delete_node)
-            mark_as_exit_action = QAction("Mark as exit", self, triggered=self._mark_as_exit)
-            clear_mark_action = QAction("Clear mark", self, triggered=self._clear_mark)
-        
         menu = QMenu()
-        menu.addAction(new_node_action)
+        menu.addAction(QAction("New node", self, triggered=self._new_node))
 
-        if found_valid_item:
-            menu.addAction(delete_node_action)
+        if nodes_num > 0:
+            nodes_str = "nodes" if nodes_num > 1 else "node"
+            menu.addAction(QAction(f"Delete {nodes_str}", self, triggered=self._delete_node))
             menu.addSeparator()
-            menu.addAction(mark_as_exit_action)
-            menu.addAction(clear_mark_action)
+            if possible_new_edges_num > 0:
+                edges_str = "edges" if possible_new_edges_num > 1 else "edge"
+                menu.addAction(QAction(f"New {edges_str}", self, triggered=self._new_edge))
+            if common_edges_num > 0:
+                edges_str = "edges" if common_edges_num > 1 else "edge"
+                menu.addAction(QAction(f"Delete {edges_str}", self, triggered=self._delete_edge))
+            if common_edges_num > 0 or possible_new_edges_num > 0:
+                menu.addSeparator()
+            menu.addAction(QAction("Mark as exit", self, triggered=self._mark_as_exit))
+            menu.addAction(QAction("Clear mark", self, triggered=self._clear_mark))
 
         menu.exec(self._tree_view.viewport().mapToGlobal(position))
 
@@ -936,9 +948,9 @@ class _MainWin(QMainWindow):
             self._detect_elements_core()
 
 
-    def _calc_edge_dist(self, id1, id2):
-        center1 = self._id_to_node[id1].center
-        center2 = self._id_to_node[id2].center
+    def _calc_edge_dist(self, edge):
+        center1 = self._id_to_node[edge[0]].center
+        center2 = self._id_to_node[edge[1]].center
 
         return _euclidean_dist(center1, center2)
     
@@ -1052,10 +1064,12 @@ class _MainWin(QMainWindow):
         for elem_id, center in elem_id_to_center.items():
             self._id_to_node[elem_id_to_node_id[elem_id]].center = center
         
-        for (node_id, neib), _ in graph.items():
-            dist = self._calc_edge_dist(node_id, neib)
-            self._graph[(node_id, neib)] = dist
-            self._edges[(min(node_id, neib), max(node_id, neib))] = _Edge(dist)
+        for edge, _ in graph.items():
+            dist = self._calc_edge_dist(edge)
+            self._graph[edge] = dist
+            min_node_id = min(edge[0], edge[1])
+            max_node_id = max(edge[0], edge[1])
+            self._edges[(min_node_id, max_node_id)] = _Edge(dist)
 
         self._hide_progress_bar()
         
