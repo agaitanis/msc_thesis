@@ -1,5 +1,6 @@
 from __future__ import annotations
 import cubicasa5k.labels as ccl
+import functools
 import numpy as np
 import os
 import queue
@@ -20,6 +21,8 @@ from xml.dom import minidom
 
 _LABEL_DIVISOR = 256
 _NODE_RADIUS = 12
+_SELECTED_COLOR = (0, 0, 100)
+_PATH_COLOR = (0, 136, 190)
 
 
 class _ItemType(IntEnum):
@@ -45,6 +48,40 @@ def _label_to_item_type(label):
         raise ValueError(f"Unknown label: {label}")
 
 
+def _get_pixel_neibs(img_array, i, j):
+    neibs = []
+
+    if i-1 >= 0:
+        neibs.append(img_array[i-1, j])
+    if i+1 < img_array.shape[0]:
+        neibs.append(img_array[i+1, j])
+
+    if j-1 >= 0:
+        neibs.append(img_array[i, j-1])
+    if j+1 < img_array.shape[1]:
+        neibs.append(img_array[i, j+1])
+
+    return neibs
+
+
+def _euclidean_dist(p1, p2):
+    x = p1[0] - p2[0]
+    y = p1[1] - p2[1]
+    return sqrt(x*x + y*y)
+
+
+def _dist_to_edge_for_pick(p, p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    x, y = p
+    if (x1 - x)*(x2 - x) + (y1 - y)*(y2 - y) > 0:
+        return None
+    dist = abs((x2 - x1)*(y1 - y) - (x1 - x)*(y2 - y1)) / sqrt((x2-x1)**2 + (y2-y1)**2)
+    if dist <= 12:
+        return dist
+    return None
+
+
 @contextmanager
 def _wait_cursor():
     QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -62,19 +99,20 @@ class _Elem():
 
         
 class _Node():
-    def __init__(self, color):
+    def __init__(self, color, item:QStandardItem, center=None):
         self.color = color
-        self.center = None
+        self.item = item
+        self.center = center
         self.is_selected = False
-        self.highlight = False
+        self.highlight_for_path = False
         self.mark = _Mark.NONE
         self.path = []
 
 
-class _Edge():
-    def __init__(self, dist, highlight=False):
-        self.dist = dist
-        self.highlight = highlight
+class _EdgeData():
+    def __init__(self):
+        self.is_selected = False
+        self.highlight_for_path = False
 
 
 class _ScrollArea(QScrollArea):
@@ -95,32 +133,154 @@ class _ImgLabel(QLabel):
     def __init__(self, win: _MainWin):
         super().__init__()
         self._win = win
-        self._move_is_allowed = False
+        self._move_img_is_allowed = False
+        self._move_node_is_allowed = False
         self._start_pos = None
-
+        self._picked_node_id = None
     
-    def mousePressEvent(self, event: QMouseEvent):
-        self._move_is_allowed = self._win.scroll_area.horizontalScrollBar().isVisible() or\
-            self._win.scroll_area.verticalScrollBar().isVisible()
+
+    def _pick_node(self, pos):
+        nearest_node_id = None
+        nearest_node = None
+        min_dist = sys.float_info.max
+
+        for id, node in self._win.id_to_node.items():
+            x1 = node.center[0]*self._win.scale_factor
+            y1 = node.center[1]*self._win.scale_factor
+            x2 = pos.x()
+            y2 = pos.y()
+            dist = _euclidean_dist((x1, y1), (x2, y2))
+            if dist < min_dist:
+                min_dist = dist
+                nearest_node_id = id
+                nearest_node = node
+
+        if min_dist <= _NODE_RADIUS + 2:
+            if QApplication.keyboardModifiers() == Qt.KeyboardModifier.ControlModifier:
+                nearest_node.is_selected = not nearest_node.is_selected
+            elif QApplication.keyboardModifiers() == Qt.KeyboardModifier.ShiftModifier:
+                pass
+            else:
+                nearest_node.is_selected = True
+
+            if nearest_node.is_selected:
+                self._win.tree_view.selectionModel().select(nearest_node.item.index(),
+                    QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows)
+            else:
+                self._win.tree_view.selectionModel().select(nearest_node.item.index(),
+                    QItemSelectionModel.SelectionFlag.Deselect | QItemSelectionModel.SelectionFlag.Rows)
+
+            self._win.redraw()
+
+            return nearest_node_id
+
+        return None
+    
+
+    def _pick_edge(self, pos):
+        nearest_edge = None
+        nearest_edge_data = None
+        min_dist = sys.float_info.max
+
+        for edge, data in self._win.edges.items():
+            node1 = self._win.id_to_node[edge[0]]
+            node2 = self._win.id_to_node[edge[1]]
+            x1 = node1.center[0]*self._win.scale_factor
+            y1 = node1.center[1]*self._win.scale_factor
+            x2 = node2.center[0]*self._win.scale_factor
+            y2 = node2.center[1]*self._win.scale_factor
+
+            dist = _dist_to_edge_for_pick((pos.x(), pos.y()), (x1, y1), (x2, y2))
+
+            if dist is not None and dist < min_dist:
+                min_dist = dist
+                nearest_edge = edge
+                nearest_edge_data = data
         
-        if self._move_is_allowed:
-            QApplication.setOverrideCursor(Qt.CursorShape.ClosedHandCursor)
+        if nearest_edge_data is not None:
+            if QApplication.keyboardModifiers() == Qt.KeyboardModifier.ControlModifier:
+                nearest_edge_data.is_selected = not nearest_edge_data.is_selected
+            elif QApplication.keyboardModifiers() == Qt.KeyboardModifier.ShiftModifier:
+                pass
+            else:
+                nearest_edge_data.is_selected = True
+
+            self._win.redraw()
+
+            return nearest_edge
+
+        return None
+    
+
+    def _deselect_rest_of_items_if_needed(self, picked_node_id, picked_edge):
+        if QApplication.keyboardModifiers() in (Qt.KeyboardModifier.ControlModifier, Qt.KeyboardModifier.ShiftModifier):
+            return
+
+        for id, node in self._win.id_to_node.items():
+            if id != picked_node_id:
+                node.is_selected = False
+                self._win.tree_view.selectionModel().select(node.item.index(), 
+                    QItemSelectionModel.SelectionFlag.Deselect | QItemSelectionModel.SelectionFlag.Rows)
+        for edge, data in self._win.edges.items():
+            if edge != picked_edge:
+                data.is_selected = False
+
+        self._win.redraw()
+
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.RightButton and self._win.find_path_button.isEnabled():
+            menu = QMenu(self)
+            menu.addAction("Add node here", functools.partial(self._win.add_node_at_pos, event.pos()))
+            menu.exec(QCursor.pos())
+            return
+
+        self._picked_node_id = self._pick_node(event.pos())
+        picked_edge = None
+        if self._picked_node_id is None:
+            picked_edge = self._pick_edge(event.pos())
+        self._deselect_rest_of_items_if_needed(self._picked_node_id, picked_edge)
+
+        self._move_node_is_allowed = self._picked_node_id is not None and\
+            QApplication.keyboardModifiers() == Qt.KeyboardModifier.ShiftModifier
+        
+        self._move_img_is_allowed = QApplication.keyboardModifiers() == Qt.KeyboardModifier.ShiftModifier and\
+            (self._win.scroll_area.horizontalScrollBar().isVisible() or\
+            self._win.scroll_area.verticalScrollBar().isVisible())
+        
+        if self._move_img_is_allowed:
             self._start_pos = event.pos()
+
+        if self._move_node_is_allowed or self._move_img_is_allowed:
+            QApplication.setOverrideCursor(Qt.CursorShape.ClosedHandCursor)
     
 
     def mouseReleaseEvent(self, event: QMouseEvent):
-        if self._move_is_allowed:
+        if self._move_img_is_allowed or self._move_node_is_allowed:
             QApplication.restoreOverrideCursor()
+
+        self._move_node_is_allowed = False
+        self._move_img_is_allowed = False
     
 
-    def mouseMoveEvent(self, event: QMouseEvent):
-        if not self._move_is_allowed:
-            return
+    def _move_node(self, pos):
+        node = self._win.id_to_node[self._picked_node_id]
+        node.center = (pos.x()/self._win.scale_factor, pos.y()/self._win.scale_factor)
+        for edge in self._win.graph.keys():
+            if edge[0] == self._picked_node_id:
+                self._win.graph[edge] = _euclidean_dist(node.center, self._win.id_to_node[edge[1]].center)
+            elif edge[1] == self._picked_node_id:
+                self._win.graph[edge] = _euclidean_dist(node.center, self._win.id_to_node[edge[0]].center)
+        self._win.clear_paths()
+        self._win.recalc_draw()
+        self._win.redraw()
 
+    
+    def _move_img(self, pos):
         scroll_bar_pos = QPoint(self._win.scroll_area.horizontalScrollBar().value(),
             self._win.scroll_area.verticalScrollBar().value())
 
-        delta = event.pos() - self._start_pos
+        delta = pos - self._start_pos
 
         new_scroll_bar_pos = scroll_bar_pos - delta
 
@@ -136,59 +296,48 @@ class _ImgLabel(QLabel):
 
         self._win.scroll_area.horizontalScrollBar().setValue(scroll_bar_pos.x() - delta.x())
         self._win.scroll_area.verticalScrollBar().setValue(scroll_bar_pos.y() - delta.y())
-    
-    
-    def _recalc_flags_for_draw(self):
-        for id, node in self._win.id_to_node.items():
-            self._win.id_to_node[id].highlight = node.is_selected
-        
-        for edge in self._win.edges.keys():
-            self._win.edges[edge].highlight = False
 
-        selected_id = None
-        for id, data in self._win.id_to_node.items():
-            if data.is_selected:
-                if selected_id is None:
-                    selected_id = id
-                else:
-                    selected_id = None
-                    break
 
-        if selected_id is not None:
-            prev_path_id = None
-            for path_id in self._win.id_to_node[selected_id].path:
-                self._win.id_to_node[path_id].highlight = True
-                if prev_path_id is not None:
-                    self._win.edges[(min(path_id, prev_path_id), max(path_id, prev_path_id))].highlight = True
-                prev_path_id = path_id
-
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if self._move_node_is_allowed:
+            self._move_node(event.pos())
+        elif self._move_img_is_allowed:
+            self._move_img(event.pos())
     
-    def _get_width_alpha(self, highlight):
-        if highlight:
+       
+    def _get_width_alpha(self, is_selected, highlight_for_path):
+        if is_selected or highlight_for_path:
             return 6, 255
         else:
             return 2, 150
+    
+
+    def _get_pen_color(self, is_selected, highlight_for_path):
+        if is_selected:
+            return _SELECTED_COLOR
+        elif highlight_for_path:
+            return _PATH_COLOR
+        else:
+            return _SELECTED_COLOR
     
     
     def _draw_nodes(self, painter: QPainter):
         r = _NODE_RADIUS
 
-        for _, data in self._win.id_to_node.items():
-            if data.center is None:
-                continue
-
-            x = data.center[1]*self._win.scale_factor
-            y = data.center[0]*self._win.scale_factor
+        for _, node in self._win.id_to_node.items():
+            x = node.center[0]*self._win.scale_factor
+            y = node.center[1]*self._win.scale_factor
             point = QPointF(x, y)
 
-            width, alpha = self._get_width_alpha(data.highlight)
+            width, alpha = self._get_width_alpha(node.is_selected, node.highlight_for_path)
+            color = self._get_pen_color(node.is_selected, node.highlight_for_path)
 
-            painter.setPen(QPen(QColor(0, 0, 100, alpha), width))
-            painter.setBrush(QBrush(QColor(data.color[0], data.color[1], data.color[2], alpha)))
+            painter.setPen(QPen(QColor(color[0], color[1], color[2], alpha), width))
+            painter.setBrush(QBrush(QColor(node.color[0], node.color[1], node.color[2], alpha)))
             painter.drawEllipse(point, r, r)
 
-            if data.mark == _Mark.EXIT:
-                color = (np.array(distinctipy.get_text_color(data.color/255))*255).astype(np.uint8)
+            if node.mark == _Mark.EXIT:
+                color = (np.array(distinctipy.get_text_color(node.color/255))*255).astype(np.uint8)
                 painter.setPen(QPen(QColor(color[0], color[1], color[2], alpha), 1))
                 painter.setBrush(QBrush(QColor(color[0], color[1], color[2], alpha)))
 
@@ -202,19 +351,20 @@ class _ImgLabel(QLabel):
         for edge, data in self._win._edges.items():
             center1 = self._win.id_to_node[edge[0]].center
             center2 = self._win.id_to_node[edge[1]].center
-            x1 = center1[1]*self._win.scale_factor
-            y1 = center1[0]*self._win.scale_factor
+            x1 = center1[0]*self._win.scale_factor
+            y1 = center1[1]*self._win.scale_factor
             point1 = QPointF(x1, y1)
-            x2 = center2[1]*self._win.scale_factor
-            y2 = center2[0]*self._win.scale_factor
+            x2 = center2[0]*self._win.scale_factor
+            y2 = center2[1]*self._win.scale_factor
             point2 = QPointF(x2, y2)
             vec = (point2 - point1)/QLineF(point1, point2).length()
             point1 += r*vec
             point2 -= r*vec
 
-            width, alpha = self._get_width_alpha(data.highlight)
+            width, alpha = self._get_width_alpha(data.is_selected, data.highlight_for_path)
+            color = self._get_pen_color(data.is_selected, data.highlight_for_path)
 
-            painter.setPen(QPen(QColor(0, 0, 100, alpha), width))
+            painter.setPen(QPen(QColor(color[0], color[1], color[2], alpha), width))
             painter.drawLine(point1, point2)
 
 
@@ -223,7 +373,6 @@ class _ImgLabel(QLabel):
 
         painter = QPainter(self)
 
-        self._recalc_flags_for_draw()
         self._draw_nodes(painter)
         self._draw_edges(painter)
 
@@ -268,75 +417,39 @@ class _Separator(QFrame):
         self.setFrameShadow(QFrame.Shadow.Sunken)
 
 
-def _get_pixel_neibs(img_array, i, j):
-    neibs = []
-
-    if i-1 >= 0:
-        neibs.append(img_array[i-1, j])
-    if i+1 < img_array.shape[0]:
-        neibs.append(img_array[i+1, j])
-
-    if j-1 >= 0:
-        neibs.append(img_array[i, j-1])
-    if j+1 < img_array.shape[1]:
-        neibs.append(img_array[i, j+1])
-
-    return neibs
-
-
-def _euclidean_dist(p1, p2):
-    x = p1[0] - p2[0]
-    y = p1[1] - p2[1]
-    return sqrt(x*x + y*y)
-
-
 class _MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self._img_label = None
-        self._scale_factor = 1.0
-        self._img_qt = None
-        self._scroll_area = None
-        self._status_bar = None
-        self._progress_bar = None
-        self._img_file_name = None
-        self._tree_view = None
-        self._item_model = None
-        self._nodes_item = None
-        self._detect_elements_button = None
-        self._create_graph_button = None
-        self._find_path_button = None
+        self.scale_factor = 1.0
+        self.id_to_elem: dict[int, _Elem] = {}
+        self.id_to_node: dict[int, _Node] = {}
+        self.tree_view: QTreeView = None
+        self.find_path_button: QPushButton = None
+        self.graph = {}
+
+        self._img_label: _ImgLabel = None
+        self._img_qt: QImage = None
+        self._scroll_area: QScrollArea = None
+        self._status_bar: QStatusBar = None
+        self._progress_bar: QProgressBar = None
+        self._img_file_name: str = None
+        self._item_model: _ItemModel = None
+        self._nodes_item: QStandardItem = None
+        self._detect_elements_button: QPushButton = None
+        self._graph_buttons: list[QPushButton] = []
+        self._create_graph_button: QPushButton = None
         self._model = None
-        self._id_to_elem: dict[int, _Elem] = {}
-        self._id_to_node: dict[int, _Node] = {}
-        self._graph = {}
-        self._edges: dict[(int, int), _Edge] = {}
-        self._colors = []
+        self._edges: dict[(int, int), _EdgeData] = {}
 
         self._create_win()
     
 
-    @property
-    def scale_factor(self):
-        return self._scale_factor
-
-
-    @property
-    def id_to_elem(self):
-        return self._id_to_elem
-
-
-    @property
-    def id_to_node(self):
-        return self._id_to_node
-
-
     def item_type_to_map(self, item_type: _ItemType):
         if item_type == _ItemType.NODE:
-            return self._id_to_node
+            return self.id_to_node
         else:
-            return self._id_to_elem
+            return self.id_to_elem
 
 
     @property
@@ -434,28 +547,36 @@ class _MainWin(QMainWindow):
         h_layout.addWidget(_Separator())
 
         button = QPushButton()
-        button.setIcon(_Icon("new_node.svg"))
-        button.clicked.connect(self._new_node)
-        button.setToolTip("New node")
+        button.setIcon(_Icon("add_node.svg"))
+        button.clicked.connect(self._add_node)
+        button.setToolTip("Add node")
+        button.setEnabled(False)
         h_layout.addWidget(button)
+        self._graph_buttons.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("delete_node.svg"))
-        button.clicked.connect(self._delete_node)
-        button.setToolTip("Delete node")
+        button.setIcon(_Icon("remove_node.svg"))
+        button.clicked.connect(self._remove_node)
+        button.setToolTip("Remove node")
+        button.setEnabled(False)
         h_layout.addWidget(button)
+        self._graph_buttons.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("new_edge.svg"))
-        button.clicked.connect(self._new_edge)
-        button.setToolTip("New edge")
+        button.setIcon(_Icon("add_edge.svg"))
+        button.clicked.connect(self._add_edge)
+        button.setToolTip("Add edge")
+        button.setEnabled(False)
         h_layout.addWidget(button)
+        self._graph_buttons.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("delete_edge.svg"))
-        button.clicked.connect(self._delete_edge)
-        button.setToolTip("Delete edge")
+        button.setIcon(_Icon("remove_edge.svg"))
+        button.clicked.connect(self._remove_edge)
+        button.setToolTip("Remove edge")
+        button.setEnabled(False)
         h_layout.addWidget(button)
+        self._graph_buttons.append(button)
 
         h_layout.addWidget(_Separator())
 
@@ -463,31 +584,35 @@ class _MainWin(QMainWindow):
         button.setIcon(_Icon("mark_as_exit.svg"))
         button.clicked.connect(self._mark_as_exit)
         button.setToolTip("Mark as exit")
+        button.setEnabled(False)
         h_layout.addWidget(button)
+        self._graph_buttons.append(button)
 
         button = QPushButton()
         button.setIcon(_Icon("clear_mark.svg"))
         button.clicked.connect(self._clear_mark)
         button.setToolTip("Clear mark")
+        button.setEnabled(False)
         h_layout.addWidget(button)
+        self._graph_buttons.append(button)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         v_layout.addWidget(splitter)
 
-        self._tree_view = QTreeView()
-        self._tree_view.setAlternatingRowColors(True)
-        self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self._tree_view.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        self._tree_view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self._tree_view.customContextMenuRequested.connect(self._context_menu)
-        splitter.addWidget(self._tree_view)
+        self.tree_view = QTreeView()
+        self.tree_view.setAlternatingRowColors(True)
+        self.tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.tree_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.tree_view.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.tree_view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.tree_view.customContextMenuRequested.connect(self._context_menu)
+        splitter.addWidget(self.tree_view)
 
         self._item_model = _ItemModel(self)
-        self._tree_view.setModel(self._item_model)
+        self.tree_view.setModel(self._item_model)
         self._clear_list()
 
-        selection_model = self._tree_view.selectionModel()
+        selection_model = self.tree_view.selectionModel()
         selection_model.selectionChanged.connect(self._selection_changed)
 
         frame = QFrame()
@@ -532,10 +657,10 @@ class _MainWin(QMainWindow):
         self._create_graph_button.setEnabled(False)
         h_layout.addWidget(self._create_graph_button)
 
-        self._find_path_button = QPushButton("Find paths")
-        self._find_path_button.clicked.connect(self._find_paths)
-        self._find_path_button.setEnabled(False)
-        h_layout.addWidget(self._find_path_button)
+        self.find_path_button = QPushButton("Find path")
+        self.find_path_button.clicked.connect(self.find_path)
+        self.find_path_button.setEnabled(False)
+        h_layout.addWidget(self.find_path_button)
 
 
     def _load_img(self, img_qt):
@@ -560,7 +685,7 @@ class _MainWin(QMainWindow):
             scroll_area_size = self._scroll_area.size()
             point = QPointF(scroll_area_size.width()/2, scroll_area_size.height()/2)
 
-        old_scale = self._scale_factor
+        old_scale = self.scale_factor
         new_scale = old_scale*factor
 
         scroll_bar_pos = QPointF(self._scroll_area.horizontalScrollBar().value(),
@@ -570,8 +695,8 @@ class _MainWin(QMainWindow):
         delta = delta_to_pos*(new_scale - old_scale)
 
         self._load_img(self._img_qt)
-        self._scale_factor = new_scale
-        self._img_label.resize(self._scale_factor * self._img_label.pixmap().size())
+        self.scale_factor = new_scale
+        self._img_label.resize(self.scale_factor * self._img_label.pixmap().size())
 
         self._scroll_area.horizontalScrollBar().setValue(int(scroll_bar_pos.x() + delta.x()))
         self._scroll_area.verticalScrollBar().setValue(int(scroll_bar_pos.y() + delta.y()))
@@ -586,7 +711,7 @@ class _MainWin(QMainWindow):
 
 
     def _show_100(self):
-        self._scale_factor = 1.0
+        self.scale_factor = 1.0
         self._img_label.adjustSize()
 
     
@@ -612,11 +737,13 @@ class _MainWin(QMainWindow):
         self._img_file_name = None
         self._detect_elements_button.setEnabled(False)
         self._create_graph_button.setEnabled(False)
-        self._find_path_button.setEnabled(False)
-        self._id_to_elem.clear()
-        self._id_to_node.clear()
+        for button in self._graph_buttons:
+            button.setEnabled(False)
+        self.find_path_button.setEnabled(False)
+        self.id_to_elem.clear()
+        self.id_to_node.clear()
         self._edges.clear()
-        self._graph.clear()
+        self.graph.clear()
 
 
     def _open_file(self):
@@ -635,14 +762,46 @@ class _MainWin(QMainWindow):
         self._load_img(image)
 
         self._img_file_name = filename
-        self._scale_factor = 1.0
+        self.scale_factor = 1.0
         self._img_label.adjustSize()
         self._zoom_to_fit()
         self._detect_elements_button.setEnabled(True)
         self._clear_list()
 
+ 
+    def recalc_draw(self):
+        for node in self.id_to_node.values():
+            node.highlight_for_path = False
+        for data in self._edges.values():
+            data.highlight_for_path = False
 
-    def _redraw(self):
+        path_start_id = None
+        for id, data in self.id_to_node.items():
+            if data.is_selected:
+                if path_start_id is None:
+                    path_start_id = id
+                else:
+                    path_start_id = None
+                    break
+        
+        for data in self._edges.values():
+            if data.is_selected:
+                path_start_id = None
+
+        if path_start_id is not None:
+            prev_path_id = None
+            for path_id in self.id_to_node[path_start_id].path:
+                self.id_to_node[path_id].highlight_for_path = True
+                if prev_path_id is not None:
+                    min_node_id = min(prev_path_id, path_id)
+                    max_node_id = max(prev_path_id, path_id)
+                    data = self._edges[min_node_id, max_node_id]
+                    data.highlight_for_path = True
+                prev_path_id = path_id
+
+
+    def redraw(self):
+        self.recalc_draw()
         self._img_label.update()
     
 
@@ -654,11 +813,17 @@ class _MainWin(QMainWindow):
         self._item_model.clear()
         self._item_model.setHorizontalHeaderLabels(("Elements", "Mark"))
         self._nodes_item = None
-        self._tree_view.repaint()
+        self.tree_view.repaint()
+
+    
+    def _get_nodes_item(self):
+        for item in self._item_model.findItems("Nodes", Qt.MatchFlag.MatchExactly):
+            return item
+        return None
 
     
     def _get_selected_childless_items(self, col, filter_item_type=None):
-        selected_indexes = self._tree_view.selectedIndexes()
+        selected_indexes = self.tree_view.selectedIndexes()
         indexes = set()
 
         for index in selected_indexes:
@@ -683,7 +848,7 @@ class _MainWin(QMainWindow):
             else:
                 indexes.add(index)
         
-        items = [self._item_model.itemFromIndex(x) for x in indexes]
+        items = [self._item_model.itemFromIndex(index) for index in indexes]
         
         return items
 
@@ -693,13 +858,14 @@ class _MainWin(QMainWindow):
 
         items = self._get_selected_childless_items(0)
 
-        for id in self._id_to_elem.keys():
-            self._id_to_elem[id].is_selected = False
+        for elem in self.id_to_elem.values():
+            elem.is_selected = False
 
-        for id in self._id_to_node.keys():
-            self._id_to_node[id].is_selected = False
+        for node in self.id_to_node.values():
+            node.is_selected = False
             
         if len(items) == 0:
+            self.recalc_draw()
             self._load_img(ImageQt.ImageQt(background))
             return
 
@@ -713,23 +879,24 @@ class _MainWin(QMainWindow):
             item_type, id = item_data
 
             if item_type == _ItemType.NODE:
-                self._id_to_node[id].is_selected = True
+                self.id_to_node[id].is_selected = True
             else:
-                self._id_to_elem[id].is_selected = True
+                self.id_to_elem[id].is_selected = True
 
-                color = self._id_to_elem[id].color
+                color = self.id_to_elem[id].color
                 foreground_array += np.where(panoptic_pred == id,
                     (color[0], color[1], color[2], 200), (0, 0, 0, 0)).astype(np.uint8)
 
         foreground = Image.fromarray(foreground_array)
         background.paste(foreground, (0, 0), foreground)
+        self.recalc_draw()
         self._load_img(ImageQt.ImageQt(background))
 
     
     def _get_common_edges(self, node_ids):
         edges = []
 
-        for edge in self._edges:
+        for edge in self._edges.keys():
             if edge[0] in node_ids and edge[1] in node_ids:
                 edges.append(edge)
         
@@ -752,45 +919,85 @@ class _MainWin(QMainWindow):
 
 
     def _context_menu(self, position):
+        if not self.find_path_button.isEnabled():
+            return
+
         node_items = self._get_selected_childless_items(0, _ItemType.NODE) 
         nodes_num = len(node_items)
 
-        node_ids = [x.data()[1] for x in node_items]
-        common_edges_num = len(self._get_common_edges(node_ids))
+        node_ids = [node_item.data()[1] for node_item in node_items]
         possible_new_edges_num = len(self._get_possible_new_edges(node_ids))
 
         menu = QMenu()
-        menu.addAction(QAction("New node", self, triggered=self._new_node))
+        menu.addAction(QAction("Add node", self, triggered=self._add_node))
 
         if nodes_num > 0:
             nodes_str = "nodes" if nodes_num > 1 else "node"
-            menu.addAction(QAction(f"Delete {nodes_str}", self, triggered=self._delete_node))
+            menu.addAction(QAction(f"Remove {nodes_str}", self, triggered=self._remove_node))
             menu.addSeparator()
             if possible_new_edges_num > 0:
                 edges_str = "edges" if possible_new_edges_num > 1 else "edge"
-                menu.addAction(QAction(f"New {edges_str}", self, triggered=self._new_edge))
-            if common_edges_num > 0:
-                edges_str = "edges" if common_edges_num > 1 else "edge"
-                menu.addAction(QAction(f"Delete {edges_str}", self, triggered=self._delete_edge))
-            if common_edges_num > 0 or possible_new_edges_num > 0:
+                menu.addAction(QAction(f"Add {edges_str}", self, triggered=self._add_edge))
                 menu.addSeparator()
             menu.addAction(QAction("Mark as exit", self, triggered=self._mark_as_exit))
             menu.addAction(QAction("Clear mark", self, triggered=self._clear_mark))
 
-        menu.exec(self._tree_view.viewport().mapToGlobal(position))
+        menu.exec(self.tree_view.viewport().mapToGlobal(position))
+
+
+    def _get_exclude_colors(self):
+        colors = [
+            (0, 0, 0),
+            (1, 1, 1),
+            (_SELECTED_COLOR[0]/255, _SELECTED_COLOR[1]/255, _SELECTED_COLOR[2]/255),
+            (_PATH_COLOR[0]/255, _PATH_COLOR[1]/255, _PATH_COLOR[2]/255),
+        ]
+
+        for node in self.id_to_node.values():
+            color = (node.color[0]/255, node.color[1]/255, node.color[2]/255)
+            colors.append(color)
+
+        return colors
+
+
+    def add_node_at_pos(self, pos):
+        x = pos.x() / self.scale_factor
+        y = pos.y() / self.scale_factor
+
+        node_id = max(self.id_to_node.keys()) + 1 if len(self.id_to_node) > 0 else 1
+
+        item1 = QStandardItem("Anonymous Node")
+        item1.setEditable(True)
+        item1.setData((_ItemType.NODE, node_id))
+
+        item2 = QStandardItem("")
+        item2.setEditable(False)
+        item2.setData((_ItemType.NODE, node_id))
+
+        parent = self._get_nodes_item()
+        parent.appendRow((item1, item2))
+
+        colors = distinctipy.get_colors(1, exclude_colors=self._get_exclude_colors(), rng=0)
+        colors = (np.array(colors)*255).astype(np.uint8)
+        self.id_to_node[node_id] = _Node(colors[0], item1, (x, y))
+
+        self.clear_paths()
+        self.redraw()
 
     
-    def _new_node(self):
-        pass # FIXME
+    def _add_node(self):
+        center = self._scroll_area.viewport().rect().center()
+        center = self._img_label.mapFromParent(center)
+        self.add_node_at_pos(center)
     
 
-    def _delete_node(self):
+    def _remove_node(self):
         items = self._get_selected_childless_items(0, _ItemType.NODE)
         if len(items) == 0:
             return
 
         nodes_str = "nodes" if len(items) > 1 else "node" 
-        ret = QMessageBox.question(self, "Question", f"Are you sure you want to delete the selected {nodes_str}?", 
+        ret = QMessageBox.question(self, "Question", f"Are you sure you want to remove the selected {nodes_str}?", 
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if ret == QMessageBox.StandardButton.No:
             return
@@ -798,33 +1005,71 @@ class _MainWin(QMainWindow):
         for item in items:
             _, id = item.data()
             item.parent().removeRow(item.row())
-            self._id_to_node.pop(id)
+            self.id_to_node.pop(id)
 
             edges_to_remove = []
-            for edge in self._graph.keys():
+            for edge in self.graph.keys():
                 if edge[0] == id or edge[1] == id:
                     edges_to_remove.append(edge)
             
             for edge in edges_to_remove:
-                self._graph.pop(edge)
+                self.graph.pop(edge)
                 if edge in self._edges:
                     self._edges.pop(edge)
         
-        self._clear_paths()
-        self._redraw()
+        self.clear_paths()
+        self.redraw()
 
     
-    def _new_edge(self):
-        pass # FIXME
+    def _add_edge(self):
+        items = self._get_selected_childless_items(1, _ItemType.NODE)
+        node_ids = [item.data()[1] for item in items]
+        edges = self._get_possible_new_edges(node_ids)
+
+        if len(edges) == 0:
+            return
+
+        for edge in edges:
+            self._edges[edge] = _EdgeData()
+            dist = self._calc_edge_dist(edge)
+            self.graph[(edge[0], edge[1])] = dist
+            self.graph[(edge[1], edge[0])] = dist
+        
+        self.clear_paths()
+        self.redraw()
 
 
-    def _delete_edge(self):
-        pass # FIXME
+    def _remove_edge(self):
+        edges = [edge for edge, data in self._edges.items() if data.is_selected]
+        if len(edges) == 0:
+            return
+
+        edges_str = "edges" if len(edges) > 1 else "edge"
+        ret = QMessageBox.question(self, "Question", f"Are you sure you want to remove the selected {edges_str}?", 
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if ret == QMessageBox.StandardButton.No:
+            return
+
+        for edge in edges:
+            self._edges.pop(edge)
+            self.graph.pop(edge)
+            self.graph.pop((edge[1], edge[0]))
+
+        self.clear_paths()
+        self.redraw()
+
+    
+    def keyPressEvent(self, event: QKeyEvent)-> None:
+        if event.key() == Qt.Key.Key_Delete.value:
+            self._remove_node()
+            self._remove_edge()
+            return
+        return super().keyPressEvent(event)
     
     
-    def _clear_paths(self):
-        for id in self._id_to_node.keys():
-            self._id_to_node[id].path.clear()
+    def clear_paths(self):
+        for node in self.id_to_node.values():
+            node.path.clear()
      
     
     def _mark_as_exit(self):
@@ -837,13 +1082,13 @@ class _MainWin(QMainWindow):
         for item in items:
             item.setText("Exit")
             _, id = item.data()
-            self._id_to_node[id].mark = _Mark.EXIT
+            self.id_to_node[id].mark = _Mark.EXIT
             clear_paths = True
         
         if clear_paths:
-            self._clear_paths()
+            self.clear_paths()
 
-        self._redraw()
+        self.redraw()
     
     
     def _clear_mark(self):
@@ -856,19 +1101,19 @@ class _MainWin(QMainWindow):
         for item in items:
             item.setText("")
             _, id = item.data()
-            self._id_to_node[id].mark = _Mark.NONE
+            self.id_to_node[id].mark = _Mark.NONE
             clear_paths = True
 
         if clear_paths:
-            self._clear_paths()
+            self.clear_paths()
 
-        self._redraw()
+        self.redraw()
 
     
     def _detect_elements_core(self):
         self._clear_list()
         self._clear_graph()
-        self._id_to_elem.clear()
+        self.id_to_elem.clear()
 
         if self._model is None:
             self._model = tf.saved_model.load("cubicasa5k/model")
@@ -929,18 +1174,19 @@ class _MainWin(QMainWindow):
 
                 parent.appendRow((item1, item2))
         
-        self._tree_view.expandAll()
+        self.tree_view.expandAll()
 
-        exclude_colors = [(0, 0, 100/255)]
-        self._colors = distinctipy.get_colors(len(ids), exclude_colors=exclude_colors, rng=0)
-        colors = (np.array(self._colors)*255).astype(np.uint8)
+        colors = distinctipy.get_colors(len(ids), exclude_colors=self._get_exclude_colors(), rng=0)
+        colors = (np.array(colors)*255).astype(np.uint8)
 
         for id, color in zip(ids, colors):
-            self._id_to_elem[id] = _Elem(color, id_to_item.get(id, None))
+            self.id_to_elem[id] = _Elem(color, id_to_item.get(id, None))
 
         self._create_graph_button.setEnabled(True)
-        self._find_path_button.setEnabled(False)
-        self._redraw()
+        for button in self._graph_buttons:
+            button.setEnabled(False)
+        self.find_path_button.setEnabled(False)
+        self.redraw()
 
 
     def _detect_elements(self):
@@ -949,8 +1195,8 @@ class _MainWin(QMainWindow):
 
 
     def _calc_edge_dist(self, edge):
-        center1 = self._id_to_node[edge[0]].center
-        center2 = self._id_to_node[edge[1]].center
+        center1 = self.id_to_node[edge[0]].center
+        center2 = self.id_to_node[edge[1]].center
 
         return _euclidean_dist(center1, center2)
     
@@ -960,10 +1206,10 @@ class _MainWin(QMainWindow):
             self._nodes_item.removeRow(0)
             self._item_model.removeRow(self._nodes_item.row())
         self._nodes_item = None
-        self._tree_view.repaint()
+        self.tree_view.repaint()
 
-        self._id_to_node.clear()
-        self._graph.clear()
+        self.id_to_node.clear()
+        self.graph.clear()
         self._edges.clear()
     
         
@@ -1012,7 +1258,7 @@ class _MainWin(QMainWindow):
 
                 if instance_center_pred[i][j] > elem_id_to_center_pred_max.get(elem_id, -1.0):
                     elem_id_to_center_pred_max[elem_id] = instance_center_pred[i][j]
-                    elem_id_to_center[elem_id] = (i, j)
+                    elem_id_to_center[elem_id] = (j, i)
 
                 neibs = _get_pixel_neibs(panoptic_pred, i, j)
 
@@ -1033,16 +1279,14 @@ class _MainWin(QMainWindow):
         self._nodes_item = parent
         self._item_model.appendRow(parent)
 
-        for elem_id, elem in self._id_to_elem.items():
+        for elem_id, elem in self.id_to_elem.items():
             label = elem_id // _LABEL_DIVISOR
             if label not in (ccl.Label.ROOM, ccl.Label.DOOR):
                 continue
 
             node_id += 1
-            elem_id_to_node_id[elem_id] = node_id
-            self._id_to_node[node_id] = _Node(elem.color)
 
-            label_str = self._id_to_elem[elem_id].item.text()
+            label_str = self.id_to_elem[elem_id].item.text()
 
             item1 = QStandardItem(label_str)
             item1.setEditable(True)
@@ -1054,7 +1298,10 @@ class _MainWin(QMainWindow):
 
             parent.appendRow((item1, item2))
 
-        self._tree_view.expand(parent.index())
+            elem_id_to_node_id[elem_id] = node_id
+            self.id_to_node[node_id] = _Node(elem.color, item1)
+
+        self.tree_view.expand(parent.index())
         
         graph = {}
 
@@ -1062,19 +1309,21 @@ class _MainWin(QMainWindow):
             graph[(elem_id_to_node_id[elem_id], elem_id_to_node_id[neib])] = dist
 
         for elem_id, center in elem_id_to_center.items():
-            self._id_to_node[elem_id_to_node_id[elem_id]].center = center
+            self.id_to_node[elem_id_to_node_id[elem_id]].center = center
         
         for edge, _ in graph.items():
             dist = self._calc_edge_dist(edge)
-            self._graph[edge] = dist
+            self.graph[edge] = dist
             min_node_id = min(edge[0], edge[1])
             max_node_id = max(edge[0], edge[1])
-            self._edges[(min_node_id, max_node_id)] = _Edge(dist)
+            self._edges[(min_node_id, max_node_id)] = _EdgeData()
 
         self._hide_progress_bar()
         
-        self._find_path_button.setEnabled(True)
-        self._redraw()
+        for button in self._graph_buttons:
+            button.setEnabled(True)
+        self.find_path_button.setEnabled(True)
+        self.redraw()
 
     
     def _create_graph(self):
@@ -1083,7 +1332,7 @@ class _MainWin(QMainWindow):
 
 
     def _dijkstra(self, exit_id, id_to_neibs):
-        id_to_dist = {id: sys.float_info.max for id in self._id_to_node.keys()}
+        id_to_dist = {id: sys.float_info.max for id in self.id_to_node.keys()}
 
         q = queue.PriorityQueue()
 
@@ -1095,7 +1344,7 @@ class _MainWin(QMainWindow):
             dist = id_to_dist[id]
 
             for neib in id_to_neibs[id]:
-                cost = self._graph[(id, neib)]
+                cost = self.graph[(id, neib)]
                 new_dist = dist + cost
 
                 if new_dist < id_to_dist[neib]:
@@ -1108,8 +1357,9 @@ class _MainWin(QMainWindow):
     def _calc_path(self, id: int, id_to_dist_dicts, exit_ids, id_to_neibs):
         best_exit_index = None
         min_dist = sys.float_info.max
+        node = self.id_to_node[id]
 
-        self._id_to_node[id].path = []
+        node.path = []
 
         for i, id_to_dist in enumerate(id_to_dist_dicts):
             dist = id_to_dist[id]
@@ -1141,28 +1391,28 @@ class _MainWin(QMainWindow):
             path.append(best_neib)
             cur_id = best_neib
 
-        self._id_to_node[id].path = path
+        node.path = path
 
 
     def _find_paths_core(self, exit_ids):
         id_to_dist_dicts = []
         id_to_neibs = defaultdict(list)
 
-        for (node_id, neib), _ in self._graph.items():
+        for (node_id, neib), _ in self.graph.items():
             id_to_neibs[node_id].append(neib)
         
         for exit_id in exit_ids:
             id_to_dist = self._dijkstra(exit_id, id_to_neibs)
             id_to_dist_dicts.append(id_to_dist)
         
-        for id in self._id_to_node.keys():
+        for id in self.id_to_node.keys():
             self._calc_path(id, id_to_dist_dicts, exit_ids, id_to_neibs)
     
 
-    def _find_paths(self):
+    def find_path(self):
         exit_ids = []
 
-        for id, data in self._id_to_node.items():
+        for id, data in self.id_to_node.items():
             if data.mark == _Mark.EXIT:
                 exit_ids.append(id)
 
@@ -1173,7 +1423,7 @@ class _MainWin(QMainWindow):
         with _wait_cursor():
             self._find_paths_core(exit_ids)
         
-        self._redraw()
+        self.redraw()
 
 
 if __name__ == '__main__':
