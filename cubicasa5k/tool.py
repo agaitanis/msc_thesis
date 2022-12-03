@@ -263,14 +263,19 @@ class _ImgLabel(QLabel):
         self._move_img_is_allowed = False
     
 
-    def _move_node(self, pos):
+    def _move_node(self, pos: QPoint):
+        pos.setX(max(0, min(pos.x(), self.width())))
+        pos.setY(max(0, min(pos.y(), self.height())))
+
         node = self._win.id_to_node[self._picked_node_id]
         node.center = (pos.x()/self._win.scale_factor, pos.y()/self._win.scale_factor)
+
         for edge in self._win.graph.keys():
             if edge[0] == self._picked_node_id:
                 self._win.graph[edge] = _euclidean_dist(node.center, self._win.id_to_node[edge[1]].center)
             elif edge[1] == self._picked_node_id:
                 self._win.graph[edge] = _euclidean_dist(node.center, self._win.id_to_node[edge[0]].center)
+
         self._win.clear_paths()
         self._win.recalc_draw()
         self._win.redraw()
