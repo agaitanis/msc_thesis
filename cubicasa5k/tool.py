@@ -230,7 +230,7 @@ class _ImgLabel(QLabel):
 
 
     def mousePressEvent(self, event: QMouseEvent):
-        if event.button() == Qt.MouseButton.RightButton and self._win.find_path_button.isEnabled():
+        if event.button() == Qt.MouseButton.RightButton and self._win.has_graph:
             menu = QMenu(self)
             menu.addAction("New node here", functools.partial(self._win.new_node_at_pos, event.pos()))
             menu.exec(QCursor.pos())
@@ -269,7 +269,9 @@ class _ImgLabel(QLabel):
         pos.setY(max(0, min(pos.y(), self.height())))
 
         node = self._win.id_to_node[self._picked_node_id]
-        node.center = (pos.x()/self._win.scale_factor, pos.y()/self._win.scale_factor)
+        x = int(pos.x() / self._win.scale_factor)
+        y = int(pos.y() / self._win.scale_factor)
+        node.center = (x, y)
 
         for edge in self._win.graph.keys():
             if edge[0] == self._picked_node_id:
@@ -431,8 +433,8 @@ class _MainWin(QMainWindow):
         self.id_to_elem: dict[int, _Elem] = {}
         self.id_to_node: dict[int, _Node] = {}
         self.tree_view: QTreeView = None
-        self.find_path_button: QPushButton = None
         self.graph = {}
+        self.has_graph = False
 
         self._img_label: _ImgLabel = None
         self._img_qt: QImage = None
@@ -445,7 +447,8 @@ class _MainWin(QMainWindow):
         self._detect_elements_button: QPushButton = None
         self._graph_widgets = []
         self._create_graph_button: QPushButton = None
-        self._model = None
+        self._calc_paths_button: QPushButton = None
+        self._model = tf.saved_model.load("cubicasa5k/model")
         self._edges: dict[(int, int), _EdgeData] = {}
 
         self._create_win()
@@ -653,10 +656,10 @@ class _MainWin(QMainWindow):
         self._create_graph_button.setEnabled(False)
         h_layout.addWidget(self._create_graph_button)
 
-        self.find_path_button = QPushButton("Find path")
-        self.find_path_button.clicked.connect(self.find_path)
-        self.find_path_button.setEnabled(False)
-        h_layout.addWidget(self.find_path_button)
+        self._calc_paths_button = QPushButton("Calculate paths")
+        self._calc_paths_button.clicked.connect(self.calc_paths)
+        self._calc_paths_button.setEnabled(False)
+        h_layout.addWidget(self._calc_paths_button)
 
         self._set_graph_widgets_enabled(False)
 
@@ -741,7 +744,8 @@ class _MainWin(QMainWindow):
         self._detect_elements_button.setEnabled(False)
         self._create_graph_button.setEnabled(False)
         self._set_graph_widgets_enabled(False)
-        self.find_path_button.setEnabled(False)
+        self._calc_paths_button.setEnabled(False)
+        self.has_graph = False
         self.id_to_elem.clear()
         self.id_to_node.clear()
         self._edges.clear()
@@ -850,7 +854,6 @@ class _MainWin(QMainWindow):
             lengths_elem = ET.SubElement(edge_elem, 'lengths')
             lengths_elem.text = str(self.graph[edge])
 
-        
         xml_str = ET.tostring(network_node, encoding='unicode')
         dom = minidom.parseString(xml_str)
         xml_str = dom.toprettyxml(indent="  ")
@@ -977,7 +980,7 @@ class _MainWin(QMainWindow):
 
 
     def _context_menu(self, position):
-        if not self.find_path_button.isEnabled():
+        if not self.has_graph:
             return
 
         node_items = self._get_selected_childless_items(0, _ItemType.NODE) 
@@ -1132,6 +1135,8 @@ class _MainWin(QMainWindow):
     def clear_paths(self):
         for node in self.id_to_node.values():
             node.path.clear()
+
+        self._calc_paths_button.setEnabled(True)
      
     
     def _mark_as_exit(self):
@@ -1176,9 +1181,6 @@ class _MainWin(QMainWindow):
         self._clear_list()
         self._clear_graph()
         self.id_to_elem.clear()
-
-        if self._model is None:
-            self._model = tf.saved_model.load("cubicasa5k/model")
 
         img_array = np.array(Image.open(self._img_file_name).convert("RGB"))
 
@@ -1246,7 +1248,8 @@ class _MainWin(QMainWindow):
 
         self._create_graph_button.setEnabled(True)
         self._set_graph_widgets_enabled(False)
-        self.find_path_button.setEnabled(False)
+        self._calc_paths_button.setEnabled(False)
+        self.has_graph = False
         self.redraw()
 
 
@@ -1382,7 +1385,8 @@ class _MainWin(QMainWindow):
         self._hide_progress_bar()
         
         self._set_graph_widgets_enabled(True)
-        self.find_path_button.setEnabled(True)
+        self._calc_paths_button.setEnabled(True)
+        self.has_graph = True
         self.redraw()
 
     
@@ -1454,7 +1458,7 @@ class _MainWin(QMainWindow):
         node.path = path
 
 
-    def _find_paths_core(self, exit_ids):
+    def _calc_paths_core(self, exit_ids):
         id_to_dist_dicts = []
         id_to_neibs = defaultdict(list)
 
@@ -1469,7 +1473,7 @@ class _MainWin(QMainWindow):
             self._calc_path(id, id_to_dist_dicts, exit_ids, id_to_neibs)
     
 
-    def find_path(self):
+    def calc_paths(self):
         exit_ids = []
 
         for id, data in self.id_to_node.items():
@@ -1480,8 +1484,10 @@ class _MainWin(QMainWindow):
             QMessageBox.critical(self, "Error", "No exit was set")
             return
         
+        self._calc_paths_button.setEnabled(False)
+        
         with _wait_cursor():
-            self._find_paths_core(exit_ids)
+            self._calc_paths_core(exit_ids)
         
         self.redraw()
 
