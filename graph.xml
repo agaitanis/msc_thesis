@@ -1,0 +1,251 @@
+<?xml version="1.0" ?>
+<network>
+  <node>
+    <id>1</id>
+    <label>Room 1</label>
+    <x>152.05388813096863</x>
+    <y>232.12960436562074</y>
+    <exit>false</exit>
+    <path>1 15</path>
+  </node>
+  <node>
+    <id>2</id>
+    <label>Room 2</label>
+    <x>463</x>
+    <y>268</y>
+    <exit>false</exit>
+    <path>2 15</path>
+  </node>
+  <node>
+    <id>3</id>
+    <label>Room 3</label>
+    <x>701</x>
+    <y>175</y>
+    <exit>false</exit>
+    <path>3 8 7 10 16</path>
+  </node>
+  <node>
+    <id>4</id>
+    <label>Room 4</label>
+    <x>928</x>
+    <y>144</y>
+    <exit>false</exit>
+    <path>4 14 7 10 16</path>
+  </node>
+  <node>
+    <id>5</id>
+    <label>Room 5</label>
+    <x>1144</x>
+    <y>144</y>
+    <exit>false</exit>
+    <path>5 13 4 14 7 10 16</path>
+  </node>
+  <node>
+    <id>6</id>
+    <label>Room 6</label>
+    <x>1062</x>
+    <y>341</y>
+    <exit>false</exit>
+    <path>6 7 10 16</path>
+  </node>
+  <node>
+    <id>7</id>
+    <label>Room 7</label>
+    <x>825</x>
+    <y>392</y>
+    <exit>false</exit>
+    <path>7 10 16</path>
+  </node>
+  <node>
+    <id>8</id>
+    <label>Room 8</label>
+    <x>773</x>
+    <y>330</y>
+    <exit>false</exit>
+    <path>8 7 10 16</path>
+  </node>
+  <node>
+    <id>9</id>
+    <label>Room 9</label>
+    <x>567</x>
+    <y>516</y>
+    <exit>false</exit>
+    <path>9 12 11 16</path>
+  </node>
+  <node>
+    <id>10</id>
+    <label>Room 10</label>
+    <x>825</x>
+    <y>423</y>
+    <exit>false</exit>
+    <path>10 16</path>
+  </node>
+  <node>
+    <id>11</id>
+    <label>Room 11</label>
+    <x>814</x>
+    <y>527</y>
+    <exit>false</exit>
+    <path>11 16</path>
+  </node>
+  <node>
+    <id>12</id>
+    <label>Room 12</label>
+    <x>752</x>
+    <y>527</y>
+    <exit>false</exit>
+    <path>12 11 16</path>
+  </node>
+  <node>
+    <id>13</id>
+    <label>Door 1</label>
+    <x>1072</x>
+    <y>175</y>
+    <exit>false</exit>
+    <path>13 4 14 7 10 16</path>
+  </node>
+  <node>
+    <id>14</id>
+    <label>Door 2</label>
+    <x>835</x>
+    <y>216</y>
+    <exit>false</exit>
+    <path>14 7 10 16</path>
+  </node>
+  <node>
+    <id>15</id>
+    <label>Door 3</label>
+    <x>278</x>
+    <y>320</y>
+    <exit>true</exit>
+    <path>15</path>
+  </node>
+  <node>
+    <id>16</id>
+    <label>Door 4</label>
+    <x>825</x>
+    <y>465</y>
+    <exit>true</exit>
+    <path>16</path>
+  </node>
+  <edge>
+    <id>1</id>
+    <from>2</from>
+    <to>3</to>
+    <lengths>255.5249498581303</lengths>
+  </edge>
+  <edge>
+    <id>2</id>
+    <from>4</from>
+    <to>13</to>
+    <lengths>147.29901561110313</lengths>
+  </edge>
+  <edge>
+    <id>3</id>
+    <from>4</from>
+    <to>14</to>
+    <lengths>117.61377470347595</lengths>
+  </edge>
+  <edge>
+    <id>4</id>
+    <from>5</from>
+    <to>13</to>
+    <lengths>78.39005038906404</lengths>
+  </edge>
+  <edge>
+    <id>5</id>
+    <from>6</from>
+    <to>14</to>
+    <lengths>259.1408883213917</lengths>
+  </edge>
+  <edge>
+    <id>6</id>
+    <from>7</from>
+    <to>14</to>
+    <lengths>176.28386199536246</lengths>
+  </edge>
+  <edge>
+    <id>7</id>
+    <from>8</from>
+    <to>14</to>
+    <lengths>129.76902558006668</lengths>
+  </edge>
+  <edge>
+    <id>8</id>
+    <from>7</from>
+    <to>8</to>
+    <lengths>80.91971329657564</lengths>
+  </edge>
+  <edge>
+    <id>9</id>
+    <from>6</from>
+    <to>7</to>
+    <lengths>242.42524621004307</lengths>
+  </edge>
+  <edge>
+    <id>10</id>
+    <from>1</from>
+    <to>15</to>
+    <lengths>153.56962435282864</lengths>
+  </edge>
+  <edge>
+    <id>11</id>
+    <from>3</from>
+    <to>8</to>
+    <lengths>170.90640713560157</lengths>
+  </edge>
+  <edge>
+    <id>12</id>
+    <from>2</from>
+    <to>15</to>
+    <lengths>192.16919628285902</lengths>
+  </edge>
+  <edge>
+    <id>13</id>
+    <from>2</from>
+    <to>8</to>
+    <lengths>316.1392098427527</lengths>
+  </edge>
+  <edge>
+    <id>14</id>
+    <from>8</from>
+    <to>9</to>
+    <lengths>277.5463925184401</lengths>
+  </edge>
+  <edge>
+    <id>15</id>
+    <from>7</from>
+    <to>10</to>
+    <lengths>31.0</lengths>
+  </edge>
+  <edge>
+    <id>16</id>
+    <from>2</from>
+    <to>9</to>
+    <lengths>268.92378102354576</lengths>
+  </edge>
+  <edge>
+    <id>17</id>
+    <from>10</from>
+    <to>16</to>
+    <lengths>42.0</lengths>
+  </edge>
+  <edge>
+    <id>18</id>
+    <from>11</from>
+    <to>16</to>
+    <lengths>62.96824596572466</lengths>
+  </edge>
+  <edge>
+    <id>19</id>
+    <from>11</from>
+    <to>12</to>
+    <lengths>62.0</lengths>
+  </edge>
+  <edge>
+    <id>20</id>
+    <from>9</from>
+    <to>12</to>
+    <lengths>185.32673849177834</lengths>
+  </edge>
+</network>

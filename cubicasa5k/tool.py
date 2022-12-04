@@ -6,6 +6,7 @@ import os
 import queue
 import sys
 import tensorflow as tf
+import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from distinctipy import distinctipy
 from enum import IntEnum
@@ -231,7 +232,7 @@ class _ImgLabel(QLabel):
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.RightButton and self._win.find_path_button.isEnabled():
             menu = QMenu(self)
-            menu.addAction("Add node here", functools.partial(self._win.add_node_at_pos, event.pos()))
+            menu.addAction("New node here", functools.partial(self._win.new_node_at_pos, event.pos()))
             menu.exec(QCursor.pos())
             return
 
@@ -442,7 +443,7 @@ class _MainWin(QMainWindow):
         self._item_model: _ItemModel = None
         self._nodes_item: QStandardItem = None
         self._detect_elements_button: QPushButton = None
-        self._graph_buttons: list[QPushButton] = []
+        self._graph_widgets = []
         self._create_graph_button: QPushButton = None
         self._model = None
         self._edges: dict[(int, int), _EdgeData] = {}
@@ -479,8 +480,10 @@ class _MainWin(QMainWindow):
             triggered=self._new_file))
         file_menu.addAction(QAction(_Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
             triggered=self._open_file))
-        file_menu.addAction(QAction(_Icon("save_graph.svg"), "Save graph...", self, shortcut="Ctrl+S", 
-            triggered=self._save_graph))
+        save_graph_action = QAction(_Icon("save_graph.svg"), "Save Graph", self, shortcut="Ctrl+S",
+            triggered=self._save_graph)
+        self._graph_widgets.append(save_graph_action)
+        file_menu.addAction(save_graph_action)
         file_menu.addSeparator()
         file_menu.addAction(QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close))
 
@@ -521,6 +524,7 @@ class _MainWin(QMainWindow):
         button.clicked.connect(self._save_graph)
         button.setToolTip("Save graph")
         h_layout.addWidget(button)
+        self._graph_widgets.append(button)
 
         h_layout.addWidget(_Separator())
         
@@ -552,36 +556,25 @@ class _MainWin(QMainWindow):
         h_layout.addWidget(_Separator())
 
         button = QPushButton()
-        button.setIcon(_Icon("add_node.svg"))
-        button.clicked.connect(self._add_node)
-        button.setToolTip("Add node")
-        button.setEnabled(False)
+        button.setIcon(_Icon("new_node.svg"))
+        button.clicked.connect(self._new_node)
+        button.setToolTip("New node")
         h_layout.addWidget(button)
-        self._graph_buttons.append(button)
+        self._graph_widgets.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("remove_node.svg"))
-        button.clicked.connect(self._remove_node)
-        button.setToolTip("Remove node")
-        button.setEnabled(False)
+        button.setIcon(_Icon("new_edge.svg"))
+        button.clicked.connect(self._new_edge)
+        button.setToolTip("New edge")
         h_layout.addWidget(button)
-        self._graph_buttons.append(button)
+        self._graph_widgets.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("add_edge.svg"))
-        button.clicked.connect(self._add_edge)
-        button.setToolTip("Add edge")
-        button.setEnabled(False)
+        button.setIcon(_Icon("delete.svg"))
+        button.clicked.connect(self._delete)
+        button.setToolTip("Delete")
         h_layout.addWidget(button)
-        self._graph_buttons.append(button)
-
-        button = QPushButton()
-        button.setIcon(_Icon("remove_edge.svg"))
-        button.clicked.connect(self._remove_edge)
-        button.setToolTip("Remove edge")
-        button.setEnabled(False)
-        h_layout.addWidget(button)
-        self._graph_buttons.append(button)
+        self._graph_widgets.append(button)
 
         h_layout.addWidget(_Separator())
 
@@ -589,17 +582,15 @@ class _MainWin(QMainWindow):
         button.setIcon(_Icon("mark_as_exit.svg"))
         button.clicked.connect(self._mark_as_exit)
         button.setToolTip("Mark as exit")
-        button.setEnabled(False)
         h_layout.addWidget(button)
-        self._graph_buttons.append(button)
+        self._graph_widgets.append(button)
 
         button = QPushButton()
         button.setIcon(_Icon("clear_mark.svg"))
         button.clicked.connect(self._clear_mark)
         button.setToolTip("Clear mark")
-        button.setEnabled(False)
         h_layout.addWidget(button)
-        self._graph_buttons.append(button)
+        self._graph_widgets.append(button)
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         v_layout.addWidget(splitter)
@@ -666,6 +657,13 @@ class _MainWin(QMainWindow):
         self.find_path_button.clicked.connect(self.find_path)
         self.find_path_button.setEnabled(False)
         h_layout.addWidget(self.find_path_button)
+
+        self._set_graph_widgets_enabled(False)
+
+
+    def _set_graph_widgets_enabled(self, enabled):
+        for obj in self._graph_widgets:
+            obj.setEnabled(enabled)
 
 
     def _load_img(self, img_qt):
@@ -742,8 +740,7 @@ class _MainWin(QMainWindow):
         self._img_file_name = None
         self._detect_elements_button.setEnabled(False)
         self._create_graph_button.setEnabled(False)
-        for button in self._graph_buttons:
-            button.setEnabled(False)
+        self._set_graph_widgets_enabled(False)
         self.find_path_button.setEnabled(False)
         self.id_to_elem.clear()
         self.id_to_node.clear()
@@ -752,14 +749,14 @@ class _MainWin(QMainWindow):
 
 
     def _open_file(self):
-        filename, _ = QFileDialog.getOpenFileName(self, "Open Image", "", 
+        filename, _ = QFileDialog.getOpenFileName(self, "Open image", "", 
             "Images (*.png *.jpeg *.jpg *.bmp *.gif)")
         if not filename:
             return
 
         image = QImage(filename)
         if image.isNull():
-            QMessageBox.information(self, "Image Viewer", "Cannot load %s." % filename)
+            QMessageBox.information(self, "Information", "Cannot load %s." % filename)
             return
 
         self._new_file()
@@ -808,11 +805,67 @@ class _MainWin(QMainWindow):
     def redraw(self):
         self.recalc_draw()
         self._img_label.update()
+        
+    
+    def _save_graph_to_file(self, filename):
+        network_node = ET.Element('network')
+
+        for id, node in self.id_to_node.items():
+            node_elem = ET.SubElement(network_node, 'node')
+
+            id_elem = ET.SubElement(node_elem, 'id')
+            id_elem.text = str(id)
+
+            label_elem = ET.SubElement(node_elem, 'label')
+            label_elem.text = node.item.text()
+
+            x_node = ET.SubElement(node_elem, 'x')
+            x_node.text = str(node.center[0])
+
+            y_node = ET.SubElement(node_elem, 'y')
+            y_node.text = str(node.center[1])
+
+            exit_node = ET.SubElement(node_elem, 'exit')
+            exit_node.text = str(node.mark == _Mark.EXIT).lower()
+
+            if len(node.path) > 0:
+                path_node = ET.SubElement(node_elem, 'path')
+                path_node.text = ' '.join(map(str, node.path))
+
+        edge_id = 1
+
+        for edge in self._edges.keys():
+            edge_elem = ET.SubElement(network_node, 'edge')
+
+            id_elem = ET.SubElement(edge_elem, 'id')
+            id_elem.text = str(edge_id)
+            edge_id += 1
+
+            from_elem = ET.SubElement(edge_elem, 'from')
+            from_elem.text = str(edge[0])
+
+            to_elem = ET.SubElement(edge_elem, 'to')
+            to_elem.text = str(edge[1])
+
+            lengths_elem = ET.SubElement(edge_elem, 'lengths')
+            lengths_elem.text = str(self.graph[edge])
+
+        
+        xml_str = ET.tostring(network_node, encoding='unicode')
+        dom = minidom.parseString(xml_str)
+        xml_str = dom.toprettyxml(indent="  ")
+        with open(filename, 'w') as f:
+            f.write(xml_str)
     
 
     def _save_graph(self):
-        pass # FIXME
-    
+        filename, _ = QFileDialog.getSaveFileName(self, "Save graph", "", "(*.xml)")
+        if not filename:
+            return
+
+        with _wait_cursor():
+            self._save_graph_to_file(filename)
+
 
     def _clear_list(self):
         self._item_model.clear()
@@ -934,15 +987,15 @@ class _MainWin(QMainWindow):
         possible_new_edges_num = len(self._get_possible_new_edges(node_ids))
 
         menu = QMenu()
-        menu.addAction(QAction("Add node", self, triggered=self._add_node))
+        menu.addAction(QAction("New node", self, triggered=self._new_node))
 
         if nodes_num > 0:
             nodes_str = "nodes" if nodes_num > 1 else "node"
-            menu.addAction(QAction(f"Remove {nodes_str}", self, triggered=self._remove_node))
+            menu.addAction(QAction(f"Delete {nodes_str}", self, triggered=self._delete_node))
             menu.addSeparator()
             if possible_new_edges_num > 0:
                 edges_str = "edges" if possible_new_edges_num > 1 else "edge"
-                menu.addAction(QAction(f"Add {edges_str}", self, triggered=self._add_edge))
+                menu.addAction(QAction(f"New {edges_str}", self, triggered=self._new_edge))
                 menu.addSeparator()
             menu.addAction(QAction("Mark as exit", self, triggered=self._mark_as_exit))
             menu.addAction(QAction("Clear mark", self, triggered=self._clear_mark))
@@ -965,9 +1018,9 @@ class _MainWin(QMainWindow):
         return colors
 
 
-    def add_node_at_pos(self, pos):
-        x = pos.x() / self.scale_factor
-        y = pos.y() / self.scale_factor
+    def new_node_at_pos(self, pos):
+        x = int(pos.x() / self.scale_factor)
+        y = int(pos.y() / self.scale_factor)
 
         node_id = max(self.id_to_node.keys()) + 1 if len(self.id_to_node) > 0 else 1
 
@@ -990,19 +1043,19 @@ class _MainWin(QMainWindow):
         self.redraw()
 
     
-    def _add_node(self):
+    def _new_node(self):
         center = self._scroll_area.viewport().rect().center()
         center = self._img_label.mapFromParent(center)
-        self.add_node_at_pos(center)
+        self.new_node_at_pos(center)
     
 
-    def _remove_node(self):
+    def _delete_node(self):
         items = self._get_selected_childless_items(0, _ItemType.NODE)
         if len(items) == 0:
             return
 
         nodes_str = "nodes" if len(items) > 1 else "node" 
-        ret = QMessageBox.question(self, "Question", f"Are you sure you want to remove the selected {nodes_str}?", 
+        ret = QMessageBox.question(self, "Question", f"Are you sure you want to delete the selected {nodes_str}?", 
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if ret == QMessageBox.StandardButton.No:
             return
@@ -1026,7 +1079,7 @@ class _MainWin(QMainWindow):
         self.redraw()
 
     
-    def _add_edge(self):
+    def _new_edge(self):
         items = self._get_selected_childless_items(1, _ItemType.NODE)
         node_ids = [item.data()[1] for item in items]
         edges = self._get_possible_new_edges(node_ids)
@@ -1044,13 +1097,13 @@ class _MainWin(QMainWindow):
         self.redraw()
 
 
-    def _remove_edge(self):
+    def _delete_edge(self):
         edges = [edge for edge, data in self._edges.items() if data.is_selected]
         if len(edges) == 0:
             return
 
         edges_str = "edges" if len(edges) > 1 else "edge"
-        ret = QMessageBox.question(self, "Question", f"Are you sure you want to remove the selected {edges_str}?", 
+        ret = QMessageBox.question(self, "Question", f"Are you sure you want to delete the selected {edges_str}?", 
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if ret == QMessageBox.StandardButton.No:
             return
@@ -1062,12 +1115,16 @@ class _MainWin(QMainWindow):
 
         self.clear_paths()
         self.redraw()
+    
+
+    def _delete(self):
+        self._delete_node()
+        self._delete_edge()
 
     
     def keyPressEvent(self, event: QKeyEvent)-> None:
         if event.key() == Qt.Key.Key_Delete.value:
-            self._remove_node()
-            self._remove_edge()
+            self._delete()
             return
         return super().keyPressEvent(event)
     
@@ -1188,8 +1245,7 @@ class _MainWin(QMainWindow):
             self.id_to_elem[id] = _Elem(color, id_to_item.get(id, None))
 
         self._create_graph_button.setEnabled(True)
-        for button in self._graph_buttons:
-            button.setEnabled(False)
+        self._set_graph_widgets_enabled(False)
         self.find_path_button.setEnabled(False)
         self.redraw()
 
@@ -1325,8 +1381,7 @@ class _MainWin(QMainWindow):
 
         self._hide_progress_bar()
         
-        for button in self._graph_buttons:
-            button.setEnabled(True)
+        self._set_graph_widgets_enabled(True)
         self.find_path_button.setEnabled(True)
         self.redraw()
 
