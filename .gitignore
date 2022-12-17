@@ -155,4 +155,4 @@ cython_debug/
 datasets
 initial_checkpoints
 results
-cubicasa5k/model
+tool/model

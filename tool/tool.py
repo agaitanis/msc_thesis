@@ -448,7 +448,7 @@ class _MainWin(QMainWindow):
         self._graph_widgets = []
         self._create_graph_button: QPushButton = None
         self._calc_paths_button: QPushButton = None
-        self._model = tf.saved_model.load("cubicasa5k/model")
+        self._model = tf.saved_model.load(os.path.join(os.path.dirname(__file__), "model"))
         self._edges: dict[(int, int), _EdgeData] = {}
 
         self._create_win()
