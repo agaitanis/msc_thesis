@@ -40,9 +40,9 @@ _DATASET_SPLIT_MAP = {
 }
 
 _NUM_SHARDS_MAP = {
-    "train" : 10,
-    "val" : 1,
-    "test" : 1,
+    "train" : 100,
+    "val" : 10,
+    "test" : 10,
 }
 
 

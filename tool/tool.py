@@ -26,25 +26,25 @@ _SELECTED_COLOR = (0, 0, 100)
 _PATH_COLOR = (0, 136, 190)
 
 
-class _ItemType(IntEnum):
+class ItemType(IntEnum):
     WALL = 0
     ROOM = 1
     DOOR = 2
     NODE = 3
 
 
-class _Mark(IntEnum):
+class Mark(IntEnum):
     NONE = 0
     EXIT = 1
 
 
 def _label_to_item_type(label):
     if label == ccl.Label.WALL:
-        return _ItemType.WALL
+        return ItemType.WALL
     elif label == ccl.Label.ROOM:
-        return _ItemType.ROOM
+        return ItemType.ROOM
     elif label == ccl.Label.DOOR:
-        return _ItemType.DOOR
+        return ItemType.DOOR
     else:
         raise ValueError(f"Unknown label: {label}")
 
@@ -56,7 +56,6 @@ def _get_pixel_neibs(img_array, i, j):
         neibs.append(img_array[i-1, j])
     if i+1 < img_array.shape[0]:
         neibs.append(img_array[i+1, j])
-
     if j-1 >= 0:
         neibs.append(img_array[i, j-1])
     if j+1 < img_array.shape[1]:
@@ -92,32 +91,32 @@ def _wait_cursor():
         QApplication.restoreOverrideCursor()
 
 
-class _Elem():
+class Elem():
     def __init__(self, color, item:QStandardItem):
         self.color = color
         self.item = item
         self.is_selected = False
 
         
-class _Node():
+class Node():
     def __init__(self, color, item:QStandardItem, center=None):
         self.color = color
         self.item = item
         self.center = center
         self.is_selected = False
         self.highlight_for_path = False
-        self.mark = _Mark.NONE
+        self.mark = Mark.NONE
         self.path = []
 
 
-class _EdgeData():
+class EdgeData():
     def __init__(self):
         self.is_selected = False
         self.highlight_for_path = False
 
 
-class _ScrollArea(QScrollArea):
-    def __init__(self, win: _MainWin):
+class ScrollArea(QScrollArea):
+    def __init__(self, win: MainWin):
         super().__init__()
         self._win = win
 
@@ -130,8 +129,8 @@ class _ScrollArea(QScrollArea):
             self._win.scale_img(0.9, event.position())
 
     
-class _ImgLabel(QLabel):
-    def __init__(self, win: _MainWin):
+class ImgLabel(QLabel):
+    def __init__(self, win: MainWin):
         super().__init__()
         self._win = win
         self._move_img_is_allowed = False
@@ -344,7 +343,7 @@ class _ImgLabel(QLabel):
             painter.setBrush(QBrush(QColor(node.color[0], node.color[1], node.color[2], alpha)))
             painter.drawEllipse(point, r, r)
 
-            if node.mark == _Mark.EXIT:
+            if node.mark == Mark.EXIT:
                 color = (np.array(distinctipy.get_text_color(node.color/255))*255).astype(np.uint8)
                 painter.setPen(QPen(QColor(color[0], color[1], color[2], alpha), 1))
                 painter.setBrush(QBrush(QColor(color[0], color[1], color[2], alpha)))
@@ -385,8 +384,8 @@ class _ImgLabel(QLabel):
         self._draw_edges(painter)
 
         
-class _ItemModel(QStandardItemModel):
-    def __init__(self, win: _MainWin):
+class ItemModel(QStandardItemModel):
+    def __init__(self, win: MainWin):
         super().__init__()
         self._win = win
     
@@ -412,50 +411,50 @@ class _ItemModel(QStandardItemModel):
         return QColor(color[0], color[1], color[2])
     
 
-class _Icon(QIcon):
+class Icon(QIcon):
     def __init__(self, filename):
         filename = os.path.join(os.path.dirname(__file__), "icons", filename)
         super().__init__(filename)
 
 
-class _Separator(QFrame):
+class Separator(QFrame):
     def __init__(self):
         super().__init__()
         self.setFrameShape(QFrame.Shape.VLine)
         self.setFrameShadow(QFrame.Shadow.Sunken)
 
 
-class _MainWin(QMainWindow):
+class MainWin(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.scale_factor = 1.0
-        self.id_to_elem: dict[int, _Elem] = {}
-        self.id_to_node: dict[int, _Node] = {}
+        self.id_to_elem: dict[int, Elem] = {}
+        self.id_to_node: dict[int, Node] = {}
         self.tree_view: QTreeView = None
         self.graph = {}
         self.has_graph = False
 
-        self._img_label: _ImgLabel = None
+        self._img_label: ImgLabel = None
         self._img_qt: QImage = None
         self._scroll_area: QScrollArea = None
         self._status_bar: QStatusBar = None
         self._progress_bar: QProgressBar = None
         self._img_file_name: str = None
-        self._item_model: _ItemModel = None
+        self._item_model: ItemModel = None
         self._nodes_item: QStandardItem = None
         self._detect_elements_button: QPushButton = None
         self._graph_widgets = []
         self._create_graph_button: QPushButton = None
         self._calc_paths_button: QPushButton = None
         self._model = tf.saved_model.load(os.path.join(os.path.dirname(__file__), "model"))
-        self._edges: dict[(int, int), _EdgeData] = {}
+        self._edges: dict[(int, int), EdgeData] = {}
 
         self._create_win()
     
 
-    def item_type_to_map(self, item_type: _ItemType):
-        if item_type == _ItemType.NODE:
+    def item_type_to_map(self, item_type: ItemType):
+        if item_type == ItemType.NODE:
             return self.id_to_node
         else:
             return self.id_to_elem
@@ -472,18 +471,18 @@ class _MainWin(QMainWindow):
 
 
     def _create_win(self):
-        self.setWindowTitle("Floor Plan Recognition")
+        self.setWindowTitle("Route Planning for Emergency Evacuation")
         self.setMinimumSize(500, 360)
         self.showMaximized()
 
         menu_bar = self.menuBar()
 
         file_menu = menu_bar.addMenu("File")
-        file_menu.addAction(QAction(_Icon("new_file.svg"), "New", self, shortcut="Ctrl+N", 
+        file_menu.addAction(QAction(Icon("new_file.svg"), "New", self, shortcut="Ctrl+N", 
             triggered=self._new_file))
-        file_menu.addAction(QAction(_Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
+        file_menu.addAction(QAction(Icon("open_file.svg"), "Open...", self, shortcut="Ctrl+O", 
             triggered=self._open_file))
-        save_graph_action = QAction(_Icon("save_graph.svg"), "Save Graph", self, shortcut="Ctrl+S",
+        save_graph_action = QAction(Icon("save_graph.svg"), "Save graph", self, shortcut="Ctrl+S",
             triggered=self._save_graph)
         self._graph_widgets.append(save_graph_action)
         file_menu.addAction(save_graph_action)
@@ -491,13 +490,13 @@ class _MainWin(QMainWindow):
         file_menu.addAction(QAction("Exit", self, shortcut="Ctrl+Q", triggered=self.close))
 
         view_menu = menu_bar.addMenu("View")
-        view_menu.addAction(QAction(_Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
+        view_menu.addAction(QAction(Icon("zoom_to_fit.svg"), "Zoom to fit", self, 
             shortcut="Ctrl+0", triggered=self._zoom_to_fit))
-        view_menu.addAction(QAction(_Icon("show_100.svg"), "Show 100%", self, 
+        view_menu.addAction(QAction(Icon("show_100.svg"), "Show 100%", self, 
             shortcut="Ctrl+1", triggered=self._show_100))
-        view_menu.addAction(QAction(_Icon("zoom_in.svg"), "Zoom in", self, 
+        view_menu.addAction(QAction(Icon("zoom_in.svg"), "Zoom in", self, 
             shortcut="Ctrl++", triggered=self._zoom_in))
-        view_menu.addAction(QAction(_Icon("zoom_out.svg"), "Zoom out", self, 
+        view_menu.addAction(QAction(Icon("zoom_out.svg"), "Zoom out", self, 
             shortcut="Ctrl+-", triggered=self._zoom_out))
 
         v_layout = QVBoxLayout()
@@ -511,85 +510,85 @@ class _MainWin(QMainWindow):
         v_layout.addLayout(h_layout)
 
         button = QPushButton()
-        button.setIcon(_Icon("new_file.svg"))
+        button.setIcon(Icon("new_file.svg"))
         button.clicked.connect(self._new_file)
         button.setToolTip("New")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("open_file.svg"))
+        button.setIcon(Icon("open_file.svg"))
         button.clicked.connect(self._open_file)
         button.setToolTip("Open")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("save_graph.svg"))
+        button.setIcon(Icon("save_graph.svg"))
         button.clicked.connect(self._save_graph)
         button.setToolTip("Save graph")
         h_layout.addWidget(button)
         self._graph_widgets.append(button)
 
-        h_layout.addWidget(_Separator())
+        h_layout.addWidget(Separator())
         
         button = QPushButton()
-        button.setIcon(_Icon("zoom_to_fit.svg"))
+        button.setIcon(Icon("zoom_to_fit.svg"))
         button.clicked.connect(self._zoom_to_fit)
         button.setToolTip("Zoom to fit")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("show_100.svg"))
+        button.setIcon(Icon("show_100.svg"))
         button.clicked.connect(self._show_100)
         button.setToolTip("Show 100%")
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("zoom_in.svg"))
+        button.setIcon(Icon("zoom_in.svg"))
         button.clicked.connect(self._zoom_in)
         button.setToolTip("Zoom in")
         h_layout.addWidget(button)
         h_layout.addWidget(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("zoom_out.svg"))
+        button.setIcon(Icon("zoom_out.svg"))
         button.clicked.connect(self._zoom_out)
         button.setToolTip("Zoom out")
         h_layout.addWidget(button)
 
-        h_layout.addWidget(_Separator())
+        h_layout.addWidget(Separator())
 
         button = QPushButton()
-        button.setIcon(_Icon("new_node.svg"))
+        button.setIcon(Icon("new_node.svg"))
         button.clicked.connect(self._new_node)
         button.setToolTip("New node")
         h_layout.addWidget(button)
         self._graph_widgets.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("new_edge.svg"))
+        button.setIcon(Icon("new_edge.svg"))
         button.clicked.connect(self._new_edge)
         button.setToolTip("New edge")
         h_layout.addWidget(button)
         self._graph_widgets.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("delete.svg"))
+        button.setIcon(Icon("delete.svg"))
         button.clicked.connect(self._delete)
         button.setToolTip("Delete")
         h_layout.addWidget(button)
         self._graph_widgets.append(button)
 
-        h_layout.addWidget(_Separator())
+        h_layout.addWidget(Separator())
 
         button = QPushButton()
-        button.setIcon(_Icon("mark_as_exit.svg"))
+        button.setIcon(Icon("mark_as_exit.svg"))
         button.clicked.connect(self._mark_as_exit)
         button.setToolTip("Mark as exit")
         h_layout.addWidget(button)
         self._graph_widgets.append(button)
 
         button = QPushButton()
-        button.setIcon(_Icon("clear_mark.svg"))
+        button.setIcon(Icon("clear_mark.svg"))
         button.clicked.connect(self._clear_mark)
         button.setToolTip("Clear mark")
         h_layout.addWidget(button)
@@ -607,7 +606,7 @@ class _MainWin(QMainWindow):
         self.tree_view.customContextMenuRequested.connect(self._context_menu)
         splitter.addWidget(self.tree_view)
 
-        self._item_model = _ItemModel(self)
+        self._item_model = ItemModel(self)
         self.tree_view.setModel(self._item_model)
         self._clear_list()
 
@@ -620,12 +619,12 @@ class _MainWin(QMainWindow):
         v_layout_2 = QVBoxLayout(frame)
         v_layout_2.setContentsMargins(0, 0, 0, 0)
 
-        self._scroll_area = _ScrollArea(self)
+        self._scroll_area = ScrollArea(self)
         self._scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
         self._scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._scroll_area.setVisible(True)
 
-        self._img_label = _ImgLabel(self)
+        self._img_label = ImgLabel(self)
         self._img_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self._img_label.setScaledContents(True)
         self._img_label.resize(300, 200)
@@ -830,7 +829,7 @@ class _MainWin(QMainWindow):
             y_node.text = str(node.center[1])
 
             exit_node = ET.SubElement(node_elem, 'exit')
-            exit_node.text = str(node.mark == _Mark.EXIT).lower()
+            exit_node.text = str(node.mark == Mark.EXIT).lower()
 
             if len(node.path) > 0:
                 path_node = ET.SubElement(node_elem, 'path')
@@ -851,8 +850,8 @@ class _MainWin(QMainWindow):
             to_elem = ET.SubElement(edge_elem, 'to')
             to_elem.text = str(edge[1])
 
-            lengths_elem = ET.SubElement(edge_elem, 'lengths')
-            lengths_elem.text = str(self.graph[edge])
+            length_elem = ET.SubElement(edge_elem, 'length')
+            length_elem.text = str(self.graph[edge])
 
         xml_str = ET.tostring(network_node, encoding='unicode')
         dom = minidom.parseString(xml_str)
@@ -939,7 +938,7 @@ class _MainWin(QMainWindow):
                 continue
             item_type, id = item_data
 
-            if item_type == _ItemType.NODE:
+            if item_type == ItemType.NODE:
                 self.id_to_node[id].is_selected = True
             else:
                 self.id_to_elem[id].is_selected = True
@@ -983,7 +982,7 @@ class _MainWin(QMainWindow):
         if not self.has_graph:
             return
 
-        node_items = self._get_selected_childless_items(0, _ItemType.NODE) 
+        node_items = self._get_selected_childless_items(0, ItemType.NODE) 
         nodes_num = len(node_items)
 
         node_ids = [node_item.data()[1] for node_item in node_items]
@@ -1029,18 +1028,18 @@ class _MainWin(QMainWindow):
 
         item1 = QStandardItem("Anonymous Node")
         item1.setEditable(True)
-        item1.setData((_ItemType.NODE, node_id))
+        item1.setData((ItemType.NODE, node_id))
 
         item2 = QStandardItem("")
         item2.setEditable(False)
-        item2.setData((_ItemType.NODE, node_id))
+        item2.setData((ItemType.NODE, node_id))
 
         parent = self._get_nodes_item()
         parent.appendRow((item1, item2))
 
         colors = distinctipy.get_colors(1, exclude_colors=self._get_exclude_colors(), rng=0)
         colors = (np.array(colors)*255).astype(np.uint8)
-        self.id_to_node[node_id] = _Node(colors[0], item1, (x, y))
+        self.id_to_node[node_id] = Node(colors[0], item1, (x, y))
 
         self.clear_paths()
         self.redraw()
@@ -1053,7 +1052,7 @@ class _MainWin(QMainWindow):
     
 
     def _delete_node(self):
-        items = self._get_selected_childless_items(0, _ItemType.NODE)
+        items = self._get_selected_childless_items(0, ItemType.NODE)
         if len(items) == 0:
             return
 
@@ -1083,7 +1082,7 @@ class _MainWin(QMainWindow):
 
     
     def _new_edge(self):
-        items = self._get_selected_childless_items(1, _ItemType.NODE)
+        items = self._get_selected_childless_items(1, ItemType.NODE)
         node_ids = [item.data()[1] for item in items]
         edges = self._get_possible_new_edges(node_ids)
 
@@ -1091,7 +1090,7 @@ class _MainWin(QMainWindow):
             return
 
         for edge in edges:
-            self._edges[edge] = _EdgeData()
+            self._edges[edge] = EdgeData()
             dist = self._calc_edge_dist(edge)
             self.graph[(edge[0], edge[1])] = dist
             self.graph[(edge[1], edge[0])] = dist
@@ -1140,7 +1139,7 @@ class _MainWin(QMainWindow):
      
     
     def _mark_as_exit(self):
-        items = self._get_selected_childless_items(1, _ItemType.NODE)
+        items = self._get_selected_childless_items(1, ItemType.NODE)
         if len(items) == 0:
             return
 
@@ -1149,7 +1148,7 @@ class _MainWin(QMainWindow):
         for item in items:
             item.setText("Exit")
             _, id = item.data()
-            self.id_to_node[id].mark = _Mark.EXIT
+            self.id_to_node[id].mark = Mark.EXIT
             clear_paths = True
         
         if clear_paths:
@@ -1159,7 +1158,7 @@ class _MainWin(QMainWindow):
     
     
     def _clear_mark(self):
-        items = self._get_selected_childless_items(1, _ItemType.NODE)
+        items = self._get_selected_childless_items(1, ItemType.NODE)
         if len(items) == 0:
             return
 
@@ -1168,7 +1167,7 @@ class _MainWin(QMainWindow):
         for item in items:
             item.setText("")
             _, id = item.data()
-            self.id_to_node[id].mark = _Mark.NONE
+            self.id_to_node[id].mark = Mark.NONE
             clear_paths = True
 
         if clear_paths:
@@ -1244,7 +1243,7 @@ class _MainWin(QMainWindow):
         colors = (np.array(colors)*255).astype(np.uint8)
 
         for id, color in zip(ids, colors):
-            self.id_to_elem[id] = _Elem(color, id_to_item.get(id, None))
+            self.id_to_elem[id] = Elem(color, id_to_item.get(id, None))
 
         self._create_graph_button.setEnabled(True)
         self._set_graph_widgets_enabled(False)
@@ -1354,16 +1353,16 @@ class _MainWin(QMainWindow):
 
             item1 = QStandardItem(label_str)
             item1.setEditable(True)
-            item1.setData((_ItemType.NODE, node_id))
+            item1.setData((ItemType.NODE, node_id))
 
             item2 = QStandardItem("")
             item2.setEditable(False)
-            item2.setData((_ItemType.NODE, node_id))
+            item2.setData((ItemType.NODE, node_id))
 
             parent.appendRow((item1, item2))
 
             elem_id_to_node_id[elem_id] = node_id
-            self.id_to_node[node_id] = _Node(elem.color, item1)
+            self.id_to_node[node_id] = Node(elem.color, item1)
 
         self.tree_view.expand(parent.index())
         
@@ -1380,7 +1379,7 @@ class _MainWin(QMainWindow):
             self.graph[edge] = dist
             min_node_id = min(edge[0], edge[1])
             max_node_id = max(edge[0], edge[1])
-            self._edges[(min_node_id, max_node_id)] = _EdgeData()
+            self._edges[(min_node_id, max_node_id)] = EdgeData()
 
         self._hide_progress_bar()
         
@@ -1477,7 +1476,7 @@ class _MainWin(QMainWindow):
         exit_ids = []
 
         for id, data in self.id_to_node.items():
-            if data.mark == _Mark.EXIT:
+            if data.mark == Mark.EXIT:
                 exit_ids.append(id)
 
         if len(exit_ids) == 0:
@@ -1495,7 +1494,7 @@ class _MainWin(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    win = _MainWin()
+    win = MainWin()
     win.show()
 
     sys.exit(app.exec())
