@@ -1,4 +1,4 @@
-# Route Planning for Emergency Evacuation using graph traversal algorithms
+# Route planning for emergency evacuation using graph traversal algorithms
 
 Automatic identification of various design elements in a floor plan image has gained increased attention in 
 recent research. Current work aims to extract information from a floor plan image and transform it into a 
