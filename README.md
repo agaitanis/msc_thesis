@@ -17,7 +17,7 @@ each node using the Dijkstra algorithm.
 
 ## Installation
 
-Install cuda and cudnn using the instructions in:
+Install cuda and cudnn using the instructions in:\
 https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
 
@@ -96,7 +96,7 @@ python deeplab2/model/deeplab_test.py
 python deeplab2/trainer/evaluator_test.py
 ```
 
-### Dataset preparation
+## Dataset preparation
 
 Download CubiCasa5K from [here](https://zenodo.org/record/2613548#.Y-e33NJBy0k)
 and store in the folder datasets/cubicasa5k.
@@ -111,7 +111,7 @@ Create the TFRecords:
 python deeplab2/data/build_cubicasa5k_data.py --cubicasa5k_root=datasets/deeplab2/cubicasa5k/ --output_dir=datasets/deeplab2/cubicasa5k/tf_records
 ```
 
-### Model training
+## Model training
 
 Train your model using the following command; the best model configuration is used in this example:
 ```bash
@@ -123,17 +123,39 @@ Export the model in order to be used by the tool:
 python deeplab2/export_model.py --experiment_option_path=deeplab2/configs/cubicasa5k/panoptic_deeplab/59_wide_resnet41.textproto --checkpoint_path=results/59/ckpt-40000 --output_path=tool/model
 ```
 
-### Tool usage
+## Tool usage
 
 Open the tool using the following command:
 ```bash
 python tool/tool.py
 ```
 
-Example:
-![alt text](https://github.com/agaitanis/msc_thesis/blob/main/example.png)
+Screenshot of the tool:
+![alt text](https://github.com/agaitanis/msc_thesis/blob/main/tool/example.png)
 
-### References
+* Image manipulation
+	* Open an image with File > Open.
+	* Zoom by pressing the zoom buttons or by scrolling.
+	* Move the picture by pressing Shift + Left Click.
+* Delect elements
+	* Press the button "Detect elements" to detect the floorplan elements using the exported model.
+* Create graph
+	* Press the button "Create graph" to automatically create the graph of the rooms/doors layout.
+* Edit graph
+	* Select a node/edge by clicking on it in the picture
+	* Select multiple nodes/edges by pressing Ctrl
+	* Move a node by pressing Shift + Left Click on the node
+	* Create a new node by pressing the "New node" button or by pressing Right Click > New node here.
+	* Create a new edge by selecting two nodes and then pressing the "New edge" button.
+	* Delete a node/edge by pressing the "Delete" button or by pressing the Del key.
+* Save graph
+	* Save the graph to xml with File > Save graph
+
+
+Example:
+![alt text](https://github.com/agaitanis/msc_thesis/blob/main/tool/example.png)
+
+## References
 
 1. Bowen Cheng, Maxwell D. Collins, Yukun Zhu, Ting Liu, Thomas S. Huang, Hartwig
 Adam, and Liang-Chieh Chen. Panoptic-deeplab: A simple, strong, and fast baseline for
