@@ -18,9 +18,9 @@ path for evacuation is calculated from each node using the Dijkstra algorithm.
 ## Installation
 
 The current project was implemented using cuda 11.7 and cudnn 8.5.0.\
-Install cuda and cudnn using the instructions in:\
-https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html \
-https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
+Install cuda and cudnn using the instructions found 
+[here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
+and [here](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html).
 
 Clone the current repository:
 ```bash
