@@ -30,7 +30,7 @@ conda activate ${ENV_NAME}
 
 Install the following libraries:
 ```bash
-pip install tensorflow==2.7.0 keras==2.7.0 cython==0.29.32 protobuf==3.20.1 opencv-python==4.6.0.66 tqdm==4.64.1 scikit-image==0.19.3 PyQt6==6.4.0 distinctipy==1.2.2
+pip install tensorflow==2.7.0 keras==2.7.0 cython==0.29.32 protobuf==3.20.1 opencv-python==4.6.0.66 tqdm==4.64.1 scikit-image==0.19.3 numpy==1.23.1 PyQt6==6.4.0 distinctipy==1.2.2
 ```
 
 Compile pycocotools:
@@ -111,6 +111,9 @@ python deeplab2/data/build_cubicasa5k_data.py --cubicasa5k_root=datasets/deeplab
 ```
 
 ## Model training
+
+Download the pretrained checkpoints from [here](https://github.com/google-research/deeplab2/blob/main/g3doc/projects/imagenet_pretrained_checkpoints.md)
+and place them in deeplab2/initial_checkpoints/.
 
 Train your model using the following command (the best model configuration is used in this example):
 ```bash
