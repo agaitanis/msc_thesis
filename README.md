@@ -100,7 +100,7 @@ python deeplab2/trainer/evaluator_test.py
 Download CubiCasa5K from [here](https://zenodo.org/record/2613548#.Y-e33NJBy0k)
 and place it in the folder datasets/cubicasa5k.
 
-Convert the dataset to the required format by DeepLab2:
+Convert the dataset to the format that is required by DeepLab2:
 ```bash
 python cubicasa5k/create_deeplab2_dataset.py --cubicasa5k_root=datasets/cubicasa5k/ --output_dir=datasets/deeplab2/cubicasa5k/
 ```
@@ -138,6 +138,7 @@ Screenshot of the tool:
 	* Move the picture by pressing Shift + Left Click.
 * Delect elements
 	* Press the "Detect elements" button to detect the floorplan elements using the exported model.
+	* Select the items on the list to draw the predicted floorplan elements on the picture.
 * Create graph
 	* Press the "Create graph" button to automatically create the graph of the rooms/doors layout.
 * Edit graph
