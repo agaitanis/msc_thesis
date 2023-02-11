@@ -24,7 +24,7 @@ https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
 
 Clone the current repository and then create a new conda environment:
 ```bash
-conda create --name <env_name> python=3.8.13
+conda create --name ${ENV_NAME} python=3.8.13
 conda activate ${ENV_NAME}
 ```
 
@@ -41,9 +41,9 @@ make
 
 Add libaries to PYTHONPATH:
 ```bash
-export PYTHONPATH=$PYTHONPATH:<project>
-export PYTHONPATH=$PYTHONPATH:<project>/models
-export PYTHONPATH=$PYTHONPATH:<project>/cocoapi/PythonAPI
+export PYTHONPATH=$PYTHONPATH:${PROJECT_DIR}
+export PYTHONPATH=$PYTHONPATH:${PROJECT_DIR}/models
+export PYTHONPATH=$PYTHONPATH:${PROJECT_DIR}/cocoapi/PythonAPI
 ```
 
 Compile protobuf:
