@@ -152,7 +152,8 @@ cython_debug/
 #.idea/
 
 *.swp
-datasets
+datasets/cubicasa5k/*/*
+datasets/deeplab2/cubicasa5k/*/*
 initial_checkpoints
 results/*/*
 results/*.txt
