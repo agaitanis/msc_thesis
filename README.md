@@ -1,14 +1,14 @@
 # Route Planning for Emergency Evacuation using graph traversal algorithms
 
-Abstract:\
 Automatic identification of various design elements in a floor plan image has gained 
 increased attention in recent research. Current work aims to extract information from a floor 
 plan image and transform it into a graph which is used for path finding in an emergency 
 evacuation. First, the basic elements of the floor plan image, i.e. walls, rooms and doors 
 are identified. This is achieved using Panoptic-Deeplab which is a state-of-the-art deep 
-neural network for panoptic segmentation of images and it is available in DeepLab2, an 
-image segmentation library. The neural network was trained using CubiCasa5K, a large-scale 
-floor plan image dataset, containing 5000 samples, annotated into over 80 floor plan 
+neural network for panoptic segmentation of images and it is available in 
+[DeepLab2](https://github.com/google-research/deeplab2), an image segmentation library. 
+The neural network was trained using [CubiCasa5K](https://github.com/CubiCasa/CubiCasa5k), 
+a large-scale floor plan image dataset, containing 5000 samples, annotated into over 80 floor plan 
 object categories. Then, using the prediction of each pixel, a graph is created which shows 
 how the rooms and the doors are connected to each other. An application was developed 
 which presents this information in a user-friendly manner and provides edit capabilities of 
@@ -17,15 +17,14 @@ each node using the Dijkstra algorithm.
 
 ## Installation
 
+The current project was implemented using cuda 11.7 and cudnn 8.5.0.\
 Install cuda and cudnn using the instructions in:\
 https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
 
-The current project was implemented using cuda 11.7 and cudnn 8.5.0
-
-Clone the current repository and create a new conda environment using Python 3.8.13:
+Clone the current repository and then create a new conda environment:
 ```bash
-conda create --name <env_name> python=3.8.11
+conda create --name <env_name> python=3.8.13
 conda activate ${ENV_NAME}
 ```
 
@@ -99,9 +98,9 @@ python deeplab2/trainer/evaluator_test.py
 ## Dataset preparation
 
 Download CubiCasa5K from [here](https://zenodo.org/record/2613548#.Y-e33NJBy0k)
-and store in the folder datasets/cubicasa5k.
+and place it in the folder datasets/cubicasa5k.
 
-Convert the dataset to the format that DeepLab2 requires:
+Convert the dataset to the required format by DeepLab2:
 ```bash
 python cubicasa5k/create_deeplab2_dataset.py --cubicasa5k_root=datasets/cubicasa5k/ --output_dir=datasets/deeplab2/cubicasa5k/
 ```
@@ -113,7 +112,7 @@ python deeplab2/data/build_cubicasa5k_data.py --cubicasa5k_root=datasets/deeplab
 
 ## Model training
 
-Train your model using the following command; the best model configuration is used in this example:
+Train your model using the following command (the best model configuration is used in this example):
 ```bash
 python deeplab2/trainer/train.py --config_file=deeplab2/configs/cubicasa5k/panoptic_deeplab/59_wide_resnet41.textproto --mode=train_and_eval --model_dir=results --num_gpus=1 >& results/59.txt
 ```
@@ -138,18 +137,22 @@ Screenshot of the tool:
 	* Zoom by pressing the zoom buttons or by scrolling.
 	* Move the picture by pressing Shift + Left Click.
 * Delect elements
-	* Press the button "Detect elements" to detect the floorplan elements using the exported model.
+	* Press the "Detect elements" button to detect the floorplan elements using the exported model.
 * Create graph
-	* Press the button "Create graph" to automatically create the graph of the rooms/doors layout.
+	* Press the "Create graph" button to automatically create the graph of the rooms/doors layout.
 * Edit graph
-	* Select a node/edge by clicking on it in the picture
-	* Select multiple nodes/edges by pressing Ctrl
-	* Move a node by pressing Shift + Left Click on the node
+	* Select a node/edge by clicking on it in the picture.
+	* Select multiple nodes/edges by pressing Ctrl.
+	* Move a node by pressing Shift + Left Click on the node.
 	* Create a new node by pressing the "New node" button or by pressing Right Click > New node here.
 	* Create a new edge by selecting two nodes and then pressing the "New edge" button.
 	* Delete a node/edge by pressing the "Delete" button or by pressing the Del key.
+* Calculate paths
+	* Set one or more exits by pressing the "Mark as exit" button
+	* Press the "Calculate paths" button in order to calculate the paths using the Dijkstra algorithm.
+	* Select one node to show the shortest path to the nearest exit.
 * Save graph
-	* Save the graph to xml with File > Save graph
+	* Save the graph to xml with File > Save graph.
 
 
 Example:
