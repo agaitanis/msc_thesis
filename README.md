@@ -22,7 +22,13 @@ Install cuda and cudnn using the instructions in:\
 https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
 https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
 
-Clone the current repository and then create a new conda environment:
+Clone the current repository:
+```bash
+cd ${YOUR_PROJECT_NAME}
+git clone https://github.com/agaitanis/msc_thesis.git
+```
+
+Create a new conda environment:
 ```bash
 conda create --name ${ENV_NAME} python=3.8.13
 conda activate ${ENV_NAME}
