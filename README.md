@@ -24,9 +24,7 @@ https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
 
 Clone the current repository:
 ```bash
-mkdir ${YOUR_PROJECT_NAME}
-cd ${YOUR_PROJECT_NAME}
-git clone https://github.com/agaitanis/msc_thesis.git
+git clone https://github.com/agaitanis/msc_thesis.git ${PROJECT_DIR}
 ```
 
 Create a new conda environment:
