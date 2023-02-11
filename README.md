@@ -65,11 +65,11 @@ nvcc -std=c++14 -c -o ${OP_NAME}_kernel.cu.o ${OP_NAME}_kernel.cu.cc \
 g++ -std=c++14 -shared -o ${OP_NAME}.so ${OP_NAME}.cc ${OP_NAME}_kernel.cc \
   ${OP_NAME}_kernel.cu.o ${TF_CFLAGS[@]} -fPIC -lcuda ${TF_LFLAGS[@]}
 ```
-If you get an error like the following:
+If you get an error like this:
 ```bash
 fatal error: third_party/gpus/cuda/include/cuda_fp16.h: No such file or directory
 ```
-Then do the following:
+then do the following:
 ```bash
 # Find the directory where tensorflow is installed
 pip show tensorflow
