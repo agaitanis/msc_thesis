@@ -18,11 +18,16 @@ path for evacuation is calculated from each node using the Dijkstra algorithm.
 ## Installation
 
 The current project was implemented using cuda 11.7 and cudnn 8.5.0.\
-Install cuda and cudnn using the instructions in:\
-https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
-https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html
+Install cuda and cudnn using the instructions found 
+[here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
+and [here](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html).
 
-Clone the current repository and then create a new conda environment:
+Clone the current repository:
+```bash
+git clone https://github.com/agaitanis/msc_thesis.git ${PROJECT_DIR}
+```
+
+Create a new conda environment:
 ```bash
 conda create --name ${ENV_NAME} python=3.8.13
 conda activate ${ENV_NAME}
