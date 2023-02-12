@@ -103,7 +103,12 @@ python deeplab2/trainer/evaluator_test.py
 ## Dataset preparation
 
 Download CubiCasa5K from [here](https://zenodo.org/record/2613548#.Y-e33NJBy0k)
-and place it in the folder datasets/cubicasa5k.
+and place it in the folder datasets/cubicasa5k or execute the following commands:
+```bash
+wget https://zenodo.org/record/2613548/files/cubicasa5k.zip?download=1 -O cubicasa5k.zip
+y | unzip cubicasa5k.zip -d datasets
+rm -f cubicasa5k.zip
+```
 
 Convert the dataset to the format that is required by DeepLab2:
 ```bash
@@ -117,8 +122,29 @@ python deeplab2/data/build_cubicasa5k_data.py --cubicasa5k_root=datasets/deeplab
 
 ## Model training
 
-Download the pretrained checkpoints from [here](https://github.com/google-research/deeplab2/blob/main/g3doc/projects/imagenet_pretrained_checkpoints.md)
-and place them in deeplab2/initial_checkpoints/.
+Download the pretrained checkpoints from 
+[here](https://github.com/google-research/deeplab2/blob/main/g3doc/projects/imagenet_pretrained_checkpoints.md)
+and place them in deeplab2/initial_checkpoints/. 
+In order to download the pretrained checkpoints used by this project just execute the following:
+```bash
+mkdir deeplab2/initial_checkpoints
+
+wget https://storage.googleapis.com/gresearch/tf-deeplab/checkpoint/resnet50_imagenet1k_strong_training_strategy.tar.gz
+tar -xf resnet50_imagenet1k_strong_training_strategy.tar.gz -C deeplab2/initial_checkpoints
+rm -f resnet50_imagenet1k_strong_training_strategy.tar.gz
+
+wget https://storage.googleapis.com/gresearch/tf-deeplab/checkpoint/resnet50_beta_imagenet1k_strong_training_strategy.tar.gz
+tar -xf resnet50_beta_imagenet1k_strong_training_strategy.tar.gz -C deeplab2/initial_checkpoints
+rm -f resnet50_beta_imagenet1k_strong_training_strategy.tar.gz
+
+wget https://storage.googleapis.com/gresearch/tf-deeplab/checkpoint/wide_resnet41_imagenet1k_strong_training_strategy.tar.gz
+tar -xf wide_resnet41_imagenet1k_strong_training_strategy.tar.gz -C deeplab2/initial_checkpoints
+rm -f wide_resnet41_imagenet1k_strong_training_strategy.tar.gz
+
+wget https://storage.googleapis.com/gresearch/tf-deeplab/checkpoint/swidernet_sac_1_1_1_imagenet1k_strong_training_strategy.tar.gz
+tar -xf swidernet_sac_1_1_1_imagenet1k_strong_training_strategy.tar.gz -C deeplab2/initial_checkpoints
+rm -f swidernet_sac_1_1_1_imagenet1k_strong_training_strategy.tar.gz
+```
 
 Train your model using the following command (the best model configuration is used in this example):
 ```bash
