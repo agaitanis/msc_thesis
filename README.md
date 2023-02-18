@@ -164,7 +164,7 @@ python tool/tool.py
 ```
 
 Screenshot of the tool:
-![alt text](https://github.com/agaitanis/msc_thesis/blob/main/tool/screenshot.png)
+![alt text](https://github.com/agaitanis/msc_thesis/blob/main/pictures/screenshot.png)
 
 * Image manipulation
 	* Open an image with File > Open.
@@ -190,7 +190,7 @@ Screenshot of the tool:
 	* Save the graph to xml with File > Save graph.
 
 Example:
-![alt text](https://github.com/agaitanis/msc_thesis/blob/main/tool/example.png)
+![alt text](https://github.com/agaitanis/msc_thesis/blob/main/pictures/example.png)
 
 ## Notes
 
