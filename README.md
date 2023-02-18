@@ -189,9 +189,22 @@ Screenshot of the tool:
 * Save graph
 	* Save the graph to xml with File > Save graph.
 
-
 Example:
 ![alt text](https://github.com/agaitanis/msc_thesis/blob/main/tool/example.png)
+
+## Notes
+
+The following files contain our code:
+* cubicasa5k/*
+* tool/*
+
+The following files were added to deeplab2:
+* deeplab2/configs/cubicasa5k/panoptic_deeplab/*
+* deeplab2/data/build_cubicasa5k_data.py
+
+The following files of deeplab2 were modified:
+* deeplab2/data/dataset.py
+* deeplab2/trainer/vis_utils.py
 
 ## References
 
