@@ -194,17 +194,17 @@ Example:
 
 ## Notes
 
-The following files contain our code:
-* cubicasa5k/*
-* tool/*
+The following folders contain our code:
+* [cubicasa5k/](https://github.com/agaitanis/msc_thesis/tree/main/cubicasa5k)
+* [tool/](https://github.com/agaitanis/msc_thesis/tree/main/tool)
 
 The following files were added to deeplab2:
-* deeplab2/configs/cubicasa5k/panoptic_deeplab/*
-* deeplab2/data/build_cubicasa5k_data.py
+* [deeplab2/configs/cubicasa5k/panoptic_deeplab/\*](https://github.com/agaitanis/msc_thesis/tree/main/deeplab2/configs/cubicasa5k/panoptic_deeplab)
+* [deeplab2/data/build_cubicasa5k_data.py](https://github.com/agaitanis/msc_thesis/blob/main/deeplab2/data/build_cubicasa5k_data.py)
 
 The following files of deeplab2 were modified:
-* deeplab2/data/dataset.py
-* deeplab2/trainer/vis_utils.py
+* [deeplab2/data/dataset.py](https://github.com/agaitanis/msc_thesis/blob/main/deeplab2/data/dataset.py)
+* [deeplab2/trainer/vis_utils.py](https://github.com/agaitanis/msc_thesis/blob/main/deeplab2/trainer/vis_utils.py)
 
 ## References
 
