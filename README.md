@@ -1,19 +1,6 @@
-# Route planning for emergency evacuation using graph traversal algorithms
+# Route Planning for Emergency Evacuation using Graph Traversal Algorithms
 
-Automatic identification of various design elements in a floor plan image has gained increased attention in 
-recent research. Current work aims to extract information from a floor plan image and transform it into a 
-graph which is used for path finding in an emergency evacuation. First, the basic elements of the floor plan 
-image, i.e. walls, rooms and doors are identified. This is achieved using 
-[Panoptic-Deeplab](https://github.com/google-research/deeplab2/blob/main/g3doc/projects/panoptic_deeplab.md) 
-which is a state-of-the-art deep neural network for panoptic segmentation of images and it is available in 
-[DeepLab2](https://github.com/google-research/deeplab2), 
-an image segmentation library.  The neural network was trained using 
-[CubiCasa5K](https://github.com/CubiCasa/CubiCasa5k), 
-a large-scale floor plan image dataset, containing 5000 samples, annotated into over 80 floor plan object 
-categories. Then, using the prediction of each pixel, a graph is created which shows how the rooms and the 
-doors are connected to each other. An application was developed which presents this information in a 
-user-friendly manner and provides edit capabilities of the graph. Finally, the exits are set and the optimal 
-path for evacuation is calculated from each node using the Dijkstra algorithm.
+Automatic identification of various design elements in a floor plan image has gained increased attention in recent research. Current work aims to extract information from a floor plan image and transform it into a graph that is used for pathfinding in an emergency evacuation. First, the basic elements of the floor plan image, i.e., walls, rooms and doors, are identified. This is achieved using [Panoptic-Deeplab](https://github.com/google-research/deeplab2/blob/main/g3doc/projects/panoptic_deeplab.md), which is a state-of-the-art deep neural network for panoptic segmentation of images, and it is available in [DeepLab2](https://github.com/google-research/deeplab2), an image segmentation library. The neural network was trained using [CubiCasa5K](https://github.com/CubiCasa/CubiCasa5k), a large-scale floor plan image dataset containing 5000 samples, annotated into over 80 floor plan object categories. Then, using the prediction of each pixel, a graph is created which shows how the rooms and the doors are connected. An application was developed which presents this information in a user-friendly manner and provides graph editing capabilities. Finally, the exits are set, and the optimal path for evacuation is calculated from each node using Dijkstra's algorithm.
 
 ## Installation
 
