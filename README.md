@@ -179,6 +179,9 @@ Screenshot of the tool:
 Example:
 ![alt text](https://github.com/agaitanis/msc_thesis/blob/main/pictures/example.png)
 
+Video:
+https://user-images.githubusercontent.com/26085222/222260324-fcd3436b-8053-492a-ad02-d7bce8bbbfb7.mp4
+
 ## Notes
 
 The following folders contain our code:
