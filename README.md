@@ -195,6 +195,27 @@ The following files of deeplab2 were modified:
 * [deeplab2/data/dataset.py](https://github.com/agaitanis/msc_thesis/blob/main/deeplab2/data/dataset.py)
 * [deeplab2/trainer/vis_utils.py](https://github.com/agaitanis/msc_thesis/blob/main/deeplab2/trainer/vis_utils.py)
 
+## Citing
+
+If you find this work useful for your project, please consider citing it:
+
+```
+@article{2023,
+  title={Route Planning for Emergency Evacuation Using Graph Traversal Algorithms},
+  volume={6},
+  ISSN={2624-6511},
+  url={http://dx.doi.org/10.3390/smartcities6040084},
+  DOI={10.3390/smartcities6040084},
+  number={4},
+  journal={Smart Cities},
+  publisher={MDPI AG},
+  author={Gaitanis, Alexandros and Lentzas, Athanasios and Tsoumakas, Grigorios and Vrakas, Dimitris},
+  year={2023},
+  month={Jul},
+  pages={1814–1831}
+}
+```
+
 ## References
 
 1. Bowen Cheng, Maxwell D. Collins, Yukun Zhu, Ting Liu, Thomas S. Huang, Hartwig
